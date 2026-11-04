@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-Version **0.1.0**. Independently launched Ansible stages for demonstrating a
+Version **0.1.1**. Independently launched Ansible stages for demonstrating a
 single CVE/RHSA update followed by a full repository update, using Red Hat
 Satellite and AAP. This project is a submodule of
 [AAP Advanced Features](https://github.com/kvegh/AAP-advanced-features).
@@ -168,9 +168,14 @@ there is no claim of application-level functional coverage.
   bindings, SSH/become access and the existing `needs-restarting` utility
   (`yum-utils` or the platform's equivalent). Missing prerequisites fail before
   package changes; the playbooks do not install diagnostic dependencies.
-- The collection manifest is [requirements.yml](requirements.yml). It is kept
-  outside `collections/requirements.yml` so an AAP SCM refresh does not silently
-  install dependencies. Configure the execution environment before running jobs.
+- The explicit collection manifest is
+  [dependencies/satellite.yml](dependencies/satellite.yml). AAP automatically
+  processes root `requirements.yml` as well as role/collection requirement paths;
+  this project keeps its declaration in an explicit location so SCM refresh
+  does not install dependencies. Supply the declared collection in the execution
+  environment before running jobs. Its installation requires an appropriately
+  configured certified content source; a successful SCM refresh alone does not
+  prove runtime dependencies are present.
 - Keep real inventories, credentials and job output outside this public repo.
   No license has been selected for this project.
 

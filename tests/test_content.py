@@ -131,6 +131,19 @@ class ContentBoundaries(unittest.TestCase):
             )
         )
 
+    def test_aap_scm_does_not_auto_install_runtime_dependencies(self):
+        for name in [
+            "requirements.yml",
+            "requirements.yaml",
+            "collections/requirements.yml",
+            "roles/requirements.yml",
+        ]:
+            self.assertFalse((ROOT / name).exists())
+        declared = yaml.safe_load((ROOT / "dependencies/satellite.yml").read_text())
+        self.assertEqual(
+            declared["collections"], [{"name": "redhat.satellite", "version": "6.0.0"}]
+        )
+
     def test_rpm_snapshot_format_contains_one_rpm_newline_escape(self):
         plays = yaml.safe_load((ROOT / "patch_hosts.yml").read_text())
         snapshots = [
