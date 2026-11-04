@@ -1,5 +1,25 @@
 # Design decisions history
 
+## Document demonstration advisories and CVE selection — 2026-11-04
+
+Documentation commit: `8d4e25540361f90b494b9bbb4d7af90cc4e66042`. Runtime version remains 0.3.0.
+
+The user requested the usable RHSA list and an easy CVE mapping. The README
+now lists all fourteen demonstration candidates with issue date, component,
+severity, associated CVEs and links to Red Hat's public advisories. Its forty-one
+CVE/advisory associations cover forty distinct CVEs. Only public advisory
+metadata is included; no environment identity or per-host vulnerability state
+is recorded.
+
+The examples explain that one CVE can resolve to several RHSAs in the selected
+repositories and that an RHSA selects one advisory. A direct read-only Satellite
+lookup of CVE-2023-40217 returned the two documented Python advisories, matching
+their public Red Hat pages. The catalog also explains the earliest issue date
+and automatically derived baseline cutoff. Catalog completeness and exact
+CVE associations were checked against the captured advisory metadata, and the
+staged documentation passed whitespace review. No runtime code changed and no
+preparation, patching or reboot ran.
+
 ## Prepare a cutoff baseline before the full security advisory set — 2026-11-04
 
 Implementation commit: `7a0a2fdd15d55c25b57eaeaad581b00e7080b2c1` (version 0.3.0).
