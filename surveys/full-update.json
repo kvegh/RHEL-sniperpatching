@@ -1,0 +1,18 @@
+{
+  "name": "Publish repository cutoff update",
+  "description": "Publish to Test through the selected advisory issue date.",
+  "spec": [
+    {
+      "question_name": "Repository cutoff (YYYY-MM-DD)",
+      "question_description": "Use a date strictly between this RHSA and the next. All advisory types are included through that day. Publication is verified before Test promotion.",
+      "required": true,
+      "type": "text",
+      "variable": "sniper_update_end_date",
+      "min": 10,
+      "max": 10,
+      "default": "",
+      "choices": "",
+      "new_question": true
+    }
+  ]
+}

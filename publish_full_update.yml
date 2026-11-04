@@ -1,5 +1,5 @@
 ---
-- name: Publish full current content to Test only
+- name: Publish repository content through an optional cutoff to Test only
   hosts: localhost
   gather_facts: false
   connection: local
@@ -20,6 +20,17 @@
           - sniper_environment == 'test'
           - not ansible_check_mode
 
+    - name: Inspect currently serving advisories before changing content
+      redhat.satellite.resource_info:
+        resource: errata
+        params:
+          content_view_version_id: "{{ sniper_baseline.id }}"
+      register: sniper_full_before
+
+    - name: Validate the optional cutoff and refuse loss of an existing fix
+      ansible.builtin.set_fact:
+        sniper_full_cutoff: "{{ sniper_update_end_date | sniper_update_cutoff(sniper_full_before.resources) }}"
+
     - name: Inspect filters on our own Content View
       redhat.satellite.resource_info:
         resource: content_view_filters
@@ -30,7 +41,7 @@
     - name: Refuse unknown filters rather than silently changing them
       ansible.builtin.assert:
         that: sniper_full_filters.resources | rejectattr('name', 'equalto', sniper_baseline_filter) | list | length == 0
-        fail_msg: Review unexpected filters on the project Content View before publishing all content.
+        fail_msg: Review unexpected filters on the project Content View before publishing repository content.
 
     - name: Synchronize the explicitly selected Library repositories
       redhat.satellite.repository_sync:
@@ -41,19 +52,82 @@
       loop_control:
         label: "{{ item.name }}"
 
-    - name: Remove only our initial cutoff restriction
+    - name: Retain our date filter for a bounded repository upgrade
+      redhat.satellite.content_view_filter:
+        organization: "{{ sniper_organization }}"
+        content_view: "{{ sniper_content_view }}"
+        name: "{{ sniper_baseline_filter }}"
+        filter_type: erratum
+        inclusion: true
+        original_packages: true
+        filter_state: present
+      when: sniper_full_cutoff | length > 0
+
+    - name: Include all advisory types only through the requested issue date
+      redhat.satellite.content_view_filter_rule:
+        organization: "{{ sniper_organization }}"
+        content_view: "{{ sniper_content_view }}"
+        content_view_filter: "{{ sniper_baseline_filter }}"
+        end_date: "{{ sniper_full_cutoff }}"
+        date_type: issued
+        types: [security, bugfix, enhancement]
+        state: present
+      when: sniper_full_cutoff | length > 0
+
+    - name: Remove our cutoff only for an explicitly unbounded publication
       redhat.satellite.content_view_filter:
         organization: "{{ sniper_organization }}"
         content_view: "{{ sniper_content_view }}"
         name: "{{ sniper_baseline_filter }}"
         filter_type: erratum
         filter_state: absent
+      when: sniper_full_cutoff | length == 0
 
-    - name: Publish current content and promote it to Test
+    - name: Publish the candidate in Library before verification
       redhat.satellite.content_view_version:
         organization: "{{ sniper_organization }}"
         content_view: "{{ sniper_content_view }}"
-        description: "{{ sniper_namespace }} full repository update"
+        description: >-
+          {{ sniper_namespace }} repository update; cutoff={{ sniper_full_cutoff if sniper_full_cutoff else 'latest' }}
+      register: sniper_full_publication
+
+    - name: Identify the exact version returned by publication
+      ansible.builtin.set_fact:
+        sniper_full_candidate: "{{ sniper_full_publication.entity.content_view_versions | sniper_one('new repository version') }}"
+
+    - name: Require a new major version of our own Content View
+      ansible.builtin.assert:
+        that:
+          - sniper_full_candidate.content_view_id | int == sniper_cv.id | int
+          - sniper_full_candidate.major | int > sniper_baseline.major | int
+          - sniper_full_candidate.minor | int == 0
+
+    - name: Inspect the candidate's actual published advisories
+      redhat.satellite.resource_info:
+        resource: errata
+        params:
+          content_view_version_id: "{{ sniper_full_candidate.id }}"
+      register: sniper_full_after
+
+    - name: Require preservation of all currently serving advisories
+      ansible.builtin.assert:
+        that:
+          - >-
+            sniper_full_before.resources | map(attribute='errata_id') |
+            difference(sniper_full_after.resources | map(attribute='errata_id') | list) | length == 0
+        fail_msg: The candidate lost an existing advisory and remains in Library without promotion.
+
+    - name: Require actual candidate content to respect the cutoff
+      ansible.builtin.assert:
+        that: sniper_full_after.resources | sniper_verify_cutoff(sniper_full_cutoff)
+        fail_msg: The candidate exceeds the requested cutoff and remains in Library without promotion.
+      when: sniper_full_cutoff | length > 0
+
+    - name: Promote only the verified exact candidate to Test
+      redhat.satellite.content_view_version:
+        organization: "{{ sniper_organization }}"
+        content_view: "{{ sniper_content_view }}"
+        version: "{{ sniper_full_candidate.version }}"
         lifecycle_environments: "{{ [sniper_test_environment] }}"
 
     - name: Read back the new Test version
@@ -64,8 +138,13 @@
           environment_id: "{{ sniper_env.id }}"
       register: sniper_full_version
 
+    - name: Verify that Test serves the exact checked candidate
+      ansible.builtin.assert:
+        that: (sniper_full_version.resources | sniper_one).id | int == sniper_full_candidate.id | int
+
     - name: Report the exact version to test and later promote
       ansible.builtin.debug:
         msg:
-          test_version: "{{ (sniper_full_version.resources | sniper_one).version }}"
+          test_version: "{{ sniper_full_candidate.version }}"
+          cutoff: "{{ sniper_full_cutoff if sniper_full_cutoff else 'latest' }}"
           next: Run patch_hosts.yml with scope full and the original ID, then explicitly promote this exact version.

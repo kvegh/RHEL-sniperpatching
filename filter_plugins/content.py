@@ -151,6 +151,32 @@ def baseline_plan(ids, repository_errata, requested_cutoff="", existing_versions
     }
 
 
+def verify_cutoff(errata, cutoff):
+    """Require every published advisory to have an issue date within the cap."""
+    limit = _baseline_date(cutoff, "update cutoff")
+    if not isinstance(errata, list):
+        raise AnsibleFilterError("Expected published advisory metadata")
+    for row in errata:
+        if not isinstance(row, dict) or not row.get("errata_id"):
+            raise AnsibleFilterError("Missing published advisory identifier")
+        issued = _baseline_date(row.get("issued"), "advisory issue date", timestamp=True)
+        if issued > limit:
+            raise AnsibleFilterError(
+                "Content contains an advisory issued after the requested cutoff: "
+                + row["errata_id"]
+            )
+    return True
+
+
+def update_cutoff(cutoff, baseline_errata):
+    """Validate a date cap before synchronization or filter changes."""
+    if cutoff == "":
+        return ""
+    canonical = _baseline_date(cutoff, "update cutoff").isoformat()
+    verify_cutoff(baseline_errata, canonical)
+    return canonical
+
+
 class FilterModule:
     def filters(self):
         return {
@@ -162,4 +188,6 @@ class FilterModule:
             "sniper_baseline_ids": baseline_ids,
             "sniper_baseline_searches": baseline_searches,
             "sniper_baseline_plan": baseline_plan,
+            "sniper_update_cutoff": update_cutoff,
+            "sniper_verify_cutoff": verify_cutoff,
         }

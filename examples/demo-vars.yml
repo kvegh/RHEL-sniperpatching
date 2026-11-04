@@ -9,5 +9,8 @@ sniper_repositories:
 # Empty: choose the day before the earliest outstanding security RHSA on the pair.
 # An explicit date must precede all selected security RHSAs.
 sniper_baseline_end_date: ""
+# For a bounded full publication, set the advisory issue-date cap.
+# Empty retains the separate publish-latest behavior.
+sniper_update_end_date: ""
 sniper_smoke_services: [sshd]
 sniper_smoke_urls: []

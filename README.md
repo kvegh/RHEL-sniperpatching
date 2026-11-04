@@ -1,7 +1,7 @@
 # RHEL-sniperpatching
 
-Version **0.4.0**. Independently launched Ansible stages for demonstrating a
-CVE-list or single-RHSA update followed by a full repository update, using Red Hat
+Version **0.5.0**. Independently launched Ansible stages for demonstrating a
+CVE-list or single-RHSA update followed by a cutoff or latest repository update, using Red Hat
 Satellite and AAP. This project is a submodule of
 [AAP Advanced Features](https://github.com/kvegh/AAP-advanced-features).
 
@@ -13,7 +13,7 @@ Satellite and AAP. This project is a submodule of
 | `prepare_demo.yml` | Creates a dedicated Content View and `Library -> RHEL-sniperpatching_Test -> RHEL-sniperpatching_Prod` path, publishes the initial baseline to both stages, then moves only the explicitly supplied test/prod host pair. No host patching. |
 | `create_minor_update.yml` | Resolves one RHSA or multiple CVEs dynamically in the selected repositories. In Test, creates a real incremental minor from the serving baseline, validates the content delta, and promotes it to Test. In Prod, validates and promotes the exact Test minor. No host patching. |
 | `patch_hosts.yml` | Patches only the selected host, checks whether reboot is necessary, reboots and reconnects as needed, proves the fix from installed RPM versions and the running kernel, then runs smoke tests. Supports targeted and full update scopes. |
-| `publish_full_update.yml` | Synchronizes the selected Library repositories, removes only this project's initial cutoff filter, publishes full current content and promotes it to Test. No host patching. |
+| `publish_full_update.yml` | Synchronizes selected Library repositories, publishes through an optional issue-date cutoff (or latest), verifies actual advisory content in Library, then promotes the exact checked major version to Test. No host patching. |
 | `promote_content_view.yml` | Promotes an explicitly supplied version currently serving Test to Prod through the normal path. No host patching. |
 | `check_patch.yml` | Read-only host identity, installed-fix, running-kernel, pending-reboot and smoke checks. It never installs packages or reboots. |
 
@@ -219,6 +219,29 @@ but newer Library content becomes available to their future publications.
 No other project's filters are removed. A later full publication creates a new
 major version, so repeat launches deliberately create new snapshots.
 
+For repeated single-RHSA demonstrations, set `sniper_update_end_date` to a
+day strictly between the selected RHSA's issue date and the next RHSA's issue
+date. For example, after RHSA-2023:6823 (2023-11-08), use 2023-11-10 before
+RHSA-2023:6885 (2023-11-13). This includes all advisory types through the cutoff
+and preserves the next security fix for its own incremental launch. The
+[cutoff publication survey](surveys/full-update.json) requires that date.
+Two RHSAs issued on the same day have no intervening calendar day; do not
+pretend that a date filter separates them.
+
+A nonempty date retains and advances this project's filter. An empty value
+retains the separate publish-latest behavior and removes that filter. Dates
+that would exclude a currently serving advisory are refused before
+synchronization or filter changes. The new version is first published in
+Library; the playbook reads its actual errata, requires preservation of the
+serving advisory set, and, for a cutoff, rejects any missing/invalid issue
+date or advisory issued later. Only that exact verified version is promoted
+to Test. A verification failure leaves Test unchanged.
+
+A cutoff publication does not prove that an independent installed package has
+a newer version available in that interval. The full host-patch stage still
+requires its strictly higher-EVR witness; an interval without one must be
+reported instead of claiming a separate upgrade succeeded.
+
 Package commands enable only the Content View's exact RHSM repository labels.
 Targeted mode uses `yum`/`dnf upgrade-minimal --advisory`; full mode uses `upgrade`.
 Read-only RPM proof uses the operating system's Python RPM bindings and native
@@ -275,6 +298,12 @@ does not prove live publication, host reassignment or package changes.
   an appropriately configured source. A successful SCM refresh alone does not
   prove runtime dependencies are present.
 - Keep real inventories, credentials and job output outside this public repo.
+  AAP CaC belongs in the private `RHEL-sniperpatching-secrets` companion as
+  whole-file Ansible Vault ciphertext at
+  `vaults/cac/RHEL-sniperpatching-cac-vault.yml`, using the `cac` identity.
+  Generic survey definitions stay here; repository read tokens and Vault
+  password sources remain outside Git. Capturing configuration does not run
+  application jobs or establish restore/deployment success.
   No license has been selected for this project.
 
 Local validation uses the available tools and a checkout of the official 3.14.0

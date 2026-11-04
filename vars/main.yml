@@ -14,6 +14,7 @@ sniper_prod_host: ""
 sniper_patch_id: ""
 sniper_repositories: []
 sniper_baseline_end_date: ""
+sniper_update_end_date: ""
 sniper_baseline_filter: "{{ sniper_namespace }}_baseline_cutoff"
 sniper_patch_scope: targeted
 sniper_upgrade_witness: ""
