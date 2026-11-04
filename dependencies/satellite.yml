@@ -1,4 +1,4 @@
 ---
 collections:
   - name: redhat.satellite
-    version: 6.0.0
+    version: 3.14.0

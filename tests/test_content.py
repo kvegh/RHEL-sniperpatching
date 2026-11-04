@@ -141,7 +141,7 @@ class ContentBoundaries(unittest.TestCase):
             self.assertFalse((ROOT / name).exists())
         declared = yaml.safe_load((ROOT / "dependencies/satellite.yml").read_text())
         self.assertEqual(
-            declared["collections"], [{"name": "redhat.satellite", "version": "6.0.0"}]
+            declared["collections"], [{"name": "redhat.satellite", "version": "3.14.0"}]
         )
 
     def test_rpm_snapshot_format_contains_one_rpm_newline_escape(self):

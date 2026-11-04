@@ -94,7 +94,7 @@
         filter_type: erratum
         inclusion: true
         original_packages: true
-        state: present
+        filter_state: present
       when: sniper_prep_versions.resources | length == 0 and sniper_baseline_end_date | length > 0
     - name: Include advisory content only through the chosen baseline date
       redhat.satellite.content_view_filter_rule:

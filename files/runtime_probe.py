@@ -7,6 +7,7 @@ import subprocess
 import sys
 
 import ansible
+import yaml
 
 MODULES = [
     "redhat.satellite." + name
@@ -38,6 +39,32 @@ def run(arguments, root):
     )
 
 
+def check_arguments(value, documented, filename):
+    """Check nested task arguments against the installed modules' merged docs."""
+    failures = []
+    if isinstance(value, dict):
+        for key, entry in value.items():
+            if key in documented and documented[key] and isinstance(entry, dict):
+                options = documented[key]["doc"]["options"]
+                allowed = set(options)
+                for option in options.values():
+                    allowed.update(option.get("aliases", []))
+                unsupported = sorted(set(entry) - allowed)
+                if unsupported:
+                    failures.append(
+                        {
+                            "file": filename,
+                            "module": key,
+                            "unsupported_arguments": unsupported,
+                        }
+                    )
+            failures.extend(check_arguments(entry, documented, filename))
+    elif isinstance(value, list):
+        for entry in value:
+            failures.extend(check_arguments(entry, documented, filename))
+    return failures
+
+
 def main():
     root = Path(sys.argv[1]).resolve()
     galaxy = run(
@@ -55,6 +82,16 @@ def main():
     docs = run(["ansible-doc", "--json"] + MODULES, root)
     documented = json.loads(docs.stdout) if docs.stdout.strip() else {}
     available = [name for name in MODULES if documented.get(name)]
+    argument_failures = []
+    paths = sorted(root.glob("*.yml")) + sorted((root / "tasks").glob("*.yml"))
+    for path in paths:
+        argument_failures.extend(
+            check_arguments(
+                yaml.safe_load(path.read_text()),
+                documented,
+                str(path.relative_to(root)),
+            )
+        )
     checked = []
     failures = {}
     for stage in STAGES:
@@ -83,6 +120,7 @@ def main():
                 ),
                 "modules": available,
                 "missing_modules": sorted(set(MODULES) - set(available)),
+                "module_argument_failures": argument_failures,
                 "syntax_checked": checked,
                 "syntax_failures": failures,
             }

@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-Version **0.2.0**. Independently launched Ansible stages for demonstrating a
+Version **0.2.1**. Independently launched Ansible stages for demonstrating a
 single CVE/RHSA update followed by a full repository update, using Red Hat
 Satellite and AAP. This project is a submodule of
 [AAP Advanced Features](https://github.com/kvegh/AAP-advanced-features).
@@ -9,7 +9,7 @@ Satellite and AAP. This project is a submodule of
 
 | Entry point | Result |
 |---|---|
-| `check_runtime.yml` | Read-only diagnostic of the selected existing EE: reports installed Ansible/Python/Satellite collection versions, parses all six stages, and queries Satellite organizations with verified HTTPS. No dependency installation or host contact. |
+| `check_runtime.yml` | Read-only diagnostic of the selected existing EE: reports installed Ansible/Python/Satellite collection versions, parses all six stages, checks their Satellite module arguments, and queries Satellite organizations with verified HTTPS. No dependency installation or host contact. |
 | `prepare_demo.yml` | Creates a dedicated Content View and `Library -> RHEL-sniperpatching_Test -> RHEL-sniperpatching_Prod` path, publishes the initial baseline to both stages, then moves only the explicitly supplied test/prod host pair. No host patching. |
 | `create_minor_update.yml` | Resolves one CVE/RHSA in the selected repositories. In Test, creates a real incremental minor from the serving baseline, validates the content delta, and promotes it to Test. In Prod, validates and promotes the exact Test minor. No host patching. |
 | `patch_hosts.yml` | Patches only the selected host, checks whether reboot is necessary, reboots and reconnects as needed, proves the fix from installed RPM versions and the running kernel, then runs smoke tests. Supports targeted and full update scopes. |
@@ -168,14 +168,24 @@ there is no claim of application-level functional coverage.
 Run `check_runtime.yml` with the existing Satellite credential and candidate EE
 before preparation. It needs no demonstration host pair, organization selection,
 patch ID or SSH credential. It reports missing required modules and individual
-stage syntax errors before requiring a successful read-only collection query.
+stage syntax errors and unsupported Satellite module arguments before requiring
+a successful read-only collection query.
 It never executes the six demonstration stages. An installed collection version
 and successful read access establish runtime evidence; a successful diagnostic
 does not prove live publication, host reassignment or package changes.
 
-- Use an execution environment with `ansible-core` 2.16 and the declared
-  `redhat.satellite` 6.0.0 collection plus its existing Python requirements.
-  For RHEL 7 targets, retain an Ansible version supporting their Python.
+- Reuse a compatible existing execution environment. A live read-only AAP
+  diagnostic passed with `ansible-core` **2.15.11**, Python **3.9.19** and the
+  already installed `redhat.satellite` **3.14.0** on 2026-11-04. All nine required
+  modules were present, all six demo stages parsed, and the collection read
+  Satellite organizations with certificate verification enabled. No EE rebuild
+  or dependency installation was needed. The manifest now declares 3.14.0 to
+  match that verified runtime. For RHEL 7 targets, retain an Ansible version
+  supporting their Python. This is a deliberate trial of the existing runtime;
+  collection 3.14.0 was released in September 2023. Publication and host patching
+  have not yet been run, and read access alone does not establish vendor support.
+  The older filter module uses `filter_state`, which these playbooks now supply;
+  the diagnostic also checks argument names against the installed module docs.
 - Target hosts need working subscription-manager, yum/dnf, native Python RPM
   bindings, SSH/become access and the existing `needs-restarting` utility
   (`yum-utils` or the platform's equivalent). Missing prerequisites fail before
@@ -184,15 +194,16 @@ does not prove live publication, host reassignment or package changes.
   [dependencies/satellite.yml](dependencies/satellite.yml). AAP automatically
   processes root `requirements.yml` as well as role/collection requirement paths;
   this project keeps its declaration in an explicit location so SCM refresh
-  does not install dependencies. Supply the declared collection in the execution
-  environment before running jobs. Its installation requires an appropriately
-  configured certified content source; a successful SCM refresh alone does not
+  does not install dependencies. The tested existing EE already provides the
+  declared collection. On another instance, run the diagnostic before deciding
+  whether additional content is needed; installing certified content requires
+  an appropriately configured source. A successful SCM refresh alone does not
   prove runtime dependencies are present.
 - Keep real inventories, credentials and job output outside this public repo.
   No license has been selected for this project.
 
-Local validation uses the available tools and an existing checkout of the
-official collection; it does not install dependencies or execute remote jobs:
+Local validation uses the available tools and a checkout of the official 3.14.0
+collection source; it does not install dependencies or execute remote jobs:
 
 ```bash
 python3.12 -B -m unittest discover -s tests -v
@@ -205,7 +216,8 @@ ansible-playbook --syntax-check promote_content_view.yml
 ansible-playbook --syntax-check check_patch.yml
 ```
 
-These are implementation/offline checks. A live end-to-end demonstration,
-actual patch installation, reboots and later AAP CaC deployment are separate
+The runtime diagnostic has also passed in AAP as described above. A live
+end-to-end demonstration, actual patch installation, reboots and later AAP CaC
+deployment are separate
 validation steps. Implementation decisions and commit references are recorded
 in [design_decisions_history.md](design_decisions_history.md).

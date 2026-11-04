@@ -47,7 +47,7 @@
         content_view: "{{ sniper_content_view }}"
         name: "{{ sniper_baseline_filter }}"
         filter_type: erratum
-        state: absent
+        filter_state: absent
 
     - name: Publish current content and promote it to Test
       redhat.satellite.content_view_version:
