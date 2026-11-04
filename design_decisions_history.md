@@ -1,5 +1,45 @@
 # Design decisions history
 
+## Reuse the existing Satellite collection after a runtime trial — 2026-11-04
+
+Implementation commit: `524f835fb2c5a638d500cb735bca500d17edae96` (version 0.2.1).
+
+The user chose the existing EE after its read-only diagnostic established
+Ansible Core 2.15.11, Python 3.9.19 and redhat.satellite 3.14.0. This collection
+was released in September 2023. The initially selected 6.0.0 requires Core 2.16+
+and cannot be substituted into that EE unchanged. The explicit dependency now
+matches the user's chosen existing runtime; no collection installation, EE
+rebuild or shared source change was needed.
+
+Inspection of the official 3.14.0 source found that content_view_filter uses
+filter_state rather than state. Both filter calls now use that interface. The
+diagnostic also compares actual task argument names with the installed module
+documentation, including aliases, because syntax checks did not detect this
+mismatch. Satellite's live API advertises the legacy host-assignment fields
+used by this collection; assignment itself has not been executed.
+
+All 44 offline tests, seven entry-point syntax checks and production-profile
+lint pass against the official 3.14.0 source checkout. The first AAP diagnostic
+read organizations successfully with verified HTTPS and zero changes. These
+checks do not establish vendor support or successful live publication, host
+patching or reboot behavior. Those demonstration stages remain unrun.
+
+## Add an independently launched read-only EE diagnostic — 2026-11-04
+
+Implementation commit: `1c9c73e0b6c1e551abdfe37738a532873555419f` (version 0.2.0).
+
+The user requested a trial with the existing EE before considering a rebuild.
+check_runtime.yml reports installed core, Python and collection versions,
+checks required module availability, parses all six demonstration stages and
+queries organizations using the existing Satellite credential with verified
+HTTPS. Its supporting commands only inspect content and check syntax; it never
+executes preparation or host-patching stages and needs no host SSH credential.
+
+Local diagnostic syntax, production-profile lint and the six-stage inspection
+passed. A separate normal AAP Job Template provides the live diagnostic without
+changing the colleague's automation. Snapshot and rollback work remains on its
+explicit hold.
+
 ## Show only runnable stages in AAP playbook discovery — 2026-11-04
 
 Implementation commit: `224a8b12c9ff9474567c3491b9439c8024237a40` (version 0.1.2).
