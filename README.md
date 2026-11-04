@@ -86,6 +86,52 @@ perform OS conversion, major-version upgrades, application installation or
 module-stream switching. Modular-only advisory metadata is refused explicitly;
 the initial demonstration targets non-modular RHEL RPM advisories.
 
+## Demonstration RHSA and CVE catalog
+
+These RHEL 7 security advisories are demonstration candidates, ordered by
+issue date. Each RHSA links to Red Hat's public advisory with its CVE list.
+Preparation discovers the current security advisory set from the explicit
+host pair; repository availability and installed-package proof are checked
+during the relevant stages.
+
+| Issued | RHSA | Component | Severity | CVEs |
+|---|---|---|---|---|
+| 2023-11-08 | [RHSA-2023:6823](https://access.redhat.com/errata/RHSA-2023:6823) | python3 | Important | CVE-2023-40217 |
+| 2023-11-13 | [RHSA-2023:6885](https://access.redhat.com/errata/RHSA-2023:6885) | python | Important | CVE-2023-40217 |
+| 2023-11-21 | [RHSA-2023:7423](https://access.redhat.com/errata/RHSA-2023:7423) | kernel | Important | CVE-2022-40982, CVE-2023-31436, CVE-2023-3611, CVE-2023-3776, CVE-2023-4128, CVE-2023-4206, CVE-2023-4207, CVE-2023-4208 |
+| 2023-11-27 | [RHSA-2023:7513](https://access.redhat.com/errata/RHSA-2023:7513) | linux-firmware | Moderate | CVE-2023-20569, CVE-2023-20593 |
+| 2023-12-12 | [RHSA-2023:7743](https://access.redhat.com/errata/RHSA-2023:7743) | curl | Low | CVE-2022-43552 |
+| 2024-01-23 | [RHSA-2024:0346](https://access.redhat.com/errata/RHSA-2024:0346) | kernel | Important | CVE-2023-42753 |
+| 2024-02-08 | [RHSA-2024:0753](https://access.redhat.com/errata/RHSA-2024:0753) | linux-firmware | Moderate | CVE-2023-20592 |
+| 2024-03-12 | [RHSA-2024:1249](https://access.redhat.com/errata/RHSA-2024:1249) | kernel | Important | CVE-2022-42896, CVE-2023-38409, CVE-2023-45871, CVE-2023-4921, CVE-2024-1086, CVE-2024-26602 |
+| 2024-04-23 | [RHSA-2024:2002](https://access.redhat.com/errata/RHSA-2024:2002) | grub2 | Moderate | CVE-2022-2601 |
+| 2024-04-23 | [RHSA-2024:2004](https://access.redhat.com/errata/RHSA-2024:2004) | kernel | Important | CVE-2020-36558, CVE-2023-2002, CVE-2023-25775, CVE-2023-4622, CVE-2023-4623 |
+| 2024-06-04 | [RHSA-2024:3588](https://access.redhat.com/errata/RHSA-2024:3588) | glibc | Important | CVE-2024-2961, CVE-2024-33599, CVE-2024-33600, CVE-2024-33601, CVE-2024-33602 |
+| 2024-06-06 | [RHSA-2024:3669](https://access.redhat.com/errata/RHSA-2024:3669) | less | Important | CVE-2024-32487 |
+| 2024-06-10 | [RHSA-2024:3741](https://access.redhat.com/errata/RHSA-2024:3741) | bind, bind-dyndb-ldap, and dhcp | Important | CVE-2023-4408, CVE-2023-50387, CVE-2023-50868 |
+| 2024-06-17 | [RHSA-2024:3939](https://access.redhat.com/errata/RHSA-2024:3939) | linux-firmware | Important | CVE-2022-27635, CVE-2022-36351, CVE-2022-38076, CVE-2022-40964, CVE-2022-46329 |
+
+### Choosing a CVE or an RHSA
+
+`sniper_patch_id` accepts one CVE or one RHSA. For example:
+
+```yaml
+sniper_patch_id: "CVE-2024-32487"
+```
+
+In this catalog, that CVE maps to `RHSA-2024:3669` for `less`. The playbook
+resolves CVEs through Satellite, restricted to the selected Content View's
+repositories. A CVE can select several RHSAs: `CVE-2023-40217` maps to
+both `RHSA-2023:6823` (`python3`) and `RHSA-2023:6885` (`python`).
+With a CVE input, every matching security advisory is included and affected
+installed components are verified. To select exactly one advisory, supply
+its RHSA ID.
+
+The earliest candidate above is `RHSA-2023:6823`, issued on 2023-11-08.
+For this complete set, automatic preparation therefore chooses a cutoff of
+2023-11-07. The date is calculated from discovered issue dates rather than
+hardcoded into the playbook.
+
 ## Demonstration sequence
 
 In AAP, select the relevant playbook and supply the stage inputs below. Later CaC
