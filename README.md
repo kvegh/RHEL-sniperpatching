@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-Version **0.1.1**. Independently launched Ansible stages for demonstrating a
+Version **0.1.2**. Independently launched Ansible stages for demonstrating a
 single CVE/RHSA update followed by a full repository update, using Red Hat
 Satellite and AAP. This project is a submodule of
 [AAP Advanced Features](https://github.com/kvegh/AAP-advanced-features).
@@ -21,6 +21,9 @@ The full-update promotion is a manual demonstration gate: run the Test host
 patch and its checks successfully before launching production promotion.
 
 ## Inputs and access
+
+The generic example is [inventory/example.ini](inventory/example.ini); INI keeps
+AAP from listing an inventory example as a runnable playbook.
 
 Use an inventory containing the two existing Satellite host names, their SSH
 connection values and appropriate privilege escalation. Keep the AAP job limit empty: the bootstrap and final proof plays require

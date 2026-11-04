@@ -1,7 +1,0 @@
----
-all:
-  hosts:
-    test-client.example.test:
-      ansible_user: automation
-    prod-client.example.test:
-      ansible_user: automation
