@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-Version **0.5.0**. Independently launched Ansible stages for demonstrating a
+Version **0.5.1**. Independently launched Ansible stages for demonstrating a
 CVE-list or single-RHSA update followed by a cutoff or latest repository update, using Red Hat
 Satellite and AAP. This project is a submodule of
 [AAP Advanced Features](https://github.com/kvegh/AAP-advanced-features).
@@ -16,6 +16,19 @@ Satellite and AAP. This project is a submodule of
 | `publish_full_update.yml` | Synchronizes selected Library repositories, publishes through an optional issue-date cutoff (or latest), verifies actual advisory content in Library, then promotes the exact checked major version to Test. No host patching. |
 | `promote_content_view.yml` | Promotes an explicitly supplied version currently serving Test to Prod through the normal path. No host patching. |
 | `check_patch.yml` | Read-only host identity, installed-fix, running-kernel, pending-reboot and smoke checks. It never installs packages or reboots. |
+
+Generic AAP surveys are available under [surveys/](surveys/): preparation,
+patch selection, host patching, cutoff publication, exact-version production
+promotion and read-only fix verification. The seven dedicated runtime/demo
+templates have been configured and read back on the selected Controller with
+the existing EE and credentials; no demo stage has been launched yet.
+
+Save sniper_environment=test on the cutoff publication template, whose survey
+asks only for the date. Patch/check templates prompt explicitly for Test or Prod.
+Keep organization, exact host pair and preparation repository/product names in
+protected saved inputs. Patch and check need both Satellite and Machine
+credentials; local-only content operations need Satellite access. Limit and
+arbitrary variable prompting remain disabled.
 
 Each invocation is a separate AAP launch. Production never starts automatically.
 The full-update promotion is a manual demonstration gate: run the Test host

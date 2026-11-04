@@ -1,0 +1,17 @@
+{
+  "name": "RHEL-sniperpatching preparation",
+  "description": "Prepare the saved isolated host pair and repositories; empty cutoff precedes every outstanding security RHSA.",
+  "spec": [
+    {
+      "question_name": "Baseline issue-date cutoff (optional)",
+      "question_description": "Leave empty for the automatic day before the earliest outstanding security RHSA on the saved Test/Prod pair. An explicit YYYY-MM-DD date must precede all of them.",
+      "variable": "sniper_baseline_end_date",
+      "type": "text",
+      "required": false,
+      "default": "",
+      "choices": "",
+      "min": 0,
+      "max": 10
+    }
+  ]
+}

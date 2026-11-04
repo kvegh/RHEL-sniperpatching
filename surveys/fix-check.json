@@ -1,0 +1,28 @@
+{
+  "name": "RHEL-sniperpatching fix verification",
+  "description": "Resolve requested fixes live through Satellite on every launch.",
+  "spec": [
+    {
+      "question_name": "Lifecycle stage",
+      "question_description": "Select Test or Prod explicitly.",
+      "variable": "sniper_environment",
+      "type": "multiplechoice",
+      "required": true,
+      "default": "test",
+      "choices": "test\nprod",
+      "min": 0,
+      "max": 1024
+    },
+    {
+      "question_name": "CVE ID(s) or one RHSA",
+      "question_description": "Enter up to 50 CVEs separated by commas, spaces or newlines, or one RHSA. Each CVE is resolved live in Satellite.",
+      "variable": "sniper_patch_id",
+      "type": "textarea",
+      "required": true,
+      "default": "",
+      "choices": "",
+      "min": 1,
+      "max": 4096
+    }
+  ]
+}

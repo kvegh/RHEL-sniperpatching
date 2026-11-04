@@ -1,0 +1,50 @@
+{
+  "name": "RHEL-sniperpatching host patch",
+  "description": "Resolve requested fixes live through Satellite on every launch.",
+  "spec": [
+    {
+      "question_name": "Lifecycle stage",
+      "question_description": "Select Test or Prod explicitly.",
+      "variable": "sniper_environment",
+      "type": "multiplechoice",
+      "required": true,
+      "default": "test",
+      "choices": "test\nprod",
+      "min": 0,
+      "max": 1024
+    },
+    {
+      "question_name": "CVE ID(s) or one RHSA",
+      "question_description": "Enter up to 50 CVEs separated by commas, spaces or newlines, or one RHSA. Each CVE is resolved live in Satellite.",
+      "variable": "sniper_patch_id",
+      "type": "textarea",
+      "required": true,
+      "default": "",
+      "choices": "",
+      "min": 1,
+      "max": 4096
+    },
+    {
+      "question_name": "Patch scope",
+      "question_description": "Targeted installs only fixes selected by the ID(s). Full upgrades all packages from the currently serving Content View.",
+      "variable": "sniper_patch_scope",
+      "type": "multiplechoice",
+      "required": true,
+      "default": "targeted",
+      "choices": "targeted\nfull",
+      "min": 0,
+      "max": 1024
+    },
+    {
+      "question_name": "Independent upgrade witness (required for full)",
+      "question_description": "For full scope, enter an already installed package outside the selected advisory affected components. Its RPM version must strictly increase.",
+      "variable": "sniper_upgrade_witness",
+      "type": "text",
+      "required": false,
+      "default": "",
+      "choices": "",
+      "min": 0,
+      "max": 128
+    }
+  ]
+}

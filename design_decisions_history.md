@@ -20,7 +20,7 @@ passed after fixture-only corrections. Seven entrypoint syntax checks and
 production lint passed with the existing local collection. No live publication,
 host patching or reboot was performed by this implementation.
 
-Implementation commit: \`59e9e8ca9c13be05e9c7bd780ba249d7a3e0667a\`.
+Implementation commit: `59e9e8ca9c13be05e9c7bd780ba249d7a3e0667a`.
 
 ## Accept multiple survey CVEs with live per-ID resolution — 2026-11-04
 
