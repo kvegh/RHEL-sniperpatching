@@ -1,5 +1,23 @@
 # Design decisions history
 
+## Keep dependency installation separate from SCM synchronization — 2026-11-04
+
+Implementation commit: `f528087bd55a7117eb2fee86860bb2888549ad9d` (version 0.1.1).
+
+The external AAP synchronization exposed that it also processes a root
+requirements.yml, attempting to install the declared certified collection. Its
+configured sources could not resolve that dependency. The explicit declaration
+now lives in dependencies/satellite.yml, outside automatic discovery paths. This
+keeps source synchronization separate from intentional execution-environment
+preparation without changing the declared Satellite 6.0.0 runtime requirement
+or controller settings. No dependency installation was completed.
+
+A regression checks the automatic discovery paths and the retained dependency
+declaration. All 42 offline tests and production-profile lint pass; the six
+playbook syntax checks remain valid. Runtime dependencies must still be supplied
+before executing a playbook, and successful SCM synchronization alone is not
+evidence of runtime readiness.
+
 ## Build independently launched patching demonstration stages — 2026-11-03
 
 Implementation commit: `ba33c694edd16334a29126b4684a4c3a2d26a624` (version 0.1.0).
