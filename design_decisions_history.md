@@ -1,5 +1,27 @@
 # Design decisions history
 
+## 2026-11-04 — Bound repository updates between RHSA demonstrations
+
+The owner requested one RHSA at a time followed by a repository cutoff
+halfway before the next advisory. Full publication now accepts an optional
+issue-date cap, preserves the serving advisory set, verifies actual content
+in Library, and promotes only the exact checked candidate to Test. The public
+survey requires a cutoff for this demonstration; empty playbook input retains
+the separate latest-content mode. Same-day advisories cannot be separated by
+an intervening calendar date. Full host patching still requires an independent
+strictly higher-EVR witness.
+
+The owner also selected the existing private encrypted CaC companion schema;
+public playbooks and generic surveys remain in this repository. Configuration
+capture and live execution are separate verification steps.
+
+Validation: all 81 existing regression tests passed; all 8 new cutoff tests
+passed after fixture-only corrections. Seven entrypoint syntax checks and
+production lint passed with the existing local collection. No live publication,
+host patching or reboot was performed by this implementation.
+
+Implementation commit: \`59e9e8ca9c13be05e9c7bd780ba249d7a3e0667a\`.
+
 ## Accept multiple survey CVEs with live per-ID resolution — 2026-11-04
 
 Implementation commit: `01aa887aee80156ac2feb59f8f255a7fa606bfa8` (version 0.4.0).
