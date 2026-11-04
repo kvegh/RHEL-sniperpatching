@@ -1,5 +1,34 @@
 # Design decisions history
 
+## Accept multiple survey CVEs with live per-ID resolution — 2026-11-04
+
+Implementation commit: `01aa887aee80156ac2feb59f8f255a7fa606bfa8` (version 0.4.0).
+
+The user requested multiple CVE IDs in the JT survey and explicitly required
+dynamic mapping. The required textarea accepts one RHSA or up to fifty CVEs
+separated by commas, spaces or newlines. IDs are normalized and deduplicated.
+Every CVE is queried separately against live Satellite metadata in the selected
+repositories, complete advisory details must confirm each association, and
+an unresolved input stops the run. The advisory union is deduplicated before
+incremental creation. The README catalog is never read for runtime mapping.
+
+Native RPM proof now retains the per-input advisory associations and requires
+installed affected-component proof for each requested CVE. One passing CVE
+cannot conceal an absent or vulnerable component for another. Existing
+single-RHSA behavior and epoch validation are preserved. Job reports include
+the requested IDs and their dynamically resolved advisory mapping.
+
+The reusable survey definition contains a free-text ID field and explicit
+Test/Prod selection, without fixed CVE choices or a mapping table. The relevant
+minor-update JT can use it without changing the independent demonstration gates.
+All 81 tests pass, including actual Ansible resolver executions where identical
+survey input produces changed results after the synthetic server metadata
+changes. Missing-CVE failures, overlaps, per-CVE proof and baseline preservation
+are covered. Seven syntax checks, production lint, legacy host-Python grammar
+and a publication privacy scan pass. A read-only live Satellite probe resolved
+two CVEs to three unique RHSAs and rejected an unmatched additional CVE.
+No actual preparation, Content View update, patching, reboot or snapshot ran.
+
 ## Document demonstration advisories and CVE selection — 2026-11-04
 
 Documentation commit: `8d4e25540361f90b494b9bbb4d7af90cc4e66042`. Runtime version remains 0.3.0.
