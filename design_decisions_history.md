@@ -1,5 +1,21 @@
 # Design decisions history
 
+## 2026-11-04 — Publish the configured stage surveys
+
+The five remaining demo Job Templates were created with the existing runtime,
+inventory and credentials. Saved input and survey readbacks passed, launch
+prerequisites were satisfied, and all pre-existing template definitions,
+credential associations and surveys were preserved. No demo launch was made
+as part of this configuration step.
+
+The public repository now includes the same generic survey definitions.
+Protected organization, host, repository and credential bindings stay outside
+public source. Cutoff publication saves Test explicitly; its survey asks only
+for the date. No test mirrors these reversible data definitions; schema and
+actual Controller readbacks were reviewed.
+
+Implementation commit: `17593e593744984fd0baef8d0bad4a0dcc87ce11`.
+
 ## 2026-11-04 — Bound repository updates between RHSA demonstrations
 
 The owner requested one RHSA at a time followed by a repository cutoff
