@@ -24,7 +24,7 @@ from ansible.module_utils.basic import AnsibleModule
 name = __MODULE__
 spec = {}
 for key in ("server_url", "username", "password", "organization", "name", "search",
-            "resource", "description", "state", "filter_type", "filter_state",
+            "resource", "description", "state", "filter_type", "filter_state", "rule_state",
             "content_view", "content_view_filter", "end_date", "date_type",
             "version", "product", "repository"):
     spec[key] = {"type": "str"}
@@ -38,7 +38,13 @@ m = AnsibleModule(argument_spec=spec)
 p = m.params
 path = Path(os.environ["SNIPER_FULL_TEST_STATE"])
 s = json.loads(path.read_text())
+if name == "content_view_filter" and p["filter_type"] == "erratum" and p["original_packages"] is not None:
+    m.fail_json(msg="setting original_packages not supported for Katello::ContentViewErratumFilter")
+if name == "content_view_filter" and p["filter_type"] == "rpm" and p["filter_state"] == "present" and p["rule_state"] != "absent":
+    m.fail_json(msg="The original-only RPM filter must not create a package-name rule")
 s["calls"].append({"module": name, "resource": p.get("resource"),
+                   "filter_type": p.get("filter_type"), "original_packages": p.get("original_packages"),
+                   "rule_state": p.get("rule_state"),
                    "params": p["params"], "version": p.get("version"),
                    "destinations": p.get("lifecycle_environments"),
                    "filter_state": p.get("filter_state"), "end_date": p.get("end_date")})
@@ -161,6 +167,10 @@ class FullPublicationPlaybook(unittest.TestCase):
         promotion = next(i for i, c in enumerate(calls) if c["version"] == "2.0")
         self.assertLess(verification, promotion)
         self.assertFalse(any(c["filter_state"] == "absent" for c in calls))
+        originals = [c for c in calls if c["module"] == "content_view_filter" and c["filter_type"] == "rpm"]
+        self.assertEqual(len(originals), 1)
+        self.assertTrue(originals[0]["original_packages"])
+        self.assertEqual(originals[0]["rule_state"], "absent")
 
     def test_content_after_cutoff_stays_in_library(self):
         result, state = self.run_publication(contaminated=True)
@@ -183,7 +193,8 @@ class FullPublicationPlaybook(unittest.TestCase):
         result, state = self.run_publication(cutoff="")
         self.assertEqual(result.returncode, 0, (result.stdout + result.stderr)[-7000:])
         self.assertTrue(state["promoted"])
-        self.assertTrue(any(c["filter_state"] == "absent" for c in state["calls"]))
+        removed = {c["filter_type"] for c in state["calls"] if c["filter_state"] == "absent"}
+        self.assertEqual(removed, {"erratum", "rpm"})
         self.assertFalse(any(c["module"] == "content_view_filter_rule" for c in state["calls"]))
 
 

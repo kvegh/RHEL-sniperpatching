@@ -40,7 +40,9 @@
 
     - name: Refuse unknown filters rather than silently changing them
       ansible.builtin.assert:
-        that: sniper_full_filters.resources | rejectattr('name', 'equalto', sniper_baseline_filter) | list | length == 0
+        that: >-
+          sniper_full_filters.resources | map(attribute='name') |
+          difference([sniper_baseline_filter, sniper_original_filter]) | length == 0
         fail_msg: Review unexpected filters on the project Content View before publishing repository content.
 
     - name: Synchronize the explicitly selected Library repositories
@@ -52,6 +54,18 @@
       loop_control:
         label: "{{ item.name }}"
 
+    - name: Retain RPMs without errata in a separate owned package filter
+      redhat.satellite.content_view_filter:
+        organization: "{{ sniper_organization }}"
+        content_view: "{{ sniper_content_view }}"
+        name: "{{ sniper_original_filter }}"
+        filter_type: rpm
+        inclusion: true
+        original_packages: true
+        filter_state: present
+        rule_state: absent
+      when: sniper_full_cutoff | length > 0
+
     - name: Retain our date filter for a bounded repository upgrade
       redhat.satellite.content_view_filter:
         organization: "{{ sniper_organization }}"
@@ -59,7 +73,6 @@
         name: "{{ sniper_baseline_filter }}"
         filter_type: erratum
         inclusion: true
-        original_packages: true
         filter_state: present
       when: sniper_full_cutoff | length > 0
 
@@ -81,6 +94,16 @@
         name: "{{ sniper_baseline_filter }}"
         filter_type: erratum
         filter_state: absent
+      when: sniper_full_cutoff | length == 0
+
+    - name: Remove the original-only package restriction for latest content
+      redhat.satellite.content_view_filter:
+        organization: "{{ sniper_organization }}"
+        content_view: "{{ sniper_content_view }}"
+        name: "{{ sniper_original_filter }}"
+        filter_type: rpm
+        filter_state: absent
+        rule_state: absent
       when: sniper_full_cutoff | length == 0
 
     - name: Publish the candidate in Library before verification

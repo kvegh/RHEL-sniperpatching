@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-Version **0.5.1**. Independently launched Ansible stages for demonstrating a
+Version **0.5.2**. Independently launched Ansible stages for demonstrating a
 CVE-list or single-RHSA update followed by a cutoff or latest repository update, using Red Hat
 Satellite and AAP. This project is a submodule of
 [AAP Advanced Features](https://github.com/kvegh/AAP-advanced-features).
@@ -21,7 +21,8 @@ Generic AAP surveys are available under [surveys/](surveys/): preparation,
 patch selection, host patching, cutoff publication, exact-version production
 promotion and read-only fix verification. The seven dedicated runtime/demo
 templates have been configured and read back on the selected Controller with
-the existing EE and credentials; no demo stage has been launched yet.
+the existing EE and credentials. Live publication and patching acceptance remain
+separate validation steps.
 
 Save sniper_environment=test on the cutoff publication template, whose survey
 asks only for the date. Patch/check templates prompt explicitly for Test or Prod.
@@ -79,8 +80,11 @@ day before the earliest issue date. An explicit cutoff must be earlier than
 every selected RHSA. Missing advisories or invalid/ambiguous dates stop
 preparation before publication.
 
-The inclusion filter retains security, bugfix and enhancement errata through
-that date, plus original RPMs without errata. The baseline is published in
+The erratum inclusion filter retains security, bugfix and enhancement errata
+through that date. A separate owned RPM inclusion filter retains original
+packages without errata; its default package-name rule is disabled.
+Satellite accepts original_packages only on the RPM filter, not on an erratum
+filter. The baseline is published in
 Library first. Prep reads its actual advisory content and requires all selected
 RHSAs to be absent before promoting the same baseline to Test and Prod and
 reassigning the host pair. This leaves every selected fix available for a later,
@@ -242,7 +246,8 @@ Two RHSAs issued on the same day have no intervening calendar day; do not
 pretend that a date filter separates them.
 
 A nonempty date retains and advances this project's filter. An empty value
-retains the separate publish-latest behavior and removes that filter. Dates
+retains the separate publish-latest behavior and removes both owned inclusion
+filters. Dates
 that would exclude a currently serving advisory are refused before
 synchronization or filter changes. The new version is first published in
 Library; the playbook reads its actual errata, requires preservation of the

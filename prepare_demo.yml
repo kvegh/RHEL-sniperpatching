@@ -144,6 +144,17 @@
               {{ sniper_prep_advisory_ids | sniper_baseline_plan(
                    sniper_prep_advisory_queries.results | map(attribute='resources') | flatten,
                    sniper_baseline_end_date, sniper_prep_versions.resources) }}
+    - name: Retain RPMs without errata in a separate owned package filter
+      redhat.satellite.content_view_filter:
+        organization: "{{ sniper_organization }}"
+        content_view: "{{ sniper_content_view }}"
+        name: "{{ sniper_original_filter }}"
+        filter_type: rpm
+        inclusion: true
+        original_packages: true
+        filter_state: present
+        rule_state: absent
+      when: sniper_prep_versions.resources | length == 0
     - name: Create the frozen baseline cutoff before the first publication
       redhat.satellite.content_view_filter:
         organization: "{{ sniper_organization }}"
@@ -151,7 +162,6 @@
         name: "{{ sniper_baseline_filter }}"
         filter_type: erratum
         inclusion: true
-        original_packages: true
         filter_state: present
       when: sniper_prep_versions.resources | length == 0 and sniper_prep_baseline.cutoff | length > 0
     - name: Include advisory content only through the chosen baseline date

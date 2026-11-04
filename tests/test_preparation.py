@@ -25,7 +25,7 @@ from ansible.module_utils.basic import AnsibleModule
 NAME = __MODULE__
 spec = {}
 for key in ("server_url", "username", "password", "organization", "name", "search",
-            "resource", "prior", "description", "state", "filter_type", "filter_state",
+            "resource", "prior", "description", "state", "filter_type", "filter_state", "rule_state",
             "content_view", "content_view_filter", "end_date", "date_type",
             "version", "lifecycle_environment"):
     spec[key] = {"type": "str"}
@@ -39,8 +39,14 @@ module = AnsibleModule(argument_spec=spec)
 p = module.params
 path = Path(os.environ["SNIPER_PREP_TEST_STATE"])
 state = json.loads(path.read_text())
+if NAME == "content_view_filter" and p["filter_type"] == "erratum" and p["original_packages"] is not None:
+    module.fail_json(msg="setting original_packages not supported for Katello::ContentViewErratumFilter")
+if NAME == "content_view_filter" and p["filter_type"] == "rpm" and p["filter_state"] == "present" and p["rule_state"] != "absent":
+    module.fail_json(msg="The original-only RPM filter must not create a package-name rule")
 state["calls"].append({
     "module": NAME, "resource": p.get("resource"), "params": p["params"],
+    "filter_type": p.get("filter_type"), "original_packages": p.get("original_packages"),
+    "rule_state": p.get("rule_state"),
     "version": p.get("version"), "destinations": p.get("lifecycle_environments"),
     "end_date": p.get("end_date"),
 })
@@ -182,6 +188,10 @@ class PreparationPlaybook(unittest.TestCase):
                          "Initial demonstration baseline; cutoff=2025-02-28")
         self.assertEqual(state["serving"], {TEST: 40, PROD: 40})
         calls = state["calls"]
+        original = [c for c in calls if c["module"] == "content_view_filter" and c["filter_type"] == "rpm"]
+        self.assertEqual(len(original), 1)
+        self.assertTrue(original[0]["original_packages"])
+        self.assertEqual(original[0]["rule_state"], "absent")
         publication = next(i for i, c in enumerate(calls)
                            if c["module"] == "content_view_version")
         verification = next(i for i, c in enumerate(calls)

@@ -16,6 +16,7 @@ sniper_repositories: []
 sniper_baseline_end_date: ""
 sniper_update_end_date: ""
 sniper_baseline_filter: "{{ sniper_namespace }}_baseline_cutoff"
+sniper_original_filter: "{{ sniper_namespace }}_original_packages"
 sniper_patch_scope: targeted
 sniper_upgrade_witness: ""
 sniper_version: ""
