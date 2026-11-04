@@ -1,5 +1,25 @@
 # Design decisions history
 
+## 2026-11-04 — Correct the filter type for original packages
+
+The first live preparation failed because Satellite rejects original_packages
+on an erratum filter. Preparation and bounded publication now use a separate
+owned RPM inclusion filter for packages without errata, while the erratum filter
+retains the issue-date cap. The package filter suppresses the older collection's
+default package-name rule. Explicit latest publication removes both owned
+inclusion filters so it cannot remain accidentally limited to original packages.
+
+Actual readback after the failed attempt confirmed only the owned Content View
+and lifecycle path existed: no versions or filters were published and the
+selected hosts retained their original assignments. No cleanup was required.
+
+All 89 regression tests passed, including real preparation/publication fixtures
+that reject the unsupported argument and accidental RPM name rules. Seven
+entrypoint syntax checks and production lint passed. The corrected live retry
+remains a separate acceptance step.
+
+Implementation commit: `7d5f77a442210af21c924db9fc9edf7f4c462c29`.
+
 ## 2026-11-04 — Publish the configured stage surveys
 
 The five remaining demo Job Templates were created with the existing runtime,
