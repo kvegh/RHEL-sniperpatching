@@ -1,5 +1,30 @@
 # Design decisions history
 
+## Prepare a cutoff baseline before the full security advisory set — 2026-11-04
+
+Implementation commit: `7a0a2fdd15d55c25b57eaeaad581b00e7080b2c1` (version 0.3.0).
+
+The user requested this behavior in the preparation playbook. Prep now reads
+outstanding security RHSAs from the explicit host pair, resolves their issue
+dates only in the selected repositories, and chooses the day before the earliest
+one. An explicit date must precede every selected RHSA. Missing or ambiguous
+metadata stops preparation before publication.
+
+Publication now creates the baseline in Library first. Prep reads its actual
+advisories and requires the selected set to be absent before promotion and host
+reassignment. The same validated version initializes the dedicated Test/Prod
+path. Interrupted publication is revalidated before promotion into empty
+destinations, using the recorded cutoff. Established later versions are
+preserved on reruns. The preparation report includes the cutoff and excluded set.
+
+All 67 tests pass, including five real Ansible executions against synthetic
+local Satellite modules covering fresh preparation, contaminated content,
+invalid cutoffs, interrupted publication and established newer versions.
+All seven playbook syntax checks and production-profile lint pass. The cutoff
+calculation was also checked against the prior protected fourteen-advisory
+capture. No live preparation, publication, promotion, host reassignment,
+patching, reboot or snapshot was executed for this change.
+
 ## Resolve advisory epochs from selected repository packages — 2026-11-04
 
 Implementation commit: `9199670f987932bcfec9179934da64625d3ec3e7` (version 0.2.2).
