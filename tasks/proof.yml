@@ -1,0 +1,26 @@
+---
+- name: Select the requested fix proof
+  ansible.builtin.set_fact:
+    sniper_proof_options:
+      requested_id: '{{ hostvars["localhost"].sniper_id }}'
+
+- name: Include the independent full-upgrade witness when a before snapshot exists
+  ansible.builtin.set_fact:
+    sniper_proof_options: '{{ sniper_proof_options | combine({"name": sniper_upgrade_witness, "before": sniper_packages_before.stdout_lines}) }}'
+  when: sniper_patch_scope == 'full' and sniper_packages_before is defined
+
+- name: Compare installed RPM versions and the running kernel against advisory metadata
+  ansible.builtin.command:
+    argv:
+      - "{{ sniper_rpm_interpreter }}"
+      - "-c"
+      - '{{ lookup("ansible.builtin.file", "files/rpm_proof.py") }}'
+      - '{{ hostvars["localhost"].sniper_requirements | to_json }}'
+      - "{{ sniper_proof_options | to_json }}"
+  register: sniper_proof_command
+  changed_when: false
+  check_mode: false
+
+- name: Decode package proof
+  ansible.builtin.set_fact:
+    sniper_proof: "{{ sniper_proof_command.stdout | from_json }}"

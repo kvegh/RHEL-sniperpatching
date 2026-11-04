@@ -1,0 +1,162 @@
+---
+- name: Add one requested fix to the selected frozen baseline
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  vars_files:
+    - vars/main.yml
+  module_defaults:
+    group/redhat.satellite.satellite:
+      server_url: "{{ sniper_server_url }}"
+      username: "{{ sniper_username }}"
+      password: "{{ sniper_password }}"
+      validate_certs: true
+  tasks:
+    - name: Read the explicit serving baseline
+      ansible.builtin.import_tasks: tasks/context.yml
+    - name: Resolve the single requested fix
+      ansible.builtin.import_tasks: tasks/resolve.yml
+    - name: Inspect baseline advisories and RPMs
+      redhat.satellite.resource_info:
+        resource: "{{ item }}"
+        params:
+          content_view_version_id: "{{ sniper_baseline.id }}"
+      loop:
+        - errata
+        - packages
+      register: sniper_before_content
+    - name: Record baseline contents
+      ansible.builtin.set_fact:
+        sniper_before_errata: '{{ sniper_before_content.results[0].resources | map(attribute="errata_id") | list }}'
+        sniper_before_packages: '{{ sniper_before_content.results[1].resources | map(attribute="id") | list }}'
+    - name: Compute missing requested advisories
+      ansible.builtin.set_fact:
+        sniper_missing_errata: "{{ sniper_resolved_ids | difference(sniper_before_errata) }}"
+    - name: Create and validate the minor version before making it available to hosts
+      when: sniper_missing_errata | length > 0
+      block:
+        - name: Refuse changes in check mode
+          ansible.builtin.assert:
+            that: not ansible_check_mode
+            fail_msg: Incremental creation requires a real run; no simulated success is reported.
+        - name: Create the minor in Test only
+          when: sniper_environment == 'test'
+          block:
+            - name: Snapshot existing version IDs
+              redhat.satellite.resource_info:
+                resource: content_view_versions
+                params:
+                  content_view_id: "{{ sniper_cv.id }}"
+              register: sniper_before_versions
+            - name: Request a genuine incremental update without promotion or host patching
+              ansible.builtin.uri:
+                url: '{{ sniper_server_url | regex_replace("/$", "") }}/katello/api/content_view_versions/incremental_update'
+                method: POST
+                url_username: "{{ sniper_username }}"
+                url_password: "{{ sniper_password }}"
+                force_basic_auth: true
+                use_netrc: false
+                follow_redirects: none
+                validate_certs: true
+                body_format: json
+                body:
+                  content_view_version_environments:
+                    - content_view_version_id: "{{ sniper_baseline.id }}"
+                      environment_ids: []
+                  add_content:
+                    errata_ids: "{{ sniper_missing_errata }}"
+                  resolve_dependencies: true
+                  propagate_all_composites: false
+                  description: "{{ sniper_namespace }} requested {{ sniper_id }} from {{ sniper_baseline.version }}"
+                status_code:
+                  - 200
+                  - 202
+                timeout: 60
+              register: sniper_incremental_request
+              changed_when: true
+              no_log: true
+            - name: Wait for each returned Satellite task
+              redhat.satellite.wait_for_task:
+                task: "{{ item }}"
+                timeout: "{{ sniper_task_timeout }}"
+              loop: "{{ sniper_incremental_request.json | sniper_task_ids }}"
+              register: sniper_completed_tasks
+            - name: Require successful asynchronous completion
+              ansible.builtin.assert:
+                that:
+                  - item.task.state == 'stopped'
+                  - item.task.result == 'success'
+              loop: "{{ sniper_completed_tasks.results }}"
+              loop_control:
+                label: "{{ item.item }}"
+            - name: Find the new version
+              redhat.satellite.resource_info:
+                resource: content_view_versions
+                params:
+                  content_view_id: "{{ sniper_cv.id }}"
+              register: sniper_after_versions
+            - name: Require exactly one new minor version derived from this baseline
+              ansible.builtin.set_fact:
+                sniper_new_version: '{{ sniper_after_versions.resources | rejectattr("id", "in", sniper_before_versions.resources
+                  | map(attribute="id") | list) |
+                  list | sniper_one("new minor version") }}'
+        - name: Reuse the tested minor for production
+          when: sniper_environment == 'prod'
+          block:
+            - name: Find the project Test environment
+              redhat.satellite.resource_info:
+                resource: lifecycle_environments
+                organization: "{{ sniper_organization }}"
+                search: name = "{{ sniper_test_environment }}"
+              register: sniper_minor_test_env
+            - name: Require a normal Test to Prod lifecycle path
+              ansible.builtin.assert:
+                that: sniper_env.prior.id | int == (sniper_minor_test_env.resources | sniper_owned(sniper_owner) | sniper_one).id | int
+            - name: Read the exact minor version already promoted to Test
+              redhat.satellite.resource_info:
+                resource: content_view_versions
+                params:
+                  content_view_id: "{{ sniper_cv.id }}"
+                  environment_id: "{{ (sniper_minor_test_env.resources | sniper_one).id }}"
+              register: sniper_minor_test_version
+            - name: Reuse the tested minor instead of creating an untested production version
+              ansible.builtin.set_fact:
+                sniper_new_version: '{{ sniper_minor_test_version.resources | sniper_one("tested minor version") }}'
+        - name: Verify the minor version lineage
+          ansible.builtin.assert:
+            that:
+              - sniper_new_version.major | int == sniper_baseline.major | int
+              - sniper_new_version.minor | int > sniper_baseline.minor | int
+        - name: Inspect the generated advisories and RPMs
+          redhat.satellite.resource_info:
+            resource: "{{ item }}"
+            params:
+              content_view_version_id: "{{ sniper_new_version.id }}"
+          loop:
+            - errata
+            - packages
+          register: sniper_after_content
+        - name: Require preservation of the baseline and the exact requested advisory additions
+          ansible.builtin.assert:
+            that:
+              - sniper_before_packages | difference(sniper_after_content.results[1].resources | map(attribute='id') | list) | length == 0
+              - sniper_before_errata | difference(sniper_after_content.results[0].resources | map(attribute='errata_id') | list) | length == 0
+              - sniper_resolved_ids | difference(sniper_after_content.results[0].resources | map(attribute='errata_id') | list) | length == 0
+              - sniper_after_content.results[0].resources | map(attribute='errata_id') | difference(sniper_before_errata) | difference(sniper_resolved_ids) |
+                length == 0
+            fail_msg: The generated version has an unexpected content delta. It remains unpromoted; inspect it in Satellite.
+        - name: Promote only the validated minor version to the selected environment
+          redhat.satellite.content_view_version:
+            organization: "{{ sniper_organization }}"
+            content_view: "{{ sniper_content_view }}"
+            version: "{{ sniper_new_version.version }}"
+            lifecycle_environments: "{{ [sniper_environment_name] }}"
+    - name: Report the selected version and resolved fix
+      ansible.builtin.debug:
+        msg:
+          requested: "{{ sniper_id }}"
+          advisories: "{{ sniper_resolved_ids }}"
+          environment: "{{ sniper_environment_name }}"
+          version: "{{ (sniper_new_version | default(sniper_baseline)).version }}"
+          already_available: "{{ sniper_missing_errata | length == 0 }}"
+          host_patching: Run patch_hosts.yml separately.

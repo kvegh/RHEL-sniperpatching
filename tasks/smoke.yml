@@ -1,0 +1,24 @@
+---
+- name: Read service state for smoke tests
+  ansible.builtin.service_facts:
+
+- name: Verify requested services are running
+  ansible.builtin.assert:
+    that:
+      - (item ~ '.service') in ansible_facts.services
+      - ansible_facts.services[item ~ '.service'].state == 'running'
+    fail_msg: "Smoke test failed for {{ item }}."
+  loop: "{{ sniper_smoke_services }}"
+
+- name: Verify application HTTP smoke tests from the patched host
+  ansible.builtin.uri:
+    url: "{{ item.url }}"
+    method: GET
+    status_code: "{{ item.status | default(200) }}"
+    validate_certs: true
+    follow_redirects: none
+    use_netrc: false
+  check_mode: false
+  loop: "{{ sniper_smoke_urls }}"
+  loop_control:
+    label: "{{ item.url }}"

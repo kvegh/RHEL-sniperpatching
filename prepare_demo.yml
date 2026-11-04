@@ -1,0 +1,193 @@
+---
+- name: Prepare an isolated demonstration without patching hosts
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  vars_files:
+    - vars/main.yml
+  module_defaults:
+    group/redhat.satellite.satellite:
+      server_url: "{{ sniper_server_url }}"
+      username: "{{ sniper_username }}"
+      password: "{{ sniper_password }}"
+      validate_certs: true
+  tasks:
+    - name: Validate access and ownership
+      ansible.builtin.import_tasks: tasks/connect.yml
+    - name: Validate baseline and repository inputs
+      ansible.builtin.assert:
+        that:
+          - sniper_repositories | length > 0
+          - sniper_baseline_end_date == '' or sniper_baseline_end_date is match('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+          - not ansible_check_mode
+        fail_msg: Supply explicit repositories and an optional baseline date. Use inspection instead of check mode for a new baseline.
+    - name: Inspect both intended hosts before creating resources
+      redhat.satellite.resource_info:
+        resource: hosts
+        organization: "{{ sniper_organization }}"
+        search: name = "{{ item }}"
+        full_details: true
+      loop: "{{ [sniper_test_host, sniper_prod_host] }}"
+      register: sniper_prep_host_queries
+    - name: Require distinct existing RHEL hosts in the selected organization
+      ansible.builtin.assert:
+        that:
+          - item.resources | length == 1
+          - (item.resources | sniper_one).organization_id | int == sniper_org.id | int
+          - (item.resources | sniper_one).operatingsystem_name is search('RedHat|RHEL')
+      loop: "{{ sniper_prep_host_queries.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+    - name: Inspect both intended lifecycle environment names
+      redhat.satellite.resource_info:
+        resource: lifecycle_environments
+        organization: "{{ sniper_organization }}"
+        search: name = "{{ item }}"
+      loop: "{{ [sniper_test_environment, sniper_prod_environment] }}"
+      register: sniper_prep_env_queries
+    - name: Refuse any pre-existing foreign environment
+      ansible.builtin.set_fact:
+        sniper_owned_environments: '{{ sniper_prep_env_queries.results | map(attribute="resources") | flatten
+          | sniper_owned(sniper_owner, "lifecycle environment")
+          }}'
+    - name: Create the separate lifecycle path
+      redhat.satellite.lifecycle_environment:
+        organization: "{{ sniper_organization }}"
+        name: "{{ item.name }}"
+        prior: "{{ item.prior }}"
+        description: "{{ sniper_owner }}"
+        state: present
+      loop:
+        - name: "{{ sniper_test_environment }}"
+          prior: Library
+        - name: "{{ sniper_prod_environment }}"
+          prior: "{{ sniper_test_environment }}"
+    - name: Create the dedicated content view once
+      redhat.satellite.content_view:
+        organization: "{{ sniper_organization }}"
+        name: "{{ sniper_content_view }}"
+        description: "{{ sniper_owner }}"
+        repositories: "{{ sniper_repositories }}"
+        solve_dependencies: false
+        state: present
+      when: sniper_existing_views | length == 0
+    - name: Read the dedicated view and version history
+      redhat.satellite.resource_info:
+        resource: content_views
+        organization: "{{ sniper_organization }}"
+        search: name = "{{ sniper_content_view }}"
+      register: sniper_created_cv_query
+    - name: Record the isolated content view
+      ansible.builtin.set_fact:
+        sniper_cv: "{{ sniper_created_cv_query.resources | sniper_owned(sniper_owner) | sniper_one }}"
+    - name: Inspect existing versions
+      redhat.satellite.resource_info:
+        resource: content_view_versions
+        params:
+          content_view_id: "{{ sniper_cv.id }}"
+      register: sniper_prep_versions
+    - name: Create an optional frozen baseline cutoff before the first publication
+      redhat.satellite.content_view_filter:
+        organization: "{{ sniper_organization }}"
+        content_view: "{{ sniper_content_view }}"
+        name: "{{ sniper_baseline_filter }}"
+        filter_type: erratum
+        inclusion: true
+        original_packages: true
+        state: present
+      when: sniper_prep_versions.resources | length == 0 and sniper_baseline_end_date | length > 0
+    - name: Include advisory content only through the chosen baseline date
+      redhat.satellite.content_view_filter_rule:
+        organization: "{{ sniper_organization }}"
+        content_view: "{{ sniper_content_view }}"
+        content_view_filter: "{{ sniper_baseline_filter }}"
+        end_date: "{{ sniper_baseline_end_date }}"
+        date_type: issued
+        types:
+          - security
+          - bugfix
+          - enhancement
+        state: present
+      when: sniper_prep_versions.resources | length == 0 and sniper_baseline_end_date | length > 0
+    - name: Publish and promote the first baseline to Test and then Prod
+      redhat.satellite.content_view_version:
+        organization: "{{ sniper_organization }}"
+        content_view: "{{ sniper_content_view }}"
+        description: Initial demonstration baseline; cutoff={{ sniper_baseline_end_date | default("none", true) }}
+        lifecycle_environments: "{{ [sniper_test_environment, sniper_prod_environment] }}"
+      when: sniper_prep_versions.resources | length == 0
+    - name: Require a serving version in each new environment before moving a host
+      redhat.satellite.resource_info:
+        resource: lifecycle_environments
+        organization: "{{ sniper_organization }}"
+        search: name = "{{ item }}"
+      loop: "{{ [sniper_test_environment, sniper_prod_environment] }}"
+      register: sniper_ready_environments
+    - name: Inspect the ready version for each destination
+      redhat.satellite.resource_info:
+        resource: content_view_versions
+        params:
+          content_view_id: "{{ sniper_cv.id }}"
+          environment_id: "{{ (item.resources | sniper_one).id }}"
+      loop: "{{ sniper_ready_environments.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+      register: sniper_ready_versions
+    - name: Recover only missing initial promotions after an interrupted preparation
+      redhat.satellite.content_view_version:
+        organization: "{{ sniper_organization }}"
+        content_view: "{{ sniper_content_view }}"
+        version: "{{ (sniper_prep_versions.resources | sniper_initial_baseline).version }}"
+        lifecycle_environments: "{{ [item.item.item] }}"
+      loop: "{{ sniper_ready_versions.results }}"
+      loop_control:
+        label: "{{ item.item.item }}"
+      when: item.resources | length == 0
+    - name: Read back destination versions after any recovered promotion
+      redhat.satellite.resource_info:
+        resource: content_view_versions
+        params:
+          content_view_id: "{{ sniper_cv.id }}"
+          environment_id: "{{ (item.resources | sniper_one).id }}"
+      loop: "{{ sniper_ready_environments.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+      register: sniper_ready_versions
+    - name: Require both destinations to have a single promoted version
+      ansible.builtin.assert:
+        that: item.resources | length == 1
+      loop: "{{ sniper_ready_versions.results }}"
+      loop_control:
+        label: "{{ item.item.item }}"
+    - name: Assign only the selected pair to the new content path
+      redhat.satellite.host:
+        name: "{{ item.host }}"
+        organization: "{{ sniper_organization }}"
+        content_view: "{{ sniper_content_view }}"
+        lifecycle_environment: "{{ item.environment }}"
+        state: present
+      loop:
+        - host: "{{ sniper_test_host }}"
+          environment: "{{ sniper_test_environment }}"
+        - host: "{{ sniper_prod_host }}"
+          environment: "{{ sniper_prod_environment }}"
+    - name: Read back both final host assignments
+      redhat.satellite.resource_info:
+        resource: hosts
+        organization: "{{ sniper_organization }}"
+        search: name = "{{ item.host }}"
+        full_details: true
+      loop:
+        - host: "{{ sniper_test_host }}"
+          environment: "{{ sniper_test_environment }}"
+        - host: "{{ sniper_prod_host }}"
+          environment: "{{ sniper_prod_environment }}"
+      register: sniper_final_host_queries
+    - name: Verify the isolated assignments
+      ansible.builtin.assert:
+        that:
+          - (item.resources | sniper_one).content_facet_attributes.content_view.id | int == sniper_cv.id | int
+          - (item.resources | sniper_one).content_facet_attributes.lifecycle_environment.name == item.item.environment
+      loop: "{{ sniper_final_host_queries.results }}"
+      loop_control:
+        label: "{{ item.item.host }}"

@@ -1,0 +1,46 @@
+---
+- name: Validate the single requested ID
+  ansible.builtin.set_fact:
+    sniper_id: "{{ sniper_patch_id | sniper_patch_id }}"
+
+- name: Resolve the ID only within this Content View repository set
+  redhat.satellite.resource_info:
+    resource: errata
+    organization: "{{ sniper_organization }}"
+    search: '{{ "errata_id = " ~ sniper_id if sniper_id.startswith("RHSA-") else omit }}'
+    params: '{{ {"repository_id": item.id} | combine({"cve": sniper_id} if sniper_id.startswith("CVE-") else {}) }}'
+  loop: "{{ sniper_repo_details }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: sniper_errata_queries
+
+- name: Collect resolved advisories
+  ansible.builtin.set_fact:
+    sniper_errata: '{{ sniper_errata_queries.results | map(attribute="resources") | flatten | unique(attribute="errata_id") | list }}'
+
+- name: Require applicable security-advisory metadata
+  ansible.builtin.assert:
+    that:
+      - sniper_errata | length > 0
+      - sniper_errata | rejectattr('errata_id', 'match', '^RHSA-[0-9]{4}:[0-9]+$') | list | length == 0
+    fail_msg: The ID resolves to no RHSA in the selected repositories, or resolves outside supported security advisories.
+
+- name: Read complete advisory package metadata
+  redhat.satellite.resource_info:
+    resource: errata
+    params:
+      id: "{{ item.id }}"
+      organization_id: "{{ sniper_org.id }}"
+  loop: "{{ sniper_errata }}"
+  loop_control:
+    label: "{{ item.errata_id }}"
+  register: sniper_detail_queries
+
+- name: Build the fixed-RPM verification requirements
+  ansible.builtin.set_fact:
+    sniper_advisory_details: '{{ sniper_detail_queries.results | map(attribute="resources") | flatten }}'
+    sniper_resolved_ids: '{{ sniper_errata | map(attribute="errata_id") | sort | list }}'
+
+- name: Require usable non-modular fixed-package data
+  ansible.builtin.set_fact:
+    sniper_requirements: "{{ sniper_advisory_details | sniper_package_requirements }}"

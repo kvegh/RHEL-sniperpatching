@@ -1,0 +1,52 @@
+---
+- name: Resolve the selected verification target
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  vars_files: [vars/main.yml]
+  module_defaults:
+    group/redhat.satellite.satellite:
+      server_url: "{{ sniper_server_url }}"
+      username: "{{ sniper_username }}"
+      password: "{{ sniper_password }}"
+      validate_certs: true
+  tasks:
+    - name: Resolve one exact target and fix
+      ansible.builtin.import_tasks: tasks/host_context.yml
+
+- name: Read-only fix and smoke-test verification
+  hosts: sniper_targets
+  gather_facts: true
+  become: true
+  serial: 1
+  any_errors_fatal: true
+  vars_files: [vars/main.yml]
+  tasks:
+    - name: Validate host identity and read installed package proof
+      ansible.builtin.import_tasks: tasks/host_preflight.yml
+
+    - name: Require an effective fix with no pending reboot and run smoke tests
+      ansible.builtin.import_tasks: tasks/check_final.yml
+
+- name: Require actual verification completion and publish job evidence
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Refuse a successful job when the target verification was skipped
+      ansible.builtin.assert:
+        that:
+          - hostvars[sniper_host_name].sniper_verified_id | default('') == sniper_id
+          - hostvars[sniper_host_name].sniper_verified_environment | default('') == sniper_environment
+          - hostvars[sniper_host_name].sniper_proof.verified | default(false) | bool
+        fail_msg: The selected host did not complete fix verification. Check inventory and job limits.
+    - name: Publish the verified demonstration result
+      ansible.builtin.set_stats:
+        aggregate: false
+        data:
+          sniper_result:
+            requested_id: "{{ sniper_id }}"
+            environment: "{{ sniper_environment }}"
+            host: "{{ sniper_host_name }}"
+            content_view_version: "{{ sniper_baseline.version }}"
+            proof: "{{ hostvars[sniper_host_name].sniper_proof }}"

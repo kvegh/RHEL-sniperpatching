@@ -1,0 +1,138 @@
+---
+- name: Resolve the selected patch target
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  vars_files: [vars/main.yml]
+  module_defaults:
+    group/redhat.satellite.satellite:
+      server_url: "{{ sniper_server_url }}"
+      username: "{{ sniper_username }}"
+      password: "{{ sniper_password }}"
+      validate_certs: true
+  tasks:
+    - name: Resolve one exact target and fix
+      ansible.builtin.import_tasks: tasks/host_context.yml
+
+- name: Patch and prove the selected host
+  hosts: sniper_targets
+  gather_facts: true
+  become: true
+  serial: 1
+  any_errors_fatal: true
+  vars_files: [vars/main.yml]
+  tasks:
+    - name: Validate host identity, required tools, and advisory metadata
+      ansible.builtin.import_tasks: tasks/host_preflight.yml
+
+    - name: Validate explicit update scope and independent full-upgrade witness
+      ansible.builtin.assert:
+        that:
+          - sniper_patch_scope in ['targeted', 'full']
+          - sniper_patch_scope != 'full' or sniper_upgrade_witness is match('^[A-Za-z0-9][A-Za-z0-9+_.-]*$')
+          - not ansible_check_mode
+          - sniper_patch_scope != 'full' or sniper_upgrade_witness not in sniper_proof.affected_names
+        fail_msg: Full updates require a named independent installed package to prove an actual additional upgrade.
+
+    - name: Snapshot installed RPM versions before patching
+      ansible.builtin.command:
+        argv: [rpm, "-qa", "--qf", "%{NAME}|%{EPOCHNUM}|%{VERSION}|%{RELEASE}|%{ARCH}\\n"]
+      register: sniper_packages_before
+      changed_when: false
+
+    - name: Require the full-update witness to be installed before patching
+      ansible.builtin.assert:
+        that: sniper_packages_before.stdout_lines | select('match', '^' ~ (sniper_upgrade_witness | regex_escape) ~ '\|') | list | length > 0
+        fail_msg: The independent upgrade witness must already be installed.
+      when: sniper_patch_scope == 'full'
+
+    - name: Patch only the requested advisory or explicitly perform a full update
+      ansible.builtin.command:
+        argv: '{{ ["yum" if ansible_facts.distribution_major_version | int == 7 else "dnf", "-y"]
+          + hostvars["localhost"].sniper_repo_args + (["upgrade-minimal"]
+          + (hostvars["localhost"].sniper_resolved_ids | map("regex_replace", "^", "--advisory=") | list)
+          if sniper_patch_scope == "targeted" else ["upgrade"]) }}'
+      environment:
+        LC_ALL: C
+      when: sniper_patch_scope == 'full' or not sniper_proof.verified | bool
+      changed_when: true
+
+    - name: Snapshot installed RPM versions after patching
+      ansible.builtin.command:
+        argv: [rpm, "-qa", "--qf", "%{NAME}|%{EPOCHNUM}|%{VERSION}|%{RELEASE}|%{ARCH}\\n"]
+      register: sniper_packages_after
+      changed_when: false
+
+    - name: Record changed package names
+      ansible.builtin.set_fact:
+        sniper_changed_packages: "{{ sniper_packages_before.stdout_lines | sniper_package_delta(sniper_packages_after.stdout_lines) }}"
+
+    - name: Inspect fix and running kernel after package installation
+      ansible.builtin.import_tasks: tasks/proof.yml
+
+    - name: Detect reboot requirement
+      ansible.builtin.command:
+        argv: [needs-restarting, "-r"]
+      register: sniper_reboot_hint
+      changed_when: false
+      failed_when: sniper_reboot_hint.rc not in [0, 1]
+
+    - name: Detect running processes still using replaced binaries
+      ansible.builtin.command:
+        argv: [needs-restarting]
+      register: sniper_stale_processes
+      changed_when: false
+
+    - name: Reboot when required by the system, kernel proof, or outdated running processes
+      ansible.builtin.reboot:
+        reboot_timeout: "{{ sniper_reboot_timeout }}"
+        post_reboot_delay: 10
+      when: >-
+        sniper_reboot_hint.rc == 1 or sniper_proof.requires_kernel_reboot | bool or
+        (sniper_changed_packages | length > 0 and hostvars['localhost'].sniper_advisory_details
+        | selectattr('reboot_suggested', 'defined') | selectattr('reboot_suggested')
+        | list | length > 0) or
+        sniper_stale_processes.stdout_lines | select('match', '^[0-9]+\s*:') | list | length > 0 or
+        (sniper_changed_packages | intersect(['kernel', 'kernel-core', 'kernel-rt', 'glibc', 'systemd', 'udev', 'dbus', 'linux-firmware',
+        'microcode_ctl', 'openssl-libs',
+        'gnutls']) | length > 0)
+
+    - name: Verify the effective fix after any required reboot and run smoke tests
+      ansible.builtin.import_tasks: tasks/check_final.yml
+
+    - name: Require proof of an independent additional package upgrade
+      ansible.builtin.assert:
+        that:
+          - sniper_upgrade_witness not in sniper_proof.affected_names
+          - sniper_proof.upgrade_witness.upgraded | bool
+        fail_msg: Full update did not prove an additional upgrade of the specified independent installed package.
+      when: sniper_patch_scope == 'full'
+
+    - name: Report package changes and full-update witness
+      ansible.builtin.debug:
+        msg:
+          changed_packages: "{{ sniper_changed_packages }}"
+          independent_upgrade_witness: '{{ sniper_upgrade_witness if sniper_patch_scope == "full" else "not requested" }}'
+
+- name: Require actual verification completion and publish job evidence
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Refuse a successful job when the target verification was skipped
+      ansible.builtin.assert:
+        that:
+          - hostvars[sniper_host_name].sniper_verified_id | default('') == sniper_id
+          - hostvars[sniper_host_name].sniper_verified_environment | default('') == sniper_environment
+          - hostvars[sniper_host_name].sniper_proof.verified | default(false) | bool
+        fail_msg: The selected host did not complete fix verification. Check inventory and job limits.
+    - name: Publish the verified demonstration result
+      ansible.builtin.set_stats:
+        aggregate: false
+        data:
+          sniper_result:
+            requested_id: "{{ sniper_id }}"
+            environment: "{{ sniper_environment }}"
+            host: "{{ sniper_host_name }}"
+            content_view_version: "{{ sniper_baseline.version }}"
+            proof: "{{ hostvars[sniper_host_name].sniper_proof }}"

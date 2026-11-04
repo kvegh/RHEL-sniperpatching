@@ -1,0 +1,45 @@
+---
+- name: Resolve the requested fix and serving baseline
+  ansible.builtin.import_tasks: context.yml
+
+- name: Resolve fixed package versions
+  ansible.builtin.import_tasks: resolve.yml
+
+- name: Inspect advisories available in the serving Content View version
+  redhat.satellite.resource_info:
+    resource: errata
+    params:
+      content_view_version_id: "{{ sniper_baseline.id }}"
+  register: sniper_installable_advisories
+
+- name: Require the requested fix to be available from the serving content
+  ansible.builtin.assert:
+    that: sniper_resolved_ids | difference(sniper_installable_advisories.resources | map(attribute='errata_id') | list) | length == 0
+    fail_msg: Run the minor content update before patching or checking this environment.
+
+- name: Read the selected existing Satellite host
+  redhat.satellite.resource_info:
+    resource: hosts
+    organization: "{{ sniper_organization }}"
+    search: 'name = "{{ sniper_host_name }}"'
+    full_details: true
+  register: sniper_host_query
+
+- name: Require the exact existing host
+  ansible.builtin.set_fact:
+    sniper_host: '{{ sniper_host_query.resources | sniper_one("target host") }}'
+
+- name: Require the host to consume our selected environment and content view
+  ansible.builtin.assert:
+    that:
+      - sniper_host.content_facet_attributes.content_view.id | int == sniper_cv.id | int
+      - sniper_host.content_facet_attributes.lifecycle_environment.id | int == sniper_env.id | int
+      - sniper_host_name in hostvars
+      - sniper_host.subscription_facet_attributes.uuid is match('^[a-fA-F0-9-]{36}$')
+      - groups.get('sniper_targets', []) | difference([sniper_host_name]) | length == 0
+    fail_msg: The target must already consume this project view/environment and exist in the supplied AAP inventory.
+
+- name: Add only the explicitly selected existing inventory host to this run
+  ansible.builtin.add_host:
+    name: "{{ sniper_host_name }}"
+    groups: sniper_targets

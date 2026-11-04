@@ -1,0 +1,43 @@
+---
+- name: Require a supported RHEL host and matching Satellite identity
+  ansible.builtin.assert:
+    that:
+      - ansible_facts.distribution == 'RedHat'
+      - ansible_facts.distribution_major_version | int in [7, 8, 9]
+      - inventory_hostname == hostvars['localhost'].sniper_host_name
+
+- name: Read the registered system identity
+  ansible.builtin.command:
+    argv: [subscription-manager, identity]
+  register: sniper_identity
+  changed_when: false
+  check_mode: false
+
+- name: Verify SSH reached the selected Satellite consumer
+  ansible.builtin.assert:
+    that: hostvars['localhost'].sniper_host.subscription_facet_attributes.uuid in sniper_identity.stdout
+    fail_msg: SSH inventory address and Satellite consumer identity disagree.
+
+- name: Select the operating-system Python with RPM bindings
+  ansible.builtin.set_fact:
+    sniper_rpm_interpreter: >-
+      {{ sniper_rpm_python | default(
+        '/usr/bin/python' if ansible_facts.distribution_major_version | int == 7
+        else '/usr/libexec/platform-python' if ansible_facts.distribution_major_version | int == 8
+        else '/usr/bin/python3') }}
+
+- name: Require the existing reboot detection utility before changing packages
+  ansible.builtin.command:
+    argv: [needs-restarting, "-r"]
+  register: sniper_reboot_preflight
+  changed_when: false
+  failed_when: sniper_reboot_preflight.rc not in [0, 1]
+  check_mode: false
+
+- name: Read package proof before any change
+  ansible.builtin.import_tasks: proof.yml
+
+- name: Refuse an unaffected host
+  ansible.builtin.assert:
+    that: sniper_proof.affected_packages | length > 0
+    fail_msg: No installed affected packages were found; the requested fix cannot be demonstrated on this host.

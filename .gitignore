@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+*.retry
+.env
+inventory.local.yml
+vars/private*.yml
+artifacts/

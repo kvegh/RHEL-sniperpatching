@@ -1,0 +1,71 @@
+---
+- name: Publish full current content to Test only
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  vars_files: [vars/main.yml]
+  module_defaults:
+    group/redhat.satellite.satellite:
+      server_url: "{{ sniper_server_url }}"
+      username: "{{ sniper_username }}"
+      password: "{{ sniper_password }}"
+      validate_certs: true
+  tasks:
+    - name: Read the project and explicit environment
+      ansible.builtin.import_tasks: tasks/context.yml
+
+    - name: Require a real Test-only publication
+      ansible.builtin.assert:
+        that:
+          - sniper_environment == 'test'
+          - not ansible_check_mode
+
+    - name: Inspect filters on our own Content View
+      redhat.satellite.resource_info:
+        resource: content_view_filters
+        params:
+          content_view_id: "{{ sniper_cv.id }}"
+      register: sniper_full_filters
+
+    - name: Refuse unknown filters rather than silently changing them
+      ansible.builtin.assert:
+        that: sniper_full_filters.resources | rejectattr('name', 'equalto', sniper_baseline_filter) | list | length == 0
+        fail_msg: Review unexpected filters on the project Content View before publishing all content.
+
+    - name: Synchronize the explicitly selected Library repositories
+      redhat.satellite.repository_sync:
+        organization: "{{ sniper_organization }}"
+        product: "{{ item.product.name }}"
+        repository: "{{ item.name }}"
+      loop: "{{ sniper_repo_details }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Remove only our initial cutoff restriction
+      redhat.satellite.content_view_filter:
+        organization: "{{ sniper_organization }}"
+        content_view: "{{ sniper_content_view }}"
+        name: "{{ sniper_baseline_filter }}"
+        filter_type: erratum
+        state: absent
+
+    - name: Publish current content and promote it to Test
+      redhat.satellite.content_view_version:
+        organization: "{{ sniper_organization }}"
+        content_view: "{{ sniper_content_view }}"
+        description: "{{ sniper_namespace }} full repository update"
+        lifecycle_environments: "{{ [sniper_test_environment] }}"
+
+    - name: Read back the new Test version
+      redhat.satellite.resource_info:
+        resource: content_view_versions
+        params:
+          content_view_id: "{{ sniper_cv.id }}"
+          environment_id: "{{ sniper_env.id }}"
+      register: sniper_full_version
+
+    - name: Report the exact version to test and later promote
+      ansible.builtin.debug:
+        msg:
+          test_version: "{{ (sniper_full_version.resources | sniper_one).version }}"
+          next: Run patch_hosts.yml with scope full and the original ID, then explicitly promote this exact version.

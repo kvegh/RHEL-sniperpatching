@@ -1,0 +1,12 @@
+---
+# Synthetic example. Keep real access and host configuration outside this repository.
+sniper_organization: Example Organization
+sniper_test_host: test-client.example.test
+sniper_prod_host: prod-client.example.test
+sniper_repositories:
+  - name: Example RHEL Server RPMs
+    product: Example RHEL Server
+# Choose a cutoff before the demonstration advisory was issued.
+sniper_baseline_end_date: "2023-12-01"
+sniper_smoke_services: [sshd]
+sniper_smoke_urls: []
