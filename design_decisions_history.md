@@ -1,5 +1,29 @@
 # Design decisions history
 
+## Resolve advisory epochs from selected repository packages — 2026-11-04
+
+Implementation commit: `9199670f987932bcfec9179934da64625d3ec3e7` (version 0.2.2).
+
+Satellite advisory NVRA strings omit the RPM epoch. Treating that omission as
+zero made older installed packages with nonzero epochs appear newer than the
+fixed versions. The resolver now queries exact package filenames through the
+certified collection, restricted to the selected repositories, and matches the
+complete name/version/release/architecture identity before using its structured
+epoch. Queries are bounded. Explicit null means epoch zero; missing, ambiguous,
+empty or conflicting metadata is rejected. The native host proof also refuses
+requirements without an explicit epoch.
+
+Fifty-four tests pass, including missing/ambiguous metadata, nonzero-epoch
+false positives and actual Ansible task templating. All seven syntax checks,
+production-profile lint and legacy host-Python grammar checks pass. Read-only
+Satellite queries resolved all 151 fixed-package entries in the inspected
+advisory set, including 33 nonzero epochs. Corrected native-RPM checks on both
+selected RHEL 7.9 hosts confirm that all 14 reported advisories remain
+outstanding; the earlier GRUB and BIND/DHCP fixed results were false positives.
+
+No package installation, reboot, Content View change or snapshot operation ran.
+Later AAP CaC and the six actual demonstration stages remain separate work.
+
 ## Reuse the existing Satellite collection after a runtime trial — 2026-11-04
 
 Implementation commit: `524f835fb2c5a638d500cb735bca500d17edae96` (version 0.2.1).
