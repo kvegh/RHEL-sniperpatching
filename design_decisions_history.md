@@ -1,5 +1,15 @@
 # Design decisions history
 
+## Show only runnable stages in AAP playbook discovery — 2026-11-04
+
+Implementation commit: `224a8b12c9ff9474567c3491b9439c8024237a40` (version 0.1.2).
+
+The successful external AAP source refresh also listed the YAML example
+inventory as a playbook. The generic example now uses INI, with the local
+ansible.cfg default and README aligned, so the project presents only its six
+actual stage entry points. All six syntax checks and production-profile lint
+pass after the format change; the 42 passing logic tests are unaffected.
+
 ## Keep dependency installation separate from SCM synchronization — 2026-11-04
 
 Implementation commit: `f528087bd55a7117eb2fee86860bb2888549ad9d` (version 0.1.1).
