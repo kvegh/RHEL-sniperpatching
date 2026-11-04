@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-Version **0.2.2**. Independently launched Ansible stages for demonstrating a
+Version **0.3.0**. Independently launched Ansible stages for demonstrating a
 single CVE/RHSA update followed by a full repository update, using Red Hat
 Satellite and AAP. This project is a submodule of
 [AAP Advanced Features](https://github.com/kvegh/AAP-advanced-features).
@@ -59,15 +59,27 @@ activation keys are not changed by host reassignment.
 
 ### Choosing the initial baseline
 
-Choose `sniper_baseline_end_date` before the demonstration advisory's issue date.
-Preparation uses an inclusion filter for security, bugfix and enhancement errata
-through that date, retaining RPMs without errata. This filter belongs only to the
-new Content View. Omit the date to snapshot all currently synchronized content;
-then an advisory already present in that baseline needs no minor update and is
-reported as already available. Historical package availability depends on the
-selected Library repositories; a date filter cannot recreate packages already
-removed upstream. Set the baseline inputs before the first publication: reruns
-do not rebuild or roll back an established baseline.
+Preparation reads outstanding errata for the explicit Test/Prod host pair,
+collects their complete security RHSA set and resolves those advisories in the
+selected repositories. With an empty `sniper_baseline_end_date`, it chooses the
+day before the earliest issue date. An explicit cutoff must be earlier than
+every selected RHSA. Missing advisories or invalid/ambiguous dates stop
+preparation before publication.
+
+The inclusion filter retains security, bugfix and enhancement errata through
+that date, plus original RPMs without errata. The baseline is published in
+Library first. Prep reads its actual advisory content and requires all selected
+RHSAs to be absent before promoting the same baseline to Test and Prod and
+reassigning the host pair. This leaves every selected fix available for a later,
+separate minor-update launch.
+
+A retry preserves established serving versions. If publication succeeded but a
+promotion was interrupted, prep validates the recorded cutoff and actual content
+again before promoting that single initial version into empty destinations.
+It never rebuilds a published baseline or resets a later demonstration version.
+Historical availability still depends on the selected repositories; a date
+filter cannot recreate packages removed upstream. The check concerns published
+content; it does not downgrade installed RPMs.
 
 Use RHEL content matching the hosts' installed OS. This implementation does not
 perform OS conversion, major-version upgrades, application installation or

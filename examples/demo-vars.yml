@@ -6,7 +6,8 @@ sniper_prod_host: prod-client.example.test
 sniper_repositories:
   - name: Example RHEL Server RPMs
     product: Example RHEL Server
-# Choose a cutoff before the demonstration advisory was issued.
-sniper_baseline_end_date: "2023-12-01"
+# Empty: choose the day before the earliest outstanding security RHSA on the pair.
+# An explicit date must precede all selected security RHSAs.
+sniper_baseline_end_date: ""
 sniper_smoke_services: [sshd]
 sniper_smoke_urls: []
