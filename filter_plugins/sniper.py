@@ -24,7 +24,7 @@ def _text(value, pattern, label):
 
 
 def _epoch(value):
-    if value in (None, "", "(none)"):
+    if value in (None, "(none)"):
         return "0"
     if isinstance(value, bool) or not re.fullmatch(r"[0-9]+", str(value)):
         raise ValueError("Invalid RPM epoch")
@@ -36,7 +36,7 @@ def _package(value):
     if isinstance(value, dict):
         if all(k in value for k in ("name", "version", "release", "arch")):
             result = {k: value[k] for k in ("name", "version", "release", "arch")}
-            result["epoch"] = _epoch(value.get("epoch"))
+            result["epoch"] = _epoch(value["epoch"]) if "epoch" in value else None
         else:
             value = next(
                 (value.get(k) for k in ("nevra", "nvra", "filename") if value.get(k)),
@@ -48,7 +48,10 @@ def _package(value):
                 )
             result = _package(value)
             if "epoch" in original:
-                result["epoch"] = _epoch(original["epoch"])
+                epoch = _epoch(original["epoch"])
+                if result["epoch"] is not None and result["epoch"] != epoch:
+                    raise ValueError("Conflicting RPM epoch in package metadata")
+                result["epoch"] = epoch
             return result
     elif isinstance(value, str):
         value = value[:-4] if value.endswith(".rpm") else value
@@ -57,12 +60,12 @@ def _package(value):
             name, version, release = nvr.rsplit("-", 2)
         except ValueError as exc:
             raise ValueError("Invalid RPM NEVRA") from exc
-        epoch = "0"
+        epoch = None
         if ":" in version:
             epoch, version = version.split(":", 1)
         result = {
             "name": name,
-            "epoch": _epoch(epoch),
+            "epoch": _epoch(epoch) if epoch is not None else None,
             "version": version,
             "release": release,
             "arch": arch,
@@ -72,20 +75,21 @@ def _package(value):
             "Satellite package metadata must be a dictionary or NEVRA string"
         )
     result["name"] = _text(result["name"], _NAME, "name")
-    result["epoch"] = _epoch(result["epoch"])
+    if result["epoch"] is not None:
+        result["epoch"] = _epoch(result["epoch"])
     result["version"] = _text(result["version"], _EVR, "version")
     result["release"] = _text(result["release"], _EVR, "release")
     result["arch"] = _text(result["arch"], _ARCH, "architecture")
     return result
 
 
-def sniper_package_requirements(errata_details):
-    """Retain per-advisory EVRs; never guess modular-stream policy."""
+def _advisory_packages(errata_details):
+    """Parse advisory package identity without inventing an omitted epoch."""
     if isinstance(errata_details, dict):
         errata_details = errata_details.get("results", [errata_details])
     if not isinstance(errata_details, list) or not errata_details:
         raise ValueError("At least one resolved RHSA detail is required")
-    result, seen = [], set()
+    result = []
     for detail in errata_details:
         if not isinstance(detail, dict):
             raise ValueError("Erratum detail must be a dictionary")
@@ -108,15 +112,71 @@ def sniper_package_requirements(errata_details):
                 continue
             found = True
             item = {"advisory": advisory, **package}
-            identity = tuple(
-                item[k]
-                for k in ("advisory", "name", "epoch", "version", "release", "arch")
-            )
-            if identity not in seen:
-                result.append(item)
-                seen.add(identity)
+            result.append(item)
         if not found:
             raise ValueError("Resolved RHSA has no binary fixed package metadata")
+    return result
+
+
+def _nvra(package):
+    return tuple(package[key] for key in ("name", "version", "release", "arch"))
+
+
+def sniper_package_searches(errata_details):
+    """Bound exact filename queries; RPM filenames themselves omit epochs."""
+    terms = sorted(
+        {
+            'filename = "%s-%s-%s.%s.rpm"' % _nvra(package)
+            for package in _advisory_packages(errata_details)
+        }
+    )
+    queries, current = [], ""
+    for term in terms:
+        if len(term) > 2000:
+            raise ValueError("RPM filename is too long for a bounded package query")
+        combined = current + " or " + term if current else term
+        if len(combined) > 2000:
+            queries.append(current)
+            current = term
+        else:
+            current = combined
+    if current:
+        queries.append(current)
+    return queries
+
+
+def sniper_package_requirements(errata_details, package_catalog=None):
+    """Resolve omitted epochs from exact packages in the selected repositories."""
+    catalogue = {}
+    if package_catalog is not None:
+        if isinstance(package_catalog, dict):
+            package_catalog = package_catalog.get("results")
+        if not isinstance(package_catalog, list):
+            raise ValueError("Package catalogue must contain structured package rows")
+        for raw in package_catalog:
+            if not isinstance(raw, dict) or "epoch" not in raw:
+                raise ValueError("Package catalogue must include an explicit RPM epoch")
+            package = _package(raw)
+            catalogue.setdefault(_nvra(package), set()).add(package["epoch"])
+    result, seen = [], set()
+    for package in _advisory_packages(errata_details):
+        epochs = catalogue.get(_nvra(package), set())
+        if package["epoch"] is None:
+            if len(epochs) != 1:
+                raise ValueError(
+                    "Missing or ambiguous authoritative RPM epoch for "
+                    + package["name"]
+                )
+            package["epoch"] = next(iter(epochs))
+        elif epochs and epochs != {package["epoch"]}:
+            raise ValueError("Conflicting RPM epoch metadata for " + package["name"])
+        identity = tuple(
+            package[key]
+            for key in ("advisory", "name", "epoch", "version", "release", "arch")
+        )
+        if identity not in seen:
+            result.append(package)
+            seen.add(identity)
     return result
 
 
@@ -158,5 +218,6 @@ class FilterModule:
         return {
             "sniper_patch_id": sniper_patch_id,
             "sniper_package_requirements": sniper_package_requirements,
+            "sniper_package_searches": sniper_package_searches,
             "sniper_package_delta": sniper_package_delta,
         }

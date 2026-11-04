@@ -114,7 +114,8 @@ class MetadataTests(unittest.TestCase):
                         {"filename": "demo-doc-3.0-4.el7.noarch.rpm"},
                     ],
                 }
-            ]
+            ],
+            [installed("demo-doc", "3.0", "4.el7", epoch=None, arch="noarch")],
         )
         self.assertEqual(rows[0], fixed("demo-tools", "3.0", "4.el7", "2"))
         self.assertEqual(rows[1], fixed("demo-libs", "3.0", "4.el7", "2", "i686"))
@@ -124,8 +125,8 @@ class MetadataTests(unittest.TestCase):
         d = {
             "errata_id": ADVISORY,
             "packages": [
-                "demo-2.0-1.el7.x86_64.rpm",
-                "demo-2.0-1.el7.x86_64.rpm",
+                "demo-0:2.0-1.el7.x86_64.rpm",
+                "demo-0:2.0-1.el7.x86_64.rpm",
                 "demo-2.0-1.el7.src.rpm",
             ],
         }
@@ -136,7 +137,7 @@ class MetadataTests(unittest.TestCase):
     def test_retains_advisory_identity_for_same_package(self):
         rows = filters.sniper_package_requirements(
             [
-                {"errata_id": a, "packages": ["demo-2.0-1.el7.x86_64"]}
+                {"errata_id": a, "packages": ["demo-0:2.0-1.el7.x86_64"]}
                 for a in [ADVISORY, OTHER]
             ]
         )

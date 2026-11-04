@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-Version **0.2.1**. Independently launched Ansible stages for demonstrating a
+Version **0.2.2**. Independently launched Ansible stages for demonstrating a
 single CVE/RHSA update followed by a full repository update, using Red Hat
 Satellite and AAP. This project is a submodule of
 [AAP Advanced Features](https://github.com/kvegh/AAP-advanced-features).
@@ -152,7 +152,12 @@ major version, so repeat launches deliberately create new snapshots.
 Package commands enable only the Content View's exact RHSM repository labels.
 Targeted mode uses `yum`/`dnf upgrade-minimal --advisory`; full mode uses `upgrade`.
 Read-only RPM proof uses the operating system's Python RPM bindings and native
-`rpm.labelCompare`, including architecture and epoch. Old install-only kernels
+`rpm.labelCompare`, including architecture and epoch. Satellite advisory package
+filenames can omit the epoch. The resolver queries their exact filenames only
+in the selected repositories and uses the structured package epoch; an explicit
+null epoch means zero. Missing, ambiguous or conflicting epochs fail verification
+instead of assuming zero. The host proof also rejects requirements without an
+epoch. Old install-only kernels
 can remain installed, but a kernel fix must be present in the **running kernel**.
 
 Reboot decisions combine `needs-restarting -r`, stale running processes,

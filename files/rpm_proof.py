@@ -58,7 +58,9 @@ def _package(item):
         ):
             raise ValueError("Invalid package field: " + key)
         entry[key] = value
-    epoch = item.get("epoch", "0")
+    if "epoch" not in item:
+        raise ValueError("Fixed package requirement lacks an authoritative RPM epoch")
+    epoch = item["epoch"]
     if isinstance(epoch, bool) or not re.match(r"[0-9]+\Z", str(epoch)):
         raise ValueError("Invalid package epoch")
     entry["epoch"] = str(int(epoch))
