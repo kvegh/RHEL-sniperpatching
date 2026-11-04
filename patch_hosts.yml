@@ -11,7 +11,7 @@
       password: "{{ sniper_password }}"
       validate_certs: true
   tasks:
-    - name: Resolve one exact target and fix
+    - name: Resolve the exact target and requested fixes
       ansible.builtin.import_tasks: tasks/host_context.yml
 
 - name: Patch and prove the selected host
@@ -132,6 +132,8 @@
         data:
           sniper_result:
             requested_id: "{{ sniper_id }}"
+            requested_ids: "{{ sniper_ids }}"
+            advisory_map: "{{ sniper_advisory_map }}"
             environment: "{{ sniper_environment }}"
             host: "{{ sniper_host_name }}"
             content_view_version: "{{ sniper_baseline.version }}"

@@ -1,5 +1,5 @@
 ---
-- name: Add one requested fix to the selected frozen baseline
+- name: Add requested fixes to the selected frozen baseline
   hosts: localhost
   gather_facts: false
   connection: local
@@ -14,7 +14,7 @@
   tasks:
     - name: Read the explicit serving baseline
       ansible.builtin.import_tasks: tasks/context.yml
-    - name: Resolve the single requested fix
+    - name: Resolve all requested fixes
       ansible.builtin.import_tasks: tasks/resolve.yml
     - name: Inspect baseline advisories and RPMs
       redhat.satellite.resource_info:
@@ -67,7 +67,9 @@
                     errata_ids: "{{ sniper_missing_errata }}"
                   resolve_dependencies: true
                   propagate_all_composites: false
-                  description: "{{ sniper_namespace }} requested {{ sniper_id }} from {{ sniper_baseline.version }}"
+                  description: >-
+                    {{ sniper_namespace }} requested {{ sniper_id if sniper_ids | length == 1
+                       else (sniper_ids | length | string) ~ ' CVEs' }} from {{ sniper_baseline.version }}
                 status_code:
                   - 200
                   - 202
@@ -155,6 +157,8 @@
       ansible.builtin.debug:
         msg:
           requested: "{{ sniper_id }}"
+          requested_ids: "{{ sniper_ids }}"
+          advisory_map: "{{ sniper_advisory_map }}"
           advisories: "{{ sniper_resolved_ids }}"
           environment: "{{ sniper_environment_name }}"
           version: "{{ (sniper_new_version | default(sniper_baseline)).version }}"

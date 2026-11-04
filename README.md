@@ -1,7 +1,7 @@
 # RHEL-sniperpatching
 
-Version **0.3.0**. Independently launched Ansible stages for demonstrating a
-single CVE/RHSA update followed by a full repository update, using Red Hat
+Version **0.4.0**. Independently launched Ansible stages for demonstrating a
+CVE-list or single-RHSA update followed by a full repository update, using Red Hat
 Satellite and AAP. This project is a submodule of
 [AAP Advanced Features](https://github.com/kvegh/AAP-advanced-features).
 
@@ -11,7 +11,7 @@ Satellite and AAP. This project is a submodule of
 |---|---|
 | `check_runtime.yml` | Read-only diagnostic of the selected existing EE: reports installed Ansible/Python/Satellite collection versions, parses all six stages, checks their Satellite module arguments, and queries Satellite organizations with verified HTTPS. No dependency installation or host contact. |
 | `prepare_demo.yml` | Creates a dedicated Content View and `Library -> RHEL-sniperpatching_Test -> RHEL-sniperpatching_Prod` path, publishes the initial baseline to both stages, then moves only the explicitly supplied test/prod host pair. No host patching. |
-| `create_minor_update.yml` | Resolves one CVE/RHSA in the selected repositories. In Test, creates a real incremental minor from the serving baseline, validates the content delta, and promotes it to Test. In Prod, validates and promotes the exact Test minor. No host patching. |
+| `create_minor_update.yml` | Resolves one RHSA or multiple CVEs dynamically in the selected repositories. In Test, creates a real incremental minor from the serving baseline, validates the content delta, and promotes it to Test. In Prod, validates and promotes the exact Test minor. No host patching. |
 | `patch_hosts.yml` | Patches only the selected host, checks whether reboot is necessary, reboots and reconnects as needed, proves the fix from installed RPM versions and the running kernel, then runs smoke tests. Supports targeted and full update scopes. |
 | `publish_full_update.yml` | Synchronizes the selected Library repositories, removes only this project's initial cutoff filter, publishes full current content and promotes it to Test. No host patching. |
 | `promote_content_view.yml` | Promotes an explicitly supplied version currently serving Test to Prod through the normal path. No host patching. |
@@ -113,19 +113,29 @@ during the relevant stages.
 
 ### Choosing a CVE or an RHSA
 
-`sniper_patch_id` accepts one CVE or one RHSA. For example:
+`sniper_patch_id` accepts one RHSA or up to 50 CVEs, separated by commas, spaces
+or newlines. For example:
 
 ```yaml
-sniper_patch_id: "CVE-2024-32487"
+sniper_patch_id: "CVE-2024-32487, CVE-2023-40217"
 ```
 
-In this catalog, that CVE maps to `RHSA-2024:3669` for `less`. The playbook
+In this catalog, `CVE-2024-32487` maps to `RHSA-2024:3669` for `less`. The playbook
 resolves CVEs through Satellite, restricted to the selected Content View's
 repositories. A CVE can select several RHSAs: `CVE-2023-40217` maps to
 both `RHSA-2023:6823` (`python3`) and `RHSA-2023:6885` (`python`).
-With a CVE input, every matching security advisory is included and affected
-installed components are verified. To select exactly one advisory, supply
-its RHSA ID.
+Every submitted CVE is queried separately against live Satellite metadata on
+each launch. Complete advisory details must confirm every CVE/RHSA association.
+Any unresolved CVE fails the run; overlapping advisories are deduplicated before
+the minor update. Installed-fix verification reports each requested CVE
+separately and requires affected installed components for every CVE. This
+documentation table is a reference and is never used for runtime resolution.
+To select exactly one advisory, supply its RHSA ID.
+
+Use [surveys/patch-selection.json](surveys/patch-selection.json) for the
+minor-update JT survey. Its required textarea accepts the same comma, space or
+newline separators, and the lifecycle selector chooses Test or Prod. No CVE
+choices or CVE-to-RHSA mappings are stored in the survey.
 
 The earliest candidate above is `RHSA-2023:6823`, issued on 2023-11-08.
 For this complete set, automatic preparation therefore chooses a cutoff of
@@ -134,8 +144,9 @@ hardcoded into the playbook.
 
 ## Demonstration sequence
 
-In AAP, select the relevant playbook and supply the stage inputs below. Later CaC
-will provision these Job Templates; this implementation supplies their source.
+In AAP, select the relevant playbook and supply the stage inputs below. The
+minor-update JT uses the patch-selection survey above. Reproducible CaC for the
+full set of stage Job Templates remains separate work.
 Equivalent CLI launches are shown for clarity. `demo.yml` and the inventory
 below are private operator files outside the repository.
 
@@ -170,8 +181,9 @@ ansible-playbook -i /path/to/inventory.yml check_patch.yml -e @/path/to/demo.yml
 The advisory and package names above are synthetic examples. Replace them with
 a fix relevant to the chosen repositories/installed software and an independent
 installed package with an actual available upgrade. `sniper_patch_id` accepts
-one RHSA or CVE. A CVE resolves to security advisories in the selected repository
-set; proof covers affected installed components and requires at least one.
+one RHSA or a list of CVEs. Every CVE resolves dynamically to security advisories
+in the selected repository set; proof requires affected installed components
+for each requested CVE.
 A single RHSA with no affected installed package fails instead of reporting
 success. An already-fixed affected package is valid evidence, including a newer
 superseding RPM version. Merely seeing no applicable update is never evidence.

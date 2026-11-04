@@ -3,6 +3,7 @@
   ansible.builtin.set_fact:
     sniper_proof_options:
       requested_id: '{{ hostvars["localhost"].sniper_id }}'
+      advisory_map: '{{ hostvars["localhost"].sniper_advisory_map }}'
 
 - name: Include the independent full-upgrade witness when a before snapshot exists
   ansible.builtin.set_fact:

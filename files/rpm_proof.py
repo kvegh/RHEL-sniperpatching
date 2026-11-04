@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 """Read-only fix proof with native RPM comparison; Python 2.7/3 compatible.
 
-argv[1] is fixed-package JSON. Optional argv[2] is JSON with requested_id and,
-for full-update proof, name/before for an independent package-upgrade witness.
+argv[1] is fixed-package JSON. Optional argv[2] is JSON with requested_id and
+advisory_map (live per-CVE Satellite resolution). requested_id accepts one RHSA
+or comma/whitespace-separated CVEs. For full-update proof, name/before select
+an independent package-upgrade witness.
 An unverified fix emits JSON and exits 0 so callers can inspect pre-patch state.
 Malformed metadata or unavailable native RPM bindings/database exit 2. Callers
 must assert verified after patching/reboot and upgrade_witness.upgraded in full
@@ -176,22 +178,46 @@ def _upgrade_witness(options, transaction, rpm_module, affected_names):
     }
 
 
+def _requests(options, requirements):
+    value = options.get("requested_id")
+    if value is None:
+        return [], {}, False
+    if not isinstance(value, STRING_TYPES) or len(value) > 4096:
+        raise ValueError("Invalid requested patch identifiers")
+    ids = sorted(set(re.split(r"[\s,]+", value.strip())))
+    if not ids or len(ids) > 50 or any(
+        not (_CVE.match(ident) or _ADVISORY.match(ident)) for ident in ids
+    ):
+        raise ValueError("Invalid requested patch identifiers")
+    available = set(item["advisory"] for item in requirements)
+    if len(ids) == 1 and _ADVISORY.match(ids[0]):
+        if available != set(ids):
+            raise ValueError("Fixed package metadata does not match requested RHSA")
+        return ids, {ids[0]: ids}, False
+    if any(not _CVE.match(ident) for ident in ids):
+        raise ValueError("Supply one RHSA or a list of CVEs")
+    mapping = options.get("advisory_map")
+    if not isinstance(mapping, dict) or set(mapping) != set(ids):
+        raise ValueError("Every CVE requires its live Satellite advisory mapping")
+    covered = set()
+    for ident, advisories in mapping.items():
+        if not isinstance(advisories, list) or not advisories or any(
+            not isinstance(a, STRING_TYPES) or not _ADVISORY.match(a)
+            or a not in available for a in advisories
+        ):
+            raise ValueError("Invalid or incomplete CVE advisory mapping")
+        covered.update(advisories)
+    if covered != available:
+        raise ValueError("CVE mapping does not match fixed package metadata")
+    return ids, mapping, True
+
+
 def verify(requirements, rpm_module=None, running_release=None, options=None):
     requirements = _validated(requirements)
     options = {} if options is None else options
     if not isinstance(options, dict):
         raise ValueError("Proof options must be a dictionary")
-    requested_id = options.get("requested_id")
-    if requested_id is not None:
-        if not isinstance(requested_id, STRING_TYPES) or not (
-            _CVE.match(requested_id) or _ADVISORY.match(requested_id)
-        ):
-            raise ValueError("Invalid requested patch identifier")
-        if _ADVISORY.match(requested_id) and set(
-            item["advisory"] for item in requirements
-        ) != set([requested_id]):
-            raise ValueError("Fixed package metadata does not match requested RHSA")
-    cve_mode = bool(requested_id and _CVE.match(requested_id))
+    requested_ids, advisory_map, cve_mode = _requests(options, requirements)
     if rpm_module is None:
         import rpm as rpm_module
     if running_release is None:
@@ -301,28 +327,40 @@ def verify(requirements, rpm_module=None, running_release=None, options=None):
         advisories[advisory] = {
             "verified": bool(advisory_records) and not advisory_mismatches,
             "not_applicable": not_applicable,
+            "affected_installed": affected_present,
             "affected_packages": advisory_records,
             "mismatches": advisory_mismatches,
         }
         records.extend(advisory_records)
         mismatches.extend(advisory_mismatches)
     applicable = [value for value in advisories.values() if not value["not_applicable"]]
-    if cve_mode and not applicable:
-        mismatches.append(
-            {
-                "requested_id": requested_id,
-                "reason": "no_affected_installed_packages_for_cve",
-            }
-        )
+    requested = {}
+    for ident in requested_ids:
+        covered = [advisories[a] for a in advisory_map[ident]]
+        active = [value for value in covered if value["affected_installed"]] if cve_mode else covered
+        requested[ident] = {
+            "advisories": advisory_map[ident],
+            "verified": bool(active) and all(value["verified"] for value in active),
+        }
+        if cve_mode and not active:
+            mismatches.append(
+                {
+                    "requested_id": ident,
+                    "reason": "no_affected_installed_packages_for_cve",
+                }
+            )
     affected_names = sorted(set(record["name"] for record in records))
     result = {
         "verified": bool(records)
         and bool(applicable)
-        and all(value["verified"] for value in applicable),
+        and all(value["verified"] for value in applicable)
+        and all(value["verified"] for value in requested.values()),
         "affected_packages": records,
         "affected_names": affected_names,
         "mismatches": mismatches,
         "advisories": advisories,
+        "requested": requested,
+        "requested_ids": requested_ids,
         "running_kernel_fixed": all(kernel_checks) if kernel_checks else None,
         "requires_kernel_reboot": any(kernel_reboots),
     }

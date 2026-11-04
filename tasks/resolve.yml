@@ -1,29 +1,27 @@
 ---
-- name: Validate the single requested ID
+- name: Validate the requested RHSA or CVE list
   ansible.builtin.set_fact:
-    sniper_id: "{{ sniper_patch_id | sniper_patch_id }}"
+    sniper_ids: "{{ sniper_patch_id | sniper_patch_ids }}"
+    sniper_id: "{{ sniper_patch_id | sniper_patch_ids | join(', ') }}"
 
-- name: Resolve the ID only within this Content View repository set
+- name: Resolve each input live within the selected Content View repositories
   redhat.satellite.resource_info:
     resource: errata
     organization: "{{ sniper_organization }}"
-    search: '{{ "errata_id = " ~ sniper_id if sniper_id.startswith("RHSA-") else omit }}'
-    params: '{{ {"repository_id": item.id} | combine({"cve": sniper_id} if sniper_id.startswith("CVE-") else {}) }}'
-  loop: "{{ sniper_repo_details }}"
+    search: '{{ "errata_id = " ~ item.1 if item.1.startswith("RHSA-") else omit }}'
+    params: '{{ {"repository_id": item.0.id} | combine({"cve": item.1} if item.1.startswith("CVE-") else {}) }}'
+  loop: "{{ sniper_repo_details | product(sniper_ids) | list }}"
   loop_control:
-    label: "{{ item.name }}"
+    label: "{{ item.1 }} in {{ item.0.name }}"
   register: sniper_errata_queries
 
-- name: Collect resolved advisories
+- name: Require a live security advisory resolution for every input
   ansible.builtin.set_fact:
-    sniper_errata: '{{ sniper_errata_queries.results | map(attribute="resources") | flatten | unique(attribute="errata_id") | list }}'
+    sniper_resolution: "{{ sniper_errata_queries.results | sniper_resolve_queries(sniper_ids) }}"
 
-- name: Require applicable security-advisory metadata
-  ansible.builtin.assert:
-    that:
-      - sniper_errata | length > 0
-      - sniper_errata | rejectattr('errata_id', 'match', '^RHSA-[0-9]{4}:[0-9]+$') | list | length == 0
-    fail_msg: The ID resolves to no RHSA in the selected repositories, or resolves outside supported security advisories.
+- name: Collect the deduplicated advisory union
+  ansible.builtin.set_fact:
+    sniper_errata: "{{ sniper_resolution.advisories }}"
 
 - name: Read complete advisory package metadata
   redhat.satellite.resource_info:
@@ -40,6 +38,10 @@
   ansible.builtin.set_fact:
     sniper_advisory_details: '{{ sniper_detail_queries.results | map(attribute="resources") | flatten }}'
     sniper_resolved_ids: '{{ sniper_errata | map(attribute="errata_id") | sort | list }}'
+
+- name: Confirm every requested CVE in complete live advisory metadata
+  ansible.builtin.set_fact:
+    sniper_advisory_map: "{{ sniper_resolution.by_input | sniper_validate_resolution(sniper_advisory_details) }}"
 
 - name: Build bounded exact package searches
   ansible.builtin.set_fact:

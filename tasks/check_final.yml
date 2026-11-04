@@ -32,6 +32,8 @@
   ansible.builtin.debug:
     msg:
       requested: '{{ hostvars["localhost"].sniper_id }}'
+      requested_ids: '{{ hostvars["localhost"].sniper_ids }}'
+      advisory_map: '{{ hostvars["localhost"].sniper_advisory_map }}'
       resolved_advisories: '{{ hostvars["localhost"].sniper_resolved_ids }}'
       environment: "{{ sniper_environment }}"
       proof: "{{ sniper_proof }}"

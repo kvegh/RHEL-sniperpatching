@@ -17,6 +17,84 @@ def sniper_patch_id(value):
     return value
 
 
+def sniper_patch_ids(value):
+    """Survey text: one RHSA or up to fifty CVEs; no expressions."""
+    if not isinstance(value, str) or len(value) > 4096:
+        raise ValueError("Enter one RHSA or up to 50 CVEs as survey text")
+    ids = sorted({sniper_patch_id(item) for item in re.split(r"[\s,]+", value.strip())})
+    if len(ids) > 50 or (len(ids) > 1 and any(not x.startswith("CVE-") for x in ids)):
+        raise ValueError("Enter one RHSA or up to 50 CVEs; do not mix RHSA and CVE IDs")
+    return ids
+
+
+def sniper_resolve_queries(queries, requested_ids):
+    """Retain the live per-input resolution, refusing any unresolved input."""
+    requested_ids = sniper_patch_ids(" ".join(requested_ids))
+    mapping = {ident: set() for ident in requested_ids}
+    advisories = {}
+    if not isinstance(queries, list):
+        raise ValueError("Expected live Satellite query results")
+    for query in queries:
+        pair = query.get("item") if isinstance(query, dict) else None
+        rows = query.get("resources") if isinstance(query, dict) else None
+        if not isinstance(pair, (list, tuple)) or len(pair) != 2 or pair[1] not in mapping:
+            raise ValueError("Satellite query result lacks its requested ID")
+        if not isinstance(rows, list):
+            raise ValueError("Satellite query result lacks advisory resources")
+        requested = pair[1]
+        for row in rows:
+            if not isinstance(row, dict):
+                raise ValueError("Invalid Satellite advisory result")
+            advisory = sniper_patch_id(row.get("errata_id"))
+            if not advisory.startswith("RHSA-"):
+                raise ValueError("Requested ID resolved outside security advisories")
+            if requested.startswith("RHSA-") and advisory != requested:
+                raise ValueError("Satellite returned a different RHSA than requested")
+            mapping[requested].add(advisory)
+            advisories[advisory] = row
+    unresolved = [ident for ident, values in mapping.items() if not values]
+    if unresolved:
+        raise ValueError("No RHSA in the selected repositories for: " + ", ".join(unresolved))
+    return {
+        "by_input": {ident: sorted(values) for ident, values in mapping.items()},
+        "advisories": [advisories[ident] for ident in sorted(advisories)],
+    }
+
+
+def sniper_validate_resolution(mapping, details):
+    """Confirm live CVE membership from complete Satellite advisory details."""
+    if not isinstance(mapping, dict) or not isinstance(details, list):
+        raise ValueError("Expected live per-ID resolution and advisory details")
+    ids = sniper_patch_ids(" ".join(mapping))
+    by_id = {}
+    for detail in details:
+        ident = sniper_patch_id(detail.get("errata_id"))
+        if not ident.startswith("RHSA-"):
+            raise ValueError("Resolved detail is not an RHSA")
+        by_id[ident] = detail
+    result = {}
+    for requested in ids:
+        values = mapping[requested]
+        if not isinstance(values, list) or not values or any(x not in by_id for x in values):
+            raise ValueError("Incomplete Satellite advisory resolution")
+        if requested.startswith("RHSA-"):
+            if values != [requested]:
+                raise ValueError("RHSA resolution must identify that exact advisory")
+        else:
+            for advisory in values:
+                cves = by_id[advisory].get("cves")
+                if not isinstance(cves, list) or requested not in {
+                    row.get("cve_id") for row in cves if isinstance(row, dict)
+                }:
+                    raise ValueError(
+                        "Satellite advisory details do not confirm " + requested + " in " + advisory
+                    )
+        result[requested] = sorted(set(values))
+    if {value for values in result.values() for value in values} != set(by_id):
+        raise ValueError("Advisory details do not match the requested resolution")
+    return result
+
+
 def _text(value, pattern, label):
     if not isinstance(value, str) or len(value) > 512 or not pattern.fullmatch(value):
         raise ValueError("Invalid RPM " + label)
@@ -217,6 +295,9 @@ class FilterModule:
     def filters(self):
         return {
             "sniper_patch_id": sniper_patch_id,
+            "sniper_patch_ids": sniper_patch_ids,
+            "sniper_resolve_queries": sniper_resolve_queries,
+            "sniper_validate_resolution": sniper_validate_resolution,
             "sniper_package_requirements": sniper_package_requirements,
             "sniper_package_searches": sniper_package_searches,
             "sniper_package_delta": sniper_package_delta,

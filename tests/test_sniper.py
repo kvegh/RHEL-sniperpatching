@@ -289,7 +289,7 @@ class ProofTests(unittest.TestCase):
         r, _ = self.check(
             [fixed(), fixed("other", advisory=OTHER)],
             [installed()],
-            options={"requested_id": CVE},
+            options={"requested_id": CVE, "advisory_map": {CVE: [ADVISORY, OTHER]}},
         )
         self.assertTrue(r["verified"])
         self.assertTrue(r["advisories"][OTHER]["not_applicable"])
@@ -297,7 +297,7 @@ class ProofTests(unittest.TestCase):
 
     def test_cve_all_absent_fails(self):
         r, _ = self.check(
-            [fixed(), fixed("other", advisory=OTHER)], [], options={"requested_id": CVE}
+            [fixed(), fixed("other", advisory=OTHER)], [], options={"requested_id": CVE, "advisory_map": {CVE: [ADVISORY, OTHER]}}
         )
         self.assertFalse(r["verified"])
         self.assertTrue(all(x["not_applicable"] for x in r["advisories"].values()))
@@ -306,7 +306,7 @@ class ProofTests(unittest.TestCase):
         r, _ = self.check(
             [fixed(), fixed("other", advisory=OTHER)],
             [installed(), installed("other", version="1.0")],
-            options={"requested_id": CVE},
+            options={"requested_id": CVE, "advisory_map": {CVE: [ADVISORY, OTHER]}},
         )
         self.assertFalse(r["verified"])
         self.assertFalse(r["advisories"][OTHER]["verified"])
