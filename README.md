@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-Version **0.1.2**. Independently launched Ansible stages for demonstrating a
+Version **0.2.0**. Independently launched Ansible stages for demonstrating a
 single CVE/RHSA update followed by a full repository update, using Red Hat
 Satellite and AAP. This project is a submodule of
 [AAP Advanced Features](https://github.com/kvegh/AAP-advanced-features).
@@ -9,6 +9,7 @@ Satellite and AAP. This project is a submodule of
 
 | Entry point | Result |
 |---|---|
+| `check_runtime.yml` | Read-only diagnostic of the selected existing EE: reports installed Ansible/Python/Satellite collection versions, parses all six stages, and queries Satellite organizations with verified HTTPS. No dependency installation or host contact. |
 | `prepare_demo.yml` | Creates a dedicated Content View and `Library -> RHEL-sniperpatching_Test -> RHEL-sniperpatching_Prod` path, publishes the initial baseline to both stages, then moves only the explicitly supplied test/prod host pair. No host patching. |
 | `create_minor_update.yml` | Resolves one CVE/RHSA in the selected repositories. In Test, creates a real incremental minor from the serving baseline, validates the content delta, and promotes it to Test. In Prod, validates and promotes the exact Test minor. No host patching. |
 | `patch_hosts.yml` | Patches only the selected host, checks whether reboot is necessary, reboots and reconnects as needed, proves the fix from installed RPM versions and the running kernel, then runs smoke tests. Supports targeted and full update scopes. |
@@ -164,6 +165,14 @@ there is no claim of application-level functional coverage.
 
 ## Execution requirements and validation
 
+Run `check_runtime.yml` with the existing Satellite credential and candidate EE
+before preparation. It needs no demonstration host pair, organization selection,
+patch ID or SSH credential. It reports missing required modules and individual
+stage syntax errors before requiring a successful read-only collection query.
+It never executes the six demonstration stages. An installed collection version
+and successful read access establish runtime evidence; a successful diagnostic
+does not prove live publication, host reassignment or package changes.
+
 - Use an execution environment with `ansible-core` 2.16 and the declared
   `redhat.satellite` 6.0.0 collection plus its existing Python requirements.
   For RHEL 7 targets, retain an Ansible version supporting their Python.
@@ -187,6 +196,7 @@ official collection; it does not install dependencies or execute remote jobs:
 
 ```bash
 python3.12 -B -m unittest discover -s tests -v
+ansible-playbook --syntax-check check_runtime.yml
 ansible-playbook --syntax-check prepare_demo.yml
 ansible-playbook --syntax-check create_minor_update.yml
 ansible-playbook --syntax-check patch_hosts.yml

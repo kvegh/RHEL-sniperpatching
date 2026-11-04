@@ -1,0 +1,23 @@
+---
+- name: Require protected HTTPS Satellite connection inputs
+  ansible.builtin.assert:
+    that:
+      - sniper_server_url is match('^https://[^/@?#]+/?$')
+      - sniper_username | length > 0
+      - sniper_password | length > 0
+    fail_msg: Supply protected SATELLITE_* connection inputs with verified HTTPS.
+  no_log: true
+
+- name: Read organizations without changing Satellite or contacting managed hosts
+  redhat.satellite.resource_info:
+    server_url: "{{ sniper_server_url }}"
+    username: "{{ sniper_username }}"
+    password: "{{ sniper_password }}"
+    validate_certs: true
+    resource: organizations
+  register: sniper_runtime_organizations
+  no_log: true
+
+- name: Report successful read-only Satellite access
+  ansible.builtin.debug:
+    msg: "Satellite collection returned {{ sniper_runtime_organizations.resources | length }} organization(s). No managed hosts were contacted."
