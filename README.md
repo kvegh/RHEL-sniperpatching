@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-Version **0.5.3**. Independently launched Ansible stages for demonstrating a
+Version **0.5.4**. Independently launched Ansible stages for demonstrating a
 CVE-list or single-RHSA update followed by a cutoff or latest repository update, using Red Hat
 Satellite and AAP. This project is a submodule of
 [AAP Advanced Features](https://github.com/kvegh/AAP-advanced-features).
@@ -305,8 +305,9 @@ does not prove live publication, host reassignment or package changes.
   or dependency installation was needed. The manifest now declares 3.14.0 to
   match that verified runtime. For RHEL 7 targets, retain an Ansible version
   supporting their Python. This is a deliberate trial of the existing runtime;
-  collection 3.14.0 was released in September 2023. Publication and host patching
-  have not yet been run, and read access alone does not establish vendor support.
+  collection 3.14.0 was released in September 2023. Baseline and single-advisory minor publication
+  have since succeeded. Host completion and CaC deployment remain separate
+  acceptance steps; read access alone does not establish vendor support.
   The older filter module uses `filter_state`, which these playbooks now supply;
   the diagnostic also checks argument names against the installed module docs.
 - Target hosts need working subscription-manager, yum/dnf, native Python RPM
@@ -330,6 +331,11 @@ does not prove live publication, host reassignment or package changes.
   password sources remain outside Git. Capturing configuration does not run
   application jobs or establish restore/deployment success.
   No license has been selected for this project.
+
+RPM inventory deltas preserve signing-key database records with their native
+missing architecture; software and advisory metadata still require a valid
+package architecture. A reporting retry verifies an already installed fix
+before deciding whether another targeted package command is needed.
 
 Local validation uses the available tools and a checkout of the official 3.14.0
 collection source; it does not install dependencies or execute remote jobs:

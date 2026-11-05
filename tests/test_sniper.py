@@ -192,6 +192,32 @@ class MetadataTests(unittest.TestCase):
             filters.sniper_package_delta(["not-a-valid-snapshot"], [])
 
 
+class SigningKeyInventoryTests(unittest.TestCase):
+    def test_signing_key_records_do_not_block_real_software_delta(self):
+        key = "gpg-pubkey|0|1234abcd|5678abcd|(none)"
+        before = [key, "demo|0|1.0|1.el7|x86_64"]
+        after = [key, "demo|0|2.0|1.el7|x86_64"]
+        self.assertEqual(filters.sniper_package_delta(before, after), ["demo"])
+
+    def test_signing_key_identity_changes_remain_visible(self):
+        before = ["gpg-pubkey|0|1234abcd|5678abcd|(none)"]
+        after = ["gpg-pubkey|0|abcd1234|abcd5678|(none)"]
+        self.assertEqual(filters.sniper_package_delta(before, after), ["gpg-pubkey"])
+
+    def test_missing_architecture_is_not_accepted_for_other_records_or_advisories(self):
+        for row in ("demo|0|1.0|1.el7|(none)",
+                    "gpg-pubkey|1|1234abcd|5678abcd|(none)",
+                    "gpg-pubkey|0|not-a-key|5678abcd|(none)",
+                    "gpg-pubkey|0|1234abcd|not-a-time|(none)"):
+            with self.subTest(row=row), self.assertRaises(ValueError):
+                filters.sniper_package_delta([row], [])
+        with self.assertRaises(ValueError):
+            filters.sniper_package_requirements([{
+                "errata_id": ADVISORY,
+                "packages": [{"name": "gpg-pubkey", "epoch": "0",
+                              "version": "1234abcd", "release": "5678abcd", "arch": "(none)"}]}])
+
+
 class ProofTests(unittest.TestCase):
     def check(
         self, requirements, packages, running="3.10.0-2.el7.x86_64", options=None

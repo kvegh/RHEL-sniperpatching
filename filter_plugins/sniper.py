@@ -274,9 +274,17 @@ def _inventory(value):
             raise ValueError(
                 "RPM inventory must contain NAME|EPOCHNUM|VERSION|RELEASE|ARCH"
             )
-        package = _package(
-            dict(zip(("name", "epoch", "version", "release", "arch"), fields))
-        )
+        raw = dict(zip(("name", "epoch", "version", "release", "arch"), fields))
+        if raw["name"] == "gpg-pubkey" and raw["arch"] == "(none)":
+            # RPM stores imported signing keys as database records without an
+            # architecture. Keep their real identity in inventory deltas only.
+            if (raw["epoch"] not in ("0", "(none)")
+                    or any(not re.fullmatch(r"[0-9a-fA-F]{8}", raw[key])
+                           for key in ("version", "release"))):
+                raise ValueError("Invalid RPM signing-key database record")
+            package = dict(raw, epoch="0")
+        else:
+            package = _package(raw)
         result.setdefault(package["name"], set()).add(
             tuple(package[k] for k in ("epoch", "version", "release", "arch"))
         )
