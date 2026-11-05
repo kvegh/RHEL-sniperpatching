@@ -320,3 +320,12 @@ The user requested a public repository named `RHEL-sniperpatching` and its
 addition to the AAP Advanced Features collection as a Git submodule. The
 initial README establishes the project and provides a commit for the parent
 repository to reference. Patching scope and implementation remain undecided.
+
+## 2026-11-05 — Deliver the lean end-to-end demo
+
+Implementation `2be30c742f946b6f9c1ad93a9b7efbe14e230953` removes the artificial
+upgrade witness and duplicate middle RPM proof, narrows host advisory reads, and
+shortens the run/reset guide. Observed-failure protections remain. One complete
+RHSA then cutoff full-update cycle passed on Test and Prod, including exact
+version promotion and final verification; unchanged full runs passed only after
+the package manager confirmed no pending updates.

@@ -66,6 +66,8 @@ Enter `sniper_update_end_date` explicitly. After RHSA-2023:6823 (November 8), us
 
 Patch host already performs final fix and smoke checks. Use **Check** for a separate read-only confirmation when needed.
 
+One live cycle has passed for RHSA-2023:6823 followed by the 2023-11-10 cutoff: Test and Prod completed both targeted and full stages, exact-version promotion and the final check. Both full stages correctly reported `already_current`; no additional packages were available in that interval.
+
 Production starts only when explicitly launched. Keep the same selected fix throughout a cycle. Use the reported version rather than assuming a version number; failed publication candidates can remain retained.
 
 ## Expected result and repeat runs
