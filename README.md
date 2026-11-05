@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-Version **0.5.5**. Independently launched Ansible stages for demonstrating a
+Version **0.5.6**. Independently launched Ansible stages for demonstrating a
 CVE-list or single-RHSA update followed by a cutoff or latest repository update, using Red Hat
 Satellite and AAP. This project is a submodule of
 [AAP Advanced Features](https://github.com/kvegh/AAP-advanced-features).
@@ -336,6 +336,9 @@ RPM inventory deltas preserve signing-key database records with their native
 missing architecture; software and advisory metadata still require a valid
 package architecture. A reporting retry verifies an already installed fix
 before deciding whether another targeted package command is needed.
+
+Candidate advisory inspection retries a transient read failure before promotion.
+Publishing and promotion actions are not retried by that read control.
 
 Local validation uses the available tools and a checkout of the official 3.14.0
 collection source; it does not install dependencies or execute remote jobs:

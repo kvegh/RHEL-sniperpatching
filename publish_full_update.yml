@@ -131,6 +131,9 @@
         params:
           content_view_version_id: "{{ sniper_full_candidate.id }}"
       register: sniper_full_after
+      retries: 2
+      delay: 2
+      until: sniper_full_after is succeeded
 
     - name: Require preservation of all currently serving advisories
       ansible.builtin.assert:

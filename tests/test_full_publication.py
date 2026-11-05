@@ -70,6 +70,10 @@ if name == "resource_info":
     elif resource == "content_view_filters":
         rows = [{"name": "RHEL-sniperpatching_baseline_cutoff"}]
     elif resource == "errata":
+        if int(params["content_view_version_id"]) != 40 and s["candidate_read_failures"] > 0:
+            s["candidate_read_failures"] -= 1
+            path.write_text(json.dumps(s))
+            m.fail_json(changed=False, msg="JSONDecodeError: Unterminated string in synthetic advisory response")
         if int(params["content_view_version_id"]) == 40:
             rows = [first]
         elif s["lost"]:
@@ -117,7 +121,8 @@ class CutoffValidation(unittest.TestCase):
 
 
 class FullPublicationPlaybook(unittest.TestCase):
-    def run_publication(self, cutoff="2025-04-01", contaminated=False, lost=False):
+    def run_publication(self, cutoff="2025-04-01", contaminated=False, lost=False,
+                        candidate_read_failures=0):
         with tempfile.TemporaryDirectory(prefix="sniper-full-test-") as directory:
             base = Path(directory)
             coll = base / "collections/ansible_collections/redhat/satellite"
@@ -130,7 +135,8 @@ class FullPublicationPlaybook(unittest.TestCase):
                 (coll / ("plugins/modules/" + name + ".py")).write_text(
                     MODULE.replace("__MODULE__", repr(name)))
             state = {"calls": [], "promoted": False, "candidate": None,
-                     "cutoff": "2025-02-28", "contaminated": contaminated, "lost": lost}
+                     "cutoff": "2025-02-28", "contaminated": contaminated, "lost": lost,
+                     "candidate_read_failures": candidate_read_failures}
             state_path = base / "state.json"
             state_path.write_text(json.dumps(state))
             variables = {
@@ -171,6 +177,32 @@ class FullPublicationPlaybook(unittest.TestCase):
         self.assertEqual(len(originals), 1)
         self.assertTrue(originals[0]["original_packages"])
         self.assertEqual(originals[0]["rule_state"], "absent")
+
+    def test_candidate_read_retries_are_bounded_and_never_repeat_publication(self):
+        for failures in (2, 3):
+            with self.subTest(candidate_read_failures=failures):
+                result, state = self.run_publication(candidate_read_failures=failures)
+                calls = state["calls"]
+                reads = [i for i, c in enumerate(calls)
+                         if c["resource"] == "errata"
+                         and str(c["params"].get("content_view_version_id")) == "41"]
+                publications = [c for c in calls if c["module"] == "content_view_version"
+                                and c["version"] is None]
+                promotions = [i for i, c in enumerate(calls)
+                              if c["module"] == "content_view_version" and c["version"] == "2.0"]
+                self.assertEqual(len(reads), 3)
+                self.assertEqual(len(publications), 1)
+                self.assertEqual(len([c for c in calls if c["module"] == "repository_sync"]), 1)
+                self.assertIsNotNone(state["candidate"])
+                if failures == 2:
+                    self.assertEqual(result.returncode, 0, (result.stdout + result.stderr)[-7000:])
+                    self.assertTrue(state["promoted"])
+                    self.assertEqual(len(promotions), 1)
+                    self.assertLess(reads[-1], promotions[0])
+                else:
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertFalse(state["promoted"])
+                    self.assertEqual(promotions, [])
 
     def test_content_after_cutoff_stays_in_library(self):
         result, state = self.run_publication(contaminated=True)
