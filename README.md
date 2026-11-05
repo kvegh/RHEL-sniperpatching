@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-Version **0.5.2**. Independently launched Ansible stages for demonstrating a
+Version **0.5.3**. Independently launched Ansible stages for demonstrating a
 CVE-list or single-RHSA update followed by a cutoff or latest repository update, using Red Hat
 Satellite and AAP. This project is a submodule of
 [AAP Advanced Features](https://github.com/kvegh/AAP-advanced-features).
@@ -223,8 +223,15 @@ Incremental creation is submitted once, with host patching and automatic
 promotion omitted. The playbook waits for Satellite task success, identifies
 one new minor from the exact baseline, checks that all baseline RPMs and errata
 remain, and rejects advisory additions outside the requested resolved set.
-Satellite resolves required package dependencies; the new version stays in
-Library if content validation fails. Production reuses the exact Test minor and
+Satellite resolves required package dependencies; failed content validation
+leaves the candidate unpromoted. A validated Test candidate first enters
+Library, then Test through the normal
+lifecycle sequence. A retry can reuse at most one matching orphan or
+Library-only minor with the exact request description and baseline lineage.
+It rechecks actual package/advisory preservation before promotion. Ambiguous
+or unrelated newer version history, exposed candidates and unrelated Library
+content stop the retry before another incremental request or promotion.
+Production reuses the exact Test minor and
 validates its delta against the production baseline. If Test and Prod have
 diverged in unrelated content, promotion is refused; no lifecycle force option
 is used. Inspect Satellite before retrying a timed-out POST, because the server

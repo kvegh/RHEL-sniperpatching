@@ -177,6 +177,70 @@ def update_cutoff(cutoff, baseline_errata):
     return canonical
 
 
+def _minor_identity(row, content_view_id):
+    if not isinstance(row, dict) or row.get("content_view_id") != content_view_id:
+        raise AnsibleFilterError("Minor history contains a foreign Content View version")
+    if (any(type(row.get(key)) is not int or row[key] < 0
+            for key in ("id", "major", "minor")) or row["id"] == 0):
+        raise AnsibleFilterError("Minor history has invalid version identifiers")
+    if row.get("version") != "%s.%s" % (row["major"], row["minor"]):
+        raise AnsibleFilterError("Minor history has inconsistent version numbers")
+    environments = row.get("environments")
+    if (not isinstance(environments, list)
+            or any(not isinstance(env, dict) or type(env.get("id")) is not int
+                   or env["id"] <= 0 for env in environments)):
+        raise AnsibleFilterError("Minor history has incomplete environment metadata")
+    ids = [env["id"] for env in environments]
+    if len(ids) != len(set(ids)):
+        raise AnsibleFilterError("Minor history has duplicate environment metadata")
+    return row["id"], row["major"], row["minor"], set(ids)
+
+
+def minor_library_safe(rows, baseline, candidate, content_view_id):
+    if (not isinstance(rows, list) or len(rows) != 1
+            or not isinstance(candidate, dict)):
+        raise AnsibleFilterError("Require one current Library version before changing content")
+    base_id = _minor_identity(baseline, content_view_id)[0]
+    allowed = {base_id}
+    if candidate:
+        allowed.add(_minor_identity(candidate, content_view_id)[0])
+    if _minor_identity(rows[0], content_view_id)[0] not in allowed:
+        raise AnsibleFilterError("Library contains unrelated content; refusing to replace it")
+    return True
+
+
+def minor_candidate(versions, baseline, content_view_id, description,
+                    library_id, library_versions):
+    if (not isinstance(versions, list) or type(content_view_id) is not int
+            or content_view_id <= 0 or type(library_id) is not int
+            or library_id <= 0 or not isinstance(description, str) or not description):
+        raise AnsibleFilterError("Require explicit minor provenance and Library identity")
+    base_id, major, minor, _ = _minor_identity(baseline, content_view_id)
+    candidates = []
+    seen = set()
+    for version in versions:
+        ident, version_major, version_minor, environments = _minor_identity(version, content_view_id)
+        if ident in seen:
+            raise AnsibleFilterError("Minor history has duplicate version identifiers")
+        seen.add(ident)
+        if ident == base_id:
+            if (version_major, version_minor) != (major, minor):
+                raise AnsibleFilterError("The serving baseline changed while planning a minor")
+            continue
+        if version.get("description") == description:
+            if (version_major != major or version_minor <= minor
+                    or not environments.issubset({library_id})):
+                raise AnsibleFilterError("Refusing a candidate with foreign lineage or consumer environments")
+            candidates.append(version)
+        elif (version_major, version_minor) > (major, minor):
+            raise AnsibleFilterError("Refusing unrelated newer minor history; inspect it before retrying")
+    if base_id not in seen or len(candidates) > 1:
+        raise AnsibleFilterError("Require the serving baseline and at most one recoverable minor")
+    candidate = candidates[0] if candidates else {}
+    minor_library_safe(library_versions, baseline, candidate, content_view_id)
+    return candidate
+
+
 class FilterModule:
     def filters(self):
         return {
@@ -190,4 +254,6 @@ class FilterModule:
             "sniper_baseline_plan": baseline_plan,
             "sniper_update_cutoff": update_cutoff,
             "sniper_verify_cutoff": verify_cutoff,
+            "sniper_minor_candidate": minor_candidate,
+            "sniper_minor_library_safe": minor_library_safe,
         }

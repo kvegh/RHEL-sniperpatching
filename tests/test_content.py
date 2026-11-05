@@ -91,8 +91,15 @@ class ContentBoundaries(unittest.TestCase):
         creation = next(
             x["block"] for x in block if x.get("when") == "sniper_environment == 'test'"
         )
+        def nested_tasks(rows):
+            for task in rows:
+                yield task
+                for key in ("block", "rescue", "always"):
+                    yield from nested_tasks(task.get(key, []))
+
         request = next(
-            x["ansible.builtin.uri"] for x in creation if "ansible.builtin.uri" in x
+            task["ansible.builtin.uri"] for task in nested_tasks(creation)
+            if "ansible.builtin.uri" in task
         )
         self.assertNotIn("update_hosts", request["body"])
         self.assertEqual(

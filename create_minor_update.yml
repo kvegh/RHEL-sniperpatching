@@ -42,66 +42,112 @@
         - name: Create the minor in Test only
           when: sniper_environment == 'test'
           block:
+            - name: Find Library in this organization
+              redhat.satellite.resource_info:
+                resource: lifecycle_environments
+                organization: "{{ sniper_organization }}"
+                search: 'name = "Library"'
+                full_details: true
+              register: sniper_minor_library_query
+            - name: Record the normal predecessor of Test
+              ansible.builtin.set_fact:
+                sniper_minor_library: "{{ sniper_minor_library_query.resources | sniper_one('Library environment') }}"
+            - name: Require the normal Library to Test path
+              ansible.builtin.assert:
+                that:
+                  - sniper_minor_library.library | bool
+                  - sniper_env.prior.id | int == sniper_minor_library.id | int
             - name: Snapshot existing version IDs
               redhat.satellite.resource_info:
                 resource: content_view_versions
+                full_details: true
                 params:
                   content_view_id: "{{ sniper_cv.id }}"
               register: sniper_before_versions
-            - name: Request a genuine incremental update without promotion or host patching
-              ansible.builtin.uri:
-                url: '{{ sniper_server_url | regex_replace("/$", "") }}/katello/api/content_view_versions/incremental_update'
-                method: POST
-                url_username: "{{ sniper_username }}"
-                url_password: "{{ sniper_password }}"
-                force_basic_auth: true
-                use_netrc: false
-                follow_redirects: none
-                validate_certs: true
-                body_format: json
-                body:
-                  content_view_version_environments:
-                    - content_view_version_id: "{{ sniper_baseline.id }}"
-                      environment_ids: []
-                  add_content:
-                    errata_ids: "{{ sniper_missing_errata }}"
-                  resolve_dependencies: true
-                  propagate_all_composites: false
-                  description: >-
-                    {{ sniper_namespace }} requested {{ sniper_id if sniper_ids | length == 1
-                       else (sniper_ids | length | string) ~ ' CVEs' }} from {{ sniper_baseline.version }}
-                status_code:
-                  - 200
-                  - 202
-                timeout: 60
-              register: sniper_incremental_request
-              changed_when: true
-              no_log: true
-            - name: Wait for each returned Satellite task
-              redhat.satellite.wait_for_task:
-                task: "{{ item }}"
-                timeout: "{{ sniper_task_timeout }}"
-              loop: "{{ sniper_incremental_request.json | sniper_task_ids }}"
-              register: sniper_completed_tasks
-            - name: Require successful asynchronous completion
-              ansible.builtin.assert:
-                that:
-                  - item.task.state == 'stopped'
-                  - item.task.result == 'success'
-              loop: "{{ sniper_completed_tasks.results }}"
-              loop_control:
-                label: "{{ item.item }}"
-            - name: Find the new version
+            - name: Use the complete immutable serving baseline metadata
+              ansible.builtin.set_fact:
+                sniper_baseline: >-
+                  {{ sniper_before_versions.resources | selectattr('id', 'equalto', sniper_baseline.id)
+                     | list | sniper_one('serving baseline in version history') }}
+            - name: Record the exact minor provenance
+              ansible.builtin.set_fact:
+                sniper_minor_description: >-
+                  {{ sniper_namespace }} requested {{ sniper_id if sniper_ids | length == 1
+                     else (sniper_ids | length | string) ~ ' CVEs' }} from {{ sniper_baseline.version }}
+            - name: Read the current Library version before any mutation
               redhat.satellite.resource_info:
                 resource: content_view_versions
+                full_details: true
                 params:
                   content_view_id: "{{ sniper_cv.id }}"
-              register: sniper_after_versions
-            - name: Require exactly one new minor version derived from this baseline
+                  environment_id: "{{ sniper_minor_library.id }}"
+              register: sniper_minor_library_before
+            - name: Select at most one recoverable owned minor and guard Library
               ansible.builtin.set_fact:
-                sniper_new_version: '{{ sniper_after_versions.resources | rejectattr("id", "in", sniper_before_versions.resources
-                  | map(attribute="id") | list) |
-                  list | sniper_one("new minor version") }}'
+                sniper_recovered_minor: >-
+                  {{ sniper_before_versions.resources | sniper_minor_candidate(
+                       sniper_baseline, sniper_cv.id, sniper_minor_description,
+                       sniper_minor_library.id, sniper_minor_library_before.resources) }}
+            - name: Reuse the recoverable minor without another incremental request
+              ansible.builtin.set_fact:
+                sniper_new_version: "{{ sniper_recovered_minor }}"
+              when: sniper_recovered_minor | length > 0
+            - name: Create one minor only when no recoverable version exists
+              when: sniper_recovered_minor | length == 0
+              block:
+                - name: Request a genuine incremental update without promotion or host patching
+                  ansible.builtin.uri:
+                    url: '{{ sniper_server_url | regex_replace("/$", "") }}/katello/api/content_view_versions/incremental_update'
+                    method: POST
+                    url_username: "{{ sniper_username }}"
+                    url_password: "{{ sniper_password }}"
+                    force_basic_auth: true
+                    use_netrc: false
+                    follow_redirects: none
+                    validate_certs: true
+                    body_format: json
+                    body:
+                      content_view_version_environments:
+                        - content_view_version_id: "{{ sniper_baseline.id }}"
+                          environment_ids: []
+                      add_content:
+                        errata_ids: "{{ sniper_missing_errata }}"
+                      resolve_dependencies: true
+                      propagate_all_composites: false
+                      description: "{{ sniper_minor_description }}"
+                    status_code:
+                      - 200
+                      - 202
+                    timeout: 60
+                  register: sniper_incremental_request
+                  changed_when: true
+                  no_log: true
+                - name: Wait for each returned Satellite task
+                  redhat.satellite.wait_for_task:
+                    task: "{{ item }}"
+                    timeout: "{{ sniper_task_timeout }}"
+                  loop: "{{ sniper_incremental_request.json | sniper_task_ids if sniper_recovered_minor | length == 0 else [] }}"
+                  register: sniper_completed_tasks
+                - name: Require successful asynchronous completion
+                  ansible.builtin.assert:
+                    that:
+                      - item.task.state == 'stopped'
+                      - item.task.result == 'success'
+                  loop: "{{ sniper_completed_tasks.results if sniper_recovered_minor | length == 0 else [] }}"
+                  loop_control:
+                    label: "{{ item.item }}"
+                - name: Find the new version
+                  redhat.satellite.resource_info:
+                    resource: content_view_versions
+                    full_details: true
+                    params:
+                      content_view_id: "{{ sniper_cv.id }}"
+                  register: sniper_after_versions
+                - name: Require exactly one new minor version derived from this baseline
+                  ansible.builtin.set_fact:
+                    sniper_new_version: '{{ sniper_after_versions.resources | rejectattr("id", "in", sniper_before_versions.resources
+                      | map(attribute="id") | list) |
+                      list | sniper_one("new minor version") }}'
         - name: Reuse the tested minor for production
           when: sniper_environment == 'prod'
           block:
@@ -127,6 +173,7 @@
         - name: Verify the minor version lineage
           ansible.builtin.assert:
             that:
+              - sniper_new_version.content_view_id | int == sniper_cv.id | int
               - sniper_new_version.major | int == sniper_baseline.major | int
               - sniper_new_version.minor | int > sniper_baseline.minor | int
         - name: Inspect the generated advisories and RPMs
@@ -147,12 +194,50 @@
               - sniper_after_content.results[0].resources | map(attribute='errata_id') | difference(sniper_before_errata) | difference(sniper_resolved_ids) |
                 length == 0
             fail_msg: The generated version has an unexpected content delta. It remains unpromoted; inspect it in Satellite.
+        - name: Stage the validated Test minor through Library without force
+          when: sniper_environment == 'test'
+          block:
+            - name: Recheck Library after validating actual candidate content
+              redhat.satellite.resource_info:
+                resource: content_view_versions
+                full_details: true
+                params:
+                  content_view_id: "{{ sniper_cv.id }}"
+                  environment_id: "{{ sniper_minor_library.id }}"
+              register: sniper_minor_library_now
+            - name: Refuse changed Library content or an already exposed candidate
+              ansible.builtin.assert:
+                that:
+                  - sniper_new_version.description == sniper_minor_description
+                  - sniper_new_version.environments | map(attribute='id') | difference([sniper_minor_library.id]) | length == 0
+                  - sniper_minor_library_now.resources | sniper_minor_library_safe(sniper_baseline, sniper_new_version, sniper_cv.id)
+            - name: Stage only the validated minor in Library
+              redhat.satellite.content_view_version:
+                organization: "{{ sniper_organization }}"
+                content_view: "{{ sniper_content_view }}"
+                version: "{{ sniper_new_version.version }}"
+                lifecycle_environments: [Library]
+                force_promote: false
+            - name: Read back the exact Library version before Test promotion
+              redhat.satellite.resource_info:
+                resource: content_view_versions
+                full_details: true
+                params:
+                  content_view_id: "{{ sniper_cv.id }}"
+                  environment_id: "{{ sniper_minor_library.id }}"
+              register: sniper_minor_library_ready
+            - name: Require the validated minor to be the current Library version
+              ansible.builtin.assert:
+                that:
+                  - (sniper_minor_library_ready.resources | sniper_one('staged Library version')).id | int == sniper_new_version.id | int
+                  - (sniper_minor_library_ready.resources | sniper_one).content_view_id | int == sniper_cv.id | int
         - name: Promote only the validated minor version to the selected environment
           redhat.satellite.content_view_version:
             organization: "{{ sniper_organization }}"
             content_view: "{{ sniper_content_view }}"
             version: "{{ sniper_new_version.version }}"
             lifecycle_environments: "{{ [sniper_environment_name] }}"
+            force_promote: false
     - name: Report the selected version and resolved fix
       ansible.builtin.debug:
         msg:
