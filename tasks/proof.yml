@@ -5,11 +5,6 @@
       requested_id: '{{ hostvars["localhost"].sniper_id }}'
       advisory_map: '{{ hostvars["localhost"].sniper_advisory_map }}'
 
-- name: Include the independent full-upgrade witness when a before snapshot exists
-  ansible.builtin.set_fact:
-    sniper_proof_options: '{{ sniper_proof_options | combine({"name": sniper_upgrade_witness, "before": sniper_packages_before.stdout_lines}) }}'
-  when: sniper_patch_scope == 'full' and sniper_packages_before is defined
-
 - name: Compare installed RPM versions and the running kernel against advisory metadata
   ansible.builtin.command:
     argv:

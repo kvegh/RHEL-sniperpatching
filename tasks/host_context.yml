@@ -8,13 +8,17 @@
 - name: Inspect advisories available in the serving Content View version
   redhat.satellite.resource_info:
     resource: errata
+    search: 'errata_id = "{{ item }}"'
     params:
       content_view_version_id: "{{ sniper_baseline.id }}"
+  loop: "{{ sniper_resolved_ids }}"
   register: sniper_installable_advisories
 
 - name: Require the requested fix to be available from the serving content
   ansible.builtin.assert:
-    that: sniper_resolved_ids | difference(sniper_installable_advisories.resources | map(attribute='errata_id') | list) | length == 0
+    that: >-
+      sniper_resolved_ids | difference(sniper_installable_advisories.results
+      | map(attribute='resources') | flatten | map(attribute='errata_id') | list) | length == 0
     fail_msg: Run the minor content update before patching or checking this environment.
 
 - name: Read the selected existing Satellite host

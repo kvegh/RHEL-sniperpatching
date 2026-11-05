@@ -25,14 +25,12 @@
     - name: Validate host identity, required tools, and advisory metadata
       ansible.builtin.import_tasks: tasks/host_preflight.yml
 
-    - name: Validate explicit update scope and independent full-upgrade witness
+    - name: Validate explicit update scope
       ansible.builtin.assert:
         that:
           - sniper_patch_scope in ['targeted', 'full']
-          - sniper_patch_scope != 'full' or sniper_upgrade_witness is match('^[A-Za-z0-9][A-Za-z0-9+_.-]*$')
           - not ansible_check_mode
-          - sniper_patch_scope != 'full' or sniper_upgrade_witness not in sniper_proof.affected_names
-        fail_msg: Full updates require a named independent installed package to prove an actual additional upgrade.
+        fail_msg: Choose targeted or full scope for the selected host.
 
     - name: Snapshot installed RPM versions before patching
       ansible.builtin.command:
@@ -40,22 +38,16 @@
       register: sniper_packages_before
       changed_when: false
 
-    - name: Require the full-update witness to be installed before patching
-      ansible.builtin.assert:
-        that: sniper_packages_before.stdout_lines | select('match', '^' ~ (sniper_upgrade_witness | regex_escape) ~ '\|') | list | length > 0
-        fail_msg: The independent upgrade witness must already be installed.
-      when: sniper_patch_scope == 'full'
-
     - name: Patch only the requested advisory or explicitly perform a full update
       ansible.builtin.command:
         argv: '{{ ["yum" if ansible_facts.distribution_major_version | int == 7 else "dnf", "-y"]
           + hostvars["localhost"].sniper_repo_args + (["upgrade-minimal"]
           + (hostvars["localhost"].sniper_resolved_ids | map("regex_replace", "^", "--advisory=") | list)
-          if sniper_patch_scope == "targeted" else ["upgrade"]) }}'
+          if sniper_patch_scope == "targeted" else ["--setopt=metadata_expire=0", "upgrade"]) }}'
       environment:
         LC_ALL: C
       when: sniper_patch_scope == 'full' or not sniper_proof.verified | bool
-      changed_when: true
+      changed_when: false
 
     - name: Snapshot installed RPM versions after patching
       ansible.builtin.command:
@@ -66,9 +58,7 @@
     - name: Record changed package names
       ansible.builtin.set_fact:
         sniper_changed_packages: "{{ sniper_packages_before.stdout_lines | sniper_package_delta(sniper_packages_after.stdout_lines) }}"
-
-    - name: Inspect fix and running kernel after package installation
-      ansible.builtin.import_tasks: tasks/proof.yml
+      changed_when: sniper_changed_packages | length > 0
 
     - name: Detect reboot requirement
       ansible.builtin.command:
@@ -100,19 +90,34 @@
     - name: Verify the effective fix after any required reboot and run smoke tests
       ansible.builtin.import_tasks: tasks/check_final.yml
 
-    - name: Require proof of an independent additional package upgrade
-      ansible.builtin.assert:
-        that:
-          - sniper_upgrade_witness not in sniper_proof.affected_names
-          - sniper_proof.upgrade_witness.upgraded | bool
-        fail_msg: Full update did not prove an additional upgrade of the specified independent installed package.
+    - name: Check for remaining updates in the selected repositories
+      ansible.builtin.command:
+        argv: '{{ ["yum" if ansible_facts.distribution_major_version | int == 7 else "dnf"]
+          + hostvars["localhost"].sniper_repo_args
+          + ["--setopt=metadata_expire=0", "check-update"] }}'
+      environment:
+        LC_ALL: C
+      register: sniper_remaining_updates
+      changed_when: false
+      failed_when: sniper_remaining_updates.rc not in [0, 100]
       when: sniper_patch_scope == 'full'
 
-    - name: Report package changes and full-update witness
+    - name: Require the full update to leave no pending repository updates
+      ansible.builtin.assert:
+        that: sniper_remaining_updates.rc == 0
+        fail_msg: Packages remain available from the selected repositories after the full update.
+      when: sniper_patch_scope == 'full'
+
+    - name: Record the verified update result
+      ansible.builtin.set_fact:
+        sniper_update_result: "{{ 'already_current' if sniper_changed_packages | length == 0 else 'updated' }}"
+        sniper_full_repository_verified: "{{ sniper_patch_scope == 'full' and sniper_remaining_updates.rc | default(-1) == 0 }}"
+
+    - name: Report verified package update result
       ansible.builtin.debug:
         msg:
           changed_packages: "{{ sniper_changed_packages }}"
-          independent_upgrade_witness: '{{ sniper_upgrade_witness if sniper_patch_scope == "full" else "not requested" }}'
+          update_result: "{{ sniper_update_result }}"
 
 - name: Require actual verification completion and publish job evidence
   hosts: localhost
@@ -138,3 +143,6 @@
             host: "{{ sniper_host_name }}"
             content_view_version: "{{ sniper_baseline.version }}"
             proof: "{{ hostvars[sniper_host_name].sniper_proof }}"
+            update_result: "{{ hostvars[sniper_host_name].sniper_update_result }}"
+            changed_packages: "{{ hostvars[sniper_host_name].sniper_changed_packages }}"
+            full_repository_verified: "{{ hostvars[sniper_host_name].sniper_full_repository_verified }}"

@@ -82,7 +82,7 @@ class ContentBoundaries(unittest.TestCase):
             task["ansible.builtin.command"]["argv"]
         )
         self.assertEqual(
-            rendered, ["dnf", "-y", "--disablerepo=*", "--enablerepo=repo-a", "upgrade"]
+            rendered, ["dnf", "-y", "--disablerepo=*", "--enablerepo=repo-a", "--setopt=metadata_expire=0", "upgrade"]
         )
 
     def test_incremental_request_cannot_patch_or_promote_hosts(self):

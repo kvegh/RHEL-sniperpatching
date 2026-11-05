@@ -34,17 +34,6 @@
       "choices": "targeted\nfull",
       "min": 0,
       "max": 1024
-    },
-    {
-      "question_name": "Independent upgrade witness (required for full)",
-      "question_description": "For full scope, enter an already installed package outside the selected advisory affected components. Its RPM version must strictly increase.",
-      "variable": "sniper_upgrade_witness",
-      "type": "text",
-      "required": false,
-      "default": "",
-      "choices": "",
-      "min": 0,
-      "max": 128
     }
   ]
 }

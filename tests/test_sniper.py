@@ -354,55 +354,10 @@ class ProofTests(unittest.TestCase):
             with self.subTest(requirements=reqs), self.assertRaises(ValueError):
                 self.check(reqs, [])
 
-    def test_independent_witness_uses_matching_preexisting_arch(self):
-        r, _ = self.check(
-            [fixed()],
-            [installed(), installed("other", version="2.0")],
-            options={
-                "requested_id": ADVISORY,
-                "name": "other",
-                "before": ["other|0|1.0|1.el7|x86_64"],
-            },
-        )
-        self.assertTrue(r["verified"])
-        self.assertTrue(r["upgrade_witness"]["upgraded"])
-        self.assertTrue(r["upgrade_witness"]["independent"])
 
-    def test_witness_rejects_addition_removal_downgrade_arch_switch(self):
-        cases = [
-            ([], [installed("other")]),
-            (["other|0|1.0|1.el7|x86_64"], []),
-            (["other|0|3.0|1.el7|x86_64"], [installed("other", version="2.0")]),
-            (
-                ["other|0|1.0|1.el7|x86_64"],
-                [installed("other", version="2.0", arch="i686")],
-            ),
-        ]
-        for before, packages in cases:
-            with self.subTest(before=before, packages=packages):
-                r, _ = self.check(
-                    [fixed()],
-                    [installed()] + packages,
-                    options={"name": "other", "before": before},
-                )
-                self.assertTrue(r["verified"])
-                self.assertFalse(r["upgrade_witness"]["upgraded"])
 
-    def test_target_fix_cannot_be_independent_witness(self):
-        r, _ = self.check(
-            [fixed()],
-            [installed()],
-            options={"name": "demo", "before": ["demo|0|1.0|1.el7|x86_64"]},
-        )
-        self.assertTrue(r["verified"])
-        self.assertFalse(r["upgrade_witness"]["upgraded"])
-        self.assertFalse(r["upgrade_witness"]["independent"])
 
-    def test_invalid_witness_snapshot_fails(self):
-        with self.assertRaises(ValueError):
-            self.check(
-                [fixed()], [installed()], options={"name": "other", "before": ["bad"]}
-            )
+
 
     def test_command_entrypoint_returns_json(self):
         out = io.StringIO()

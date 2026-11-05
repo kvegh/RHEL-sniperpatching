@@ -3,12 +3,10 @@
 
 argv[1] is fixed-package JSON. Optional argv[2] is JSON with requested_id and
 advisory_map (live per-CVE Satellite resolution). requested_id accepts one RHSA
-or comma/whitespace-separated CVEs. For full-update proof, name/before select
-an independent package-upgrade witness.
+or comma/whitespace-separated CVEs.
 An unverified fix emits JSON and exits 0 so callers can inspect pre-patch state.
 Malformed metadata or unavailable native RPM bindings/database exit 2. Callers
-must assert verified after patching/reboot and upgrade_witness.upgraded in full
-mode. Nothing is written to disk.
+must assert verified after patching/reboot. Nothing is written to disk.
 """
 
 from __future__ import print_function
@@ -114,68 +112,6 @@ def _headers(transaction, name):
         )
         for header in transaction.dbMatch("name", name)
     ]
-
-
-def _upgrade_witness(options, transaction, rpm_module, affected_names):
-    name = options.get("name")
-    if not name:
-        return None
-    if not isinstance(name, STRING_TYPES) or not _NAME.match(name):
-        raise ValueError("Invalid upgrade witness package name")
-    before = options.get("before")
-    if isinstance(before, STRING_TYPES):
-        before = before.splitlines()
-    if not isinstance(before, list):
-        raise ValueError("Upgrade witness requires its pre-update RPM snapshot")
-    previous = []
-    for line in before:
-        if not isinstance(line, STRING_TYPES):
-            raise ValueError("RPM snapshot lines must be strings")
-        if not line.strip():
-            continue
-        fields = line.split("|")
-        if len(fields) != 5:
-            raise ValueError(
-                "RPM snapshot must contain NAME|EPOCHNUM|VERSION|RELEASE|ARCH"
-            )
-        package = _package(
-            dict(zip(("name", "epoch", "version", "release", "arch"), fields))
-        )
-        if package["name"] == name:
-            previous.append(package)
-    current = _headers(transaction, name)
-    comparisons = []
-    for arch in sorted(set(package["arch"] for package in previous)):
-        old = [package for package in previous if package["arch"] == arch]
-        new = [package for package in current if package["arch"] == arch]
-        if new:
-            old_evr, new_evr = _evr(_newest(old, rpm_module)), _evr(
-                _newest(new, rpm_module)
-            )
-            comparisons.append(
-                {
-                    "arch": arch,
-                    "before": _display(old_evr),
-                    "after": _display(new_evr),
-                    "upgraded": rpm_module.labelCompare(new_evr, old_evr) > 0,
-                }
-            )
-    independent = name not in affected_names
-    return {
-        "name": name,
-        "independent": independent,
-        "upgraded": independent and any(value["upgraded"] for value in comparisons),
-        "comparisons": comparisons,
-        "reason": (
-            "target_fix_package_is_not_independent"
-            if not independent
-            else (
-                "compared_existing_name_and_arch"
-                if comparisons
-                else "no_matching_preexisting_name_and_arch"
-            )
-        ),
-    }
 
 
 def _requests(options, requirements):
@@ -364,9 +300,6 @@ def verify(requirements, rpm_module=None, running_release=None, options=None):
         "running_kernel_fixed": all(kernel_checks) if kernel_checks else None,
         "requires_kernel_reboot": any(kernel_reboots),
     }
-    witness = _upgrade_witness(options, transaction, rpm_module, affected_names)
-    if witness is not None:
-        result["upgrade_witness"] = witness
     return result
 
 
