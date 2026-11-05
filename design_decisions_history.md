@@ -349,3 +349,24 @@ midpoint cutoff inputs and distinguishes used dates from proposed ones. It flags
 same-day advisories and the final missing successor rather than inventing a
 separating date. Demo ratings distinguish package proof from kernel reboot and
 hardware/boot/service-dependent effects; only the Python cycles are live-proven.
+
+## 2026-11-05 — Compact issue labels and visible cutoff dates
+
+Implementation: `880e524261b631677ad58bcd932294f6bd0c9867`.
+
+The user requested a more readable advisory catalog with a short issue
+description rather than component names alone, and visible cutoff dates.
+GitHub controls the repository page width and fonts, so the catalog now uses
+five compact columns, short advisory link labels and meaningful issue summaries.
+Long CVE lists and full demonstration notes remain available in an expandable
+section. Existing cutoff dates are prominent; verified and proposed dates stay
+distinct, with same-day and final-entry exceptions preserved.
+
+All14 advisory mappings,40 unique CVEs,12 cutoff dates/statuses and the complete
+demonstration notes were checked against the previous README. Issue summaries
+were checked against the linked Red Hat advisories; multi-CVE rows are explicitly
+summaries of several flaws. GitHub-flavored Markdown parsing confirms both
+catalog/detail tables have14 data rows and the expected column counts. Whitespace
+checks pass; interactive GitHub rendering was not verified. This is a
+documentation-only change: runtime version0.5.7, automation and live systems are
+unchanged, and no patching job was launched.
