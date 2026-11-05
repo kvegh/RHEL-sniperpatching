@@ -1,5 +1,22 @@
 # Design decisions history
 
+## 2026-11-05 — Recover validated minor updates through Library
+
+A live incremental update created the correct minor but normal Test promotion
+failed because it had not first entered Library. The playbook now validates
+actual content before promoting through Library and then Test, with force
+disabled. A controlled retry can reuse one matching orphan or Library-only
+minor; ambiguous history, unrelated newer content, exposed candidates and
+changes to Library during validation stop the operation. Production continues
+to reuse the exact tested minor.
+
+All 95 regression tests passed, including real Ansible boundary fixtures for
+fresh creation, interrupted retries, invalid content and competing Library
+changes. Seven entrypoint syntax checks and production lint passed. Live
+acceptance of the corrected promotion remains separate.
+
+Implementation commit: `49585292ec5cc226c1f51a192005565712fd3900`.
+
 ## 2026-11-04 — Correct the filter type for original packages
 
 The first live preparation failed because Satellite rejects original_packages
