@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-Version **0.5.4**. Independently launched Ansible stages for demonstrating a
+Version **0.5.5**. Independently launched Ansible stages for demonstrating a
 CVE-list or single-RHSA update followed by a cutoff or latest repository update, using Red Hat
 Satellite and AAP. This project is a submodule of
 [AAP Advanced Features](https://github.com/kvegh/AAP-advanced-features).
@@ -351,8 +351,10 @@ ansible-playbook --syntax-check promote_content_view.yml
 ansible-playbook --syntax-check check_patch.yml
 ```
 
-The runtime diagnostic has also passed in AAP as described above. A live
-end-to-end demonstration, actual patch installation, reboots and later AAP CaC
-deployment are separate
-validation steps. Implementation decisions and commit references are recorded
+Live runs have verified the cutoff baseline, the first single-RHSA minor update,
+and targeted package fixes on both Test and Prod. Production reused the exact
+minor already tested in Test. Native RPM checks confirmed both affected packages
+were fixed. The shared CaC importer also completed successfully on a separate
+receiving AAP. Final cutoff publication and receiving-runtime checks are tracked
+separately from these completed runs. Implementation decisions and commit references are recorded
 in [design_decisions_history.md](design_decisions_history.md).

@@ -159,7 +159,11 @@ class MinorRecoveryPlaybook(unittest.TestCase):
                      "calls": [], "promotions": [], "uri_count": 0, "contaminated": contaminated, "race": race}
             if mode != "fresh":
                 state["versions"]["41"] = version(41, 1, DESCRIPTION, ())
-            if mode == "library":
+            if mode == "prod":
+                state["versions"]["40"]["environments"] = [{"id": 32}]
+                state["versions"]["41"]["environments"] = [{"id": 1}, {"id": 31}]
+                state["serving"].update({"1": 41, "31": 41})
+            elif mode == "library":
                 state["versions"]["40"]["environments"] = [{"id": 31}, {"id": 32}]
                 state["versions"]["41"]["environments"] = [{"id": 1}]
                 state["serving"]["1"] = 41
@@ -201,7 +205,8 @@ class MinorRecoveryPlaybook(unittest.TestCase):
             variables = {"sniper_server_url": "https://satellite.example.test", "sniper_username": "example",
                 "sniper_password": "fixture-minor-password-canary", "sniper_organization": "Example Organization",
                 "sniper_test_host": "test-client.example.test", "sniper_prod_host": "prod-client.example.test",
-                "sniper_environment": "test", "sniper_patch_id": A, "ansible_python_interpreter": sys.executable}
+                "sniper_environment": "prod" if mode == "prod" else "test",
+                "sniper_patch_id": A, "ansible_python_interpreter": sys.executable}
             var_path = base / "vars.json"
             var_path.write_text(json.dumps(variables))
             env = dict(os.environ, ANSIBLE_COLLECTIONS_PATH=str(base / "collections"),
@@ -226,6 +231,14 @@ class MinorRecoveryPlaybook(unittest.TestCase):
             proof = next(i for i, c in enumerate(state["calls"]) if c["resource"] == resource
                          and str(c["params"].get("content_view_version_id")) == "41")
             self.assertLess(proof, first_promotion)
+
+    def test_production_reuses_test_without_evaluating_skipped_creation_state(self):
+        result, state = self.run_minor("prod")
+        self.assertEqual(result.returncode, 0, (result.stdout + result.stderr)[-8000:])
+        self.assertEqual(state["uri_count"], 0)
+        self.assertEqual(state["promotions"], ["RHEL-sniperpatching_Prod"])
+        self.assertEqual(state["serving"], {"1": 41, "31": 41, "32": 41})
+        self.assertEqual(set(state["versions"]), {"40", "41"})
 
     def test_orphan_is_reused_without_incremental_post(self):
         result, state = self.run_minor("orphan")
