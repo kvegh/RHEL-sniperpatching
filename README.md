@@ -358,6 +358,8 @@ Live runs have verified the cutoff baseline, the first single-RHSA minor update,
 and targeted package fixes on both Test and Prod. Production reused the exact
 minor already tested in Test. Native RPM checks confirmed both affected packages
 were fixed. The shared CaC importer also completed successfully on a separate
-receiving AAP. Final cutoff publication and receiving-runtime checks are tracked
-separately from these completed runs. Implementation decisions and commit references are recorded
+receiving AAP. Date-bounded publication then passed with the earlier RHSA preserved and the
+next RHSA excluded; the imported receiving-runtime diagnostic also passed.
+The first cutoff has no independent additional package upgrade available, so
+an additional full host-upgrade demonstration remains a separate test case. Implementation decisions and commit references are recorded
 in [design_decisions_history.md](design_decisions_history.md).

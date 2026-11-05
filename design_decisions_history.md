@@ -1,5 +1,28 @@
 # Design decisions history
 
+## 2026-11-05 — Verify the first patch interval and tolerate transient reads
+
+The real production branch fixture confirms reuse of the exact Test minor
+without another incremental request. Live Test and Prod package commands and
+independent fix checks passed for the same selected RHSA.
+
+A cutoff candidate was published but its advisory inspection received a
+truncated JSON reply. A fresh complete read succeeded. Only that read-only
+inspection now makes up to three attempts; publication and promotion are not
+retried by this control. Nine focused publication tests passed, including
+transient recovery and exhaustion without repeated mutations. The live retry
+then verified all serving advisories and the date cap before promoting its
+exact candidate to Test. The earlier fix remains present and the next RHSA is
+excluded. The failed earlier candidate was retained without consumer promotion.
+
+The receiving AAP configuration import, object readback and read-only runtime
+diagnostic also passed. Its existing Machine credential binding does not prove
+SSH-key equivalence. The first cutoff has no independent extra package upgrade;
+full host-upgrade handling for that no-update case remains a separate decision.
+
+Production reuse/documentation implementation: `b0cd683a0dc43a8d5e300a825b75f3708046d4d6`.
+Read-retry implementation: `fc6106fc00b1b0a2a9b33c662d14ebecc75e00fe`.
+
 ## 2026-11-05 — Preserve RPM signing-key records during host reporting
 
 The first targeted host command succeeded, but change reporting then rejected
