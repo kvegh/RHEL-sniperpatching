@@ -36,22 +36,51 @@ means all configured repository content through that date; it is not another
 advisory date. Only the first two cutoffs have been executed. Later dates below
 are **proposed presenter inputs**, not saved defaults or completed runs.
 
-| RHSA issued | RHSA | Component | CVEs | Full-update cutoff after this RHSA | Ease of showing the fix |
-|---|---|---|---|---|---|
-| 2023-11-08 | [RHSA-2023:6823](https://access.redhat.com/errata/RHSA-2023:6823) | python3 | CVE-2023-40217 | 2023-11-10 — verified | Easy — verified RPM proof for python3/python3-libs; already fixed on the current pair. |
-| 2023-11-13 | [RHSA-2023:6885](https://access.redhat.com/errata/RHSA-2023:6885) | python | CVE-2023-40217 | 2023-11-17 — verified | Easy — verified python/python-libs upgrade; already fixed on the current pair. |
-| 2023-11-21 | [RHSA-2023:7423](https://access.redhat.com/errata/RHSA-2023:7423) | kernel | CVE-2022-40982, CVE-2023-31436, CVE-2023-3611, CVE-2023-3776, CVE-2023-4128, CVE-2023-4206, CVE-2023-4207, CVE-2023-4208 | 2023-11-24 — proposed | Moderate — installed and running-kernel proof, with reboot when required; untested next cycle. |
-| 2023-11-27 | [RHSA-2023:7513](https://access.redhat.com/errata/RHSA-2023:7513) | linux-firmware | CVE-2023-20569, CVE-2023-20593 | 2023-12-04 — proposed | Limited security effect in a VM — package proof is straightforward; firmware mitigation needs relevant hardware. Untested. |
-| 2023-12-12 | [RHSA-2023:7743](https://access.redhat.com/errata/RHSA-2023:7743) | curl | CVE-2022-43552 | 2024-01-02 — proposed | Easy package/version proof for curl; vulnerability reproduction is not prepared. Untested. |
-| 2024-01-23 | [RHSA-2024:0346](https://access.redhat.com/errata/RHSA-2024:0346) | kernel | CVE-2023-42753 | 2024-01-31 — proposed | Moderate — installed and running-kernel proof, with reboot when required. Untested. |
-| 2024-02-08 | [RHSA-2024:0753](https://access.redhat.com/errata/RHSA-2024:0753) | linux-firmware | CVE-2023-20592 | 2024-02-24 — proposed | Limited security effect in a VM — package proof is straightforward; firmware mitigation needs relevant hardware. Untested. |
-| 2024-03-12 | [RHSA-2024:1249](https://access.redhat.com/errata/RHSA-2024:1249) | kernel | CVE-2022-42896, CVE-2023-38409, CVE-2023-45871, CVE-2023-4921, CVE-2024-1086, CVE-2024-26602 | 2024-04-02 — proposed | Moderate — installed and running-kernel proof, with reboot when required. Untested. |
-| 2024-04-23 | [RHSA-2024:2002](https://access.redhat.com/errata/RHSA-2024:2002) | grub2 | CVE-2022-2601 | No separate date — next RHSA is on the same day | Limited security effect — GRUB package proof; boot-security demonstration needs the applicable boot/firmware setup. Untested. |
-| 2024-04-23 | [RHSA-2024:2004](https://access.redhat.com/errata/RHSA-2024:2004) | kernel | CVE-2020-36558, CVE-2023-2002, CVE-2023-25775, CVE-2023-4622, CVE-2023-4623 | 2024-05-14 — proposed | Moderate — installed and running-kernel proof; shares its issue date with the GRUB advisory. Untested. |
-| 2024-06-04 | [RHSA-2024:3588](https://access.redhat.com/errata/RHSA-2024:3588) | glibc | CVE-2024-2961, CVE-2024-33599, CVE-2024-33600, CVE-2024-33601, CVE-2024-33602 | 2024-06-05 — proposed | Easy package/version proof for glibc; allow required service restart/reboot handling. Untested. |
-| 2024-06-06 | [RHSA-2024:3669](https://access.redhat.com/errata/RHSA-2024:3669) | less | CVE-2024-32487 | 2024-06-08 — proposed | Easy package/version proof for the less command; vulnerability reproduction is not prepared. Untested. |
-| 2024-06-10 | [RHSA-2024:3741](https://access.redhat.com/errata/RHSA-2024:3741) | bind, bind-dyndb-ldap, and dhcp | CVE-2023-4408, CVE-2023-50387, CVE-2023-50868 | 2024-06-13 — proposed | Moderate — proof covers installed bind/DHCP components; a functional service demonstration needs those services configured. Untested. |
-| 2024-06-17 | [RHSA-2024:3939](https://access.redhat.com/errata/RHSA-2024:3939) | linux-firmware | CVE-2022-27635, CVE-2022-36351, CVE-2022-38076, CVE-2022-40964, CVE-2022-46329 | Not defined — no following catalog entry | Limited security effect in a VM — firmware package proof, with hardware-dependent mitigation. Untested. |
+Issue labels summarize Red Hat's linked advisories; multi-CVE rows can contain
+several different flaws. Full CVE lists and demonstration notes are expandable
+below. **Cutoff** is the full-update date **after this RHSA and before the next**:
+**✓ verified**, **\* proposed**. The **Demo** column rates the ease of showing an
+installed-package fix; expand the notes for reboot, service and hardware caveats.
+DoS means denial of service.
+
+| Issued | RHSA | Component — issue | Cutoff | Demo |
+|---|---|---|---|---|
+| 2023-11-08 | [2023:6823](https://access.redhat.com/errata/RHSA-2023:6823) | python3 — TLS handshake bypass | **2023-11-10** ✓ | Easy ✓ |
+| 2023-11-13 | [2023:6885](https://access.redhat.com/errata/RHSA-2023:6885) | python — TLS handshake bypass | **2023-11-17** ✓ | Easy ✓ |
+| 2023-11-21 | [2023:7423](https://access.redhat.com/errata/RHSA-2023:7423) | kernel — Network flaws / CPU leaks | **2023-11-24** * | Moderate |
+| 2023-11-27 | [2023:7513](https://access.redhat.com/errata/RHSA-2023:7513) | linux-firmware — AMD data leaks | **2023-12-04** * | Limited |
+| 2023-12-12 | [2023:7743](https://access.redhat.com/errata/RHSA-2023:7743) | curl — Proxy use-after-free | **2024-01-02** * | Easy |
+| 2024-01-23 | [2024:0346](https://access.redhat.com/errata/RHSA-2024:0346) | kernel — Netfilter out-of-bounds access | **2024-01-31** * | Moderate |
+| 2024-02-08 | [2024:0753](https://access.redhat.com/errata/RHSA-2024:0753) | linux-firmware — SEV-ES memory-integrity loss | **2024-02-24** * | Limited |
+| 2024-03-12 | [2024:1249](https://access.redhat.com/errata/RHSA-2024:1249) | kernel — Memory corruption / DoS | **2024-04-02** * | Moderate |
+| 2024-04-23 | [2024:2002](https://access.redhat.com/errata/RHSA-2024:2002) | grub2 — Font buffer overflow | Shared below | Limited |
+| 2024-04-23 | [2024:2004](https://access.redhat.com/errata/RHSA-2024:2004) | kernel — Memory / access-control flaws | **2024-05-14** * | Moderate |
+| 2024-06-04 | [2024:3588](https://access.redhat.com/errata/RHSA-2024:3588) | glibc — iconv / netgroup memory flaws | **2024-06-05** * | Easy |
+| 2024-06-06 | [2024:3669](https://access.redhat.com/errata/RHSA-2024:3669) | less — Shell command injection | **2024-06-08** * | Easy |
+| 2024-06-10 | [2024:3741](https://access.redhat.com/errata/RHSA-2024:3741) | BIND / DHCP — DNS CPU exhaustion | **2024-06-13** * | Moderate |
+| 2024-06-17 | [2024:3939](https://access.redhat.com/errata/RHSA-2024:3939) | linux-firmware — Wi-Fi access / validation flaws | Not defined | Limited |
+
+<details>
+<summary>Full CVE lists and demonstration notes (14 advisories)</summary>
+
+| RHSA | Component | CVEs | Demonstration notes |
+|---|---|---|---|
+| [2023:6823](https://access.redhat.com/errata/RHSA-2023:6823) | python3 | CVE-2023-40217 | Easy — verified RPM proof for python3/python3-libs; already fixed on the current pair. |
+| [2023:6885](https://access.redhat.com/errata/RHSA-2023:6885) | python | CVE-2023-40217 | Easy — verified python/python-libs upgrade; already fixed on the current pair. |
+| [2023:7423](https://access.redhat.com/errata/RHSA-2023:7423) | kernel | CVE-2022-40982, CVE-2023-31436, CVE-2023-3611, CVE-2023-3776, CVE-2023-4128, CVE-2023-4206, CVE-2023-4207, CVE-2023-4208 | Moderate — installed and running-kernel proof, with reboot when required; untested next cycle. |
+| [2023:7513](https://access.redhat.com/errata/RHSA-2023:7513) | linux-firmware | CVE-2023-20569, CVE-2023-20593 | Limited security effect in a VM — package proof is straightforward; firmware mitigation needs relevant hardware. Untested. |
+| [2023:7743](https://access.redhat.com/errata/RHSA-2023:7743) | curl | CVE-2022-43552 | Easy package/version proof for curl; vulnerability reproduction is not prepared. Untested. |
+| [2024:0346](https://access.redhat.com/errata/RHSA-2024:0346) | kernel | CVE-2023-42753 | Moderate — installed and running-kernel proof, with reboot when required. Untested. |
+| [2024:0753](https://access.redhat.com/errata/RHSA-2024:0753) | linux-firmware | CVE-2023-20592 | Limited security effect in a VM — package proof is straightforward; firmware mitigation needs relevant hardware. Untested. |
+| [2024:1249](https://access.redhat.com/errata/RHSA-2024:1249) | kernel | CVE-2022-42896, CVE-2023-38409, CVE-2023-45871, CVE-2023-4921, CVE-2024-1086, CVE-2024-26602 | Moderate — installed and running-kernel proof, with reboot when required. Untested. |
+| [2024:2002](https://access.redhat.com/errata/RHSA-2024:2002) | grub2 | CVE-2022-2601 | Limited security effect — GRUB package proof; boot-security demonstration needs the applicable boot/firmware setup. Untested. |
+| [2024:2004](https://access.redhat.com/errata/RHSA-2024:2004) | kernel | CVE-2020-36558, CVE-2023-2002, CVE-2023-25775, CVE-2023-4622, CVE-2023-4623 | Moderate — installed and running-kernel proof; shares its issue date with the GRUB advisory. Untested. |
+| [2024:3588](https://access.redhat.com/errata/RHSA-2024:3588) | glibc | CVE-2024-2961, CVE-2024-33599, CVE-2024-33600, CVE-2024-33601, CVE-2024-33602 | Easy package/version proof for glibc; allow required service restart/reboot handling. Untested. |
+| [2024:3669](https://access.redhat.com/errata/RHSA-2024:3669) | less | CVE-2024-32487 | Easy package/version proof for the less command; vulnerability reproduction is not prepared. Untested. |
+| [2024:3741](https://access.redhat.com/errata/RHSA-2024:3741) | bind, bind-dyndb-ldap, and dhcp | CVE-2023-4408, CVE-2023-50387, CVE-2023-50868 | Moderate — proof covers installed bind/DHCP components; a functional service demonstration needs those services configured. Untested. |
+| [2024:3939](https://access.redhat.com/errata/RHSA-2024:3939) | linux-firmware | CVE-2022-27635, CVE-2022-36351, CVE-2022-38076, CVE-2022-40964, CVE-2022-46329 | Limited security effect in a VM — firmware package proof, with hardware-dependent mitigation. Untested. |
+
+</details>
 
 The proposed cutoff is the midpoint before the next catalog advisory, rounded to
 the earlier day when necessary. Enter it manually in the Publish full update
