@@ -329,3 +329,23 @@ shortens the run/reset guide. Observed-failure protections remain. One complete
 RHSA then cutoff full-update cycle passed on Test and Prod, including exact
 version promotion and final verification; unchanged full runs passed only after
 the package manager confirmed no pending updates.
+
+## 2026-11-05 — Explain the human-led demonstration
+
+Automation implementation: `2be30c742f946b6f9c1ad93a9b7efbe14e230953` (0.5.7).
+The user requested a presenter sequence with exact existing Job Template names,
+survey inputs, visible results and explicit pause points. The README now follows
+one advisory through Test/Prod targeted patching, date-bounded full Test update,
+exact-version promotion, full Prod update and a final read-only check. It uses
+reported version numbers and distinguishes content promotion from installed RPMs.
+Two completed cycles are documented, including the second cycle's microcode_ctl
+full upgrade. Continuation from CV4.0 uses a clearly untested next kernel example;
+preparation is not a reset. A read-only CVE example shows the dynamic mapping
+without publishing additional content. No automation, surveys or live systems
+changed, and no patching jobs were launched for this documentation request.
+
+The requested catalog table retains all 14 advisories and their CVEs, adds
+midpoint cutoff inputs and distinguishes used dates from proposed ones. It flags
+same-day advisories and the final missing successor rather than inventing a
+separating date. Demo ratings distinguish package proof from kernel reboot and
+hardware/boot/service-dependent effects; only the Python cycles are live-proven.
