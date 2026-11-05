@@ -1,5 +1,20 @@
 # Design decisions history
 
+## 2026-11-05 — Preserve RPM signing-key records during host reporting
+
+The first targeted host command succeeded, but change reporting then rejected
+legitimate RPM signing-key records whose architecture is recorded as (none).
+The inventory parser now retains only that narrowly validated database shape,
+including its actual missing architecture. Signing-key changes remain visible;
+software package and advisory validation are unchanged.
+
+All 35 metadata and native-RPM proof tests passed, including three regressions
+for valid keys, changed keys and malformed or unrelated missing architectures.
+The actual before/after snapshots now parse successfully and show only the two
+expected package names changed. Live fix/reboot completion remains pending.
+
+Implementation commit: `c23a34482d1764587867deafdc58a06e71ddb263`.
+
 ## 2026-11-05 — Recover validated minor updates through Library
 
 A live incremental update created the correct minor but normal Test promotion
