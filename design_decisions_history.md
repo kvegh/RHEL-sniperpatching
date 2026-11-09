@@ -370,3 +370,22 @@ catalog/detail tables have14 data rows and the expected column counts. Whitespac
 checks pass; interactive GitHub rendering was not verified. This is a
 documentation-only change: runtime version0.5.7, automation and live systems are
 unchanged, and no patching job was launched.
+
+## 2026-11-09 — Introduce the project before its procedure
+
+README implementation: `372da7e7511ce90c15bd9599e6c9c10da7f5915d`. The user asked for an
+explanation suitable for readers unfamiliar with the project. The opening now
+explains the need for targeted one-off advisory deployment, required package
+dependencies, dynamic CVE resolution and the later broader update. It introduces
+Content Views and separates content promotion from host patch installation.
+
+The environment section describes the recorded RHEL 7.9 workshop host runs and
+their execution runtime, separately from receiving-AAP configuration/runtime
+verification. Results are dated rather than presented as a fresh live check.
+Prerequisites and the human-led procedure precede reference material. The compact
+advisory catalog, CVE details and cutoff qualifications are unchanged.
+
+Focused documentation checks preserved all 14 advisories, 40 distinct CVEs,
+ten procedure steps, survey labels and local links; independent review and
+whitespace checks passed. Only documentation changed; automation stays at 0.5.7,
+and this work launched no jobs or deployments.
