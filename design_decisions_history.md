@@ -1,5 +1,18 @@
 # Design decisions history
 
+## 2026-11-11 — Record a handover without claiming full policy review
+
+Documentation commit: `9143b410bec8713744c000e97b06d82d5459773f`.
+
+The user requested a Git handover before continuing in another chat and asked
+about the shared review guideline. The handover links that policy and records
+that no completed full-policy acceptance report exists. It distinguishes the
+two recorded successful demo cycles from a complete review, and the already
+resolved epoch defect from stale pending messages. Private environment evidence
+and credentials remain outside public source. Functional version 0.5.7 and its
+code are unchanged; validation covers the document links, staged content and
+whitespace rather than new runtime acceptance.
+
 ## 2026-11-05 — Verify the first patch interval and tolerate transient reads
 
 The real production branch fixture confirms reuse of the exact Test minor
