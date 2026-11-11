@@ -2,6 +2,9 @@
 
 **Demo project version: 0.5.7.**
 
+See [current handover status](current_status_for_handover.md) for recorded
+validation, review status and continuation boundaries.
+
 ## What this project does
 
 RHEL-sniperpatching is a working demonstration of targeted security patching for
