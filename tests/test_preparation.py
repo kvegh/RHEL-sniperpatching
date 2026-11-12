@@ -1,4 +1,6 @@
 """Run the real prep playbook against a synthetic, local Satellite module fixture."""
+# Reason and test scope: ../docs/implementation.md#synthetic-test-modules
+
 
 import json
 import os

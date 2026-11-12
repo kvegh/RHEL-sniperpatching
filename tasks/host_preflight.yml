@@ -6,6 +6,7 @@
       - ansible_facts.distribution_major_version | int in [7, 8, 9]
       - inventory_hostname == hostvars['localhost'].sniper_host_name
 
+# Reason: Match the actual subscription consumer. See ../docs/implementation.md#native-host-commands.
 - name: Read the registered system identity
   ansible.builtin.command:
     argv: [subscription-manager, identity]
@@ -26,6 +27,7 @@
         else '/usr/libexec/platform-python' if ansible_facts.distribution_major_version | int == 8
         else '/usr/bin/python3') }}
 
+# Reason: Check the existing OS reboot utility before mutation. See ../docs/implementation.md#native-host-commands.
 - name: Require the existing reboot detection utility before changing packages
   ansible.builtin.command:
     argv: [needs-restarting, "-r"]

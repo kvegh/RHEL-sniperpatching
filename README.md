@@ -1,9 +1,13 @@
 # RHEL-sniperpatching
 
-**Demo project version: 0.5.7.**
+**Demo project version: 0.5.8.**
 
 See [current handover status](current_status_for_handover.md) for recorded
 validation, review status and continuation boundaries.
+
+[Quick guide](TLDR.md) · [Process diagram](docs/process.md) ·
+[Inputs and recovery](docs/operations.md) · [Implementation rationale](docs/implementation.md) ·
+[Review evidence](docs/review-2026-11-12.md)
 
 ## What this project does
 
@@ -327,3 +331,59 @@ Public playbooks and surveys stay here. Protected AAP configuration is whole-fil
 The observed-failure protections remain: compatible original-package filters, normal Library → Test promotion, bounded reuse of an interrupted minor, signing-key inventory handling, authoritative RPM epochs and bounded transient read retries. Host/CV ownership, consumer UUID, repository restrictions, cutoff checks and final host completion assertions remain enforced.
 
 Use focused checks for changed behavior and a real Test/Prod run. Historical decisions remain in [design_decisions_history.md](design_decisions_history.md).
+
+
+## Naming and validation
+
+Project variables and public filters use the `sniper_` prefix and descriptive
+`snake_case`. Existing playbooks use `action_noun.yml`; task names use imperative
+verbs. Shared task files represent reusable components of the independently
+launched stages. The owner-selected repository name and published input/playbook
+names are retained; cosmetic renaming would break callers without a practical
+benefit. [Input precedence, check mode and repeat behavior](docs/operations.md)
+are explicit project interfaces.
+
+Use the existing local Python/Ansible tooling for focused regressions and
+`ansible-lint --profile production --strict`; all entry-point syntax and module
+interfaces must also pass in the selected EE. Offline fixture results on a
+newer local runtime supplement, rather than replace, the actual AAP baseline.
+The current review/fix batch is **not accepted yet**: mandatory APME coverage and
+the final corrected-source AAP end-to-end re-test remain pending. See the
+[dated evidence](docs/review-2026-11-12.md) for exact results and limitations.
+
+
+### Reproduce local validation
+
+Use an existing Python with Ansible and PyYAML, the selected Satellite 3.14.0
+collection on its search path, and matching Ansible CLI programs on `PATH`.
+Do not install or upgrade content as part of a normal demonstration job.
+
+```sh
+python3 -B -m unittest discover -s tests -v
+ansible-lint --profile production --strict
+python3 files/runtime_probe.py .
+ansible-playbook --syntax-check check_runtime.yml
+```
+
+The runtime probe checks all six demonstration entry points and their Satellite
+module arguments without executing the stages. The local unit/boundary fixtures
+use synthetic data and temporary files; they do not contact or patch clients.
+Record the actual interpreter/core/collection versions alongside results.
+
+### Repeatable functional test of a deployed client
+
+Use the existing **RHEL-sniperpatching - Check patch** Job Template
+(`check_patch.yml`). Select `test` or `prod` and the same already-applied RHSA/CVE
+input; retain the protected inventory, credential and exact authorized pair.
+Keep Limit empty and require existing SSH/become, native RPM/reboot tools and
+Satellite read access. The job checks current CV/consumer binding, every requested
+fix using native RPM/kernel proof, no pending reboot and configured smoke tests.
+Expected result: a successful AAP job with `sniper_result.proof.verified: true`.
+An assertion failure is a failed functional test. Defaults prove SSH service
+health; add application smoke services/URLs for application-level coverage.
+
+This check is safe to repeat on the owned pair: it creates no test resources,
+installs nothing and requires no cleanup. Run it after patching and as the final
+independent presenter check. It supplements the complete Test/Prod publication,
+patching, reboot and full-update acceptance sequence; it does not replace it.
+The corrected revision has not yet passed that AAP acceptance sequence.

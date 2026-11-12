@@ -1,4 +1,5 @@
 ---
+# Reason: validate exact content and input contracts. See ../docs/implementation.md#validation-filters.
 - name: Validate access and isolate project objects
   ansible.builtin.import_tasks: connect.yml
 

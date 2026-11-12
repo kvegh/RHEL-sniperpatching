@@ -1,4 +1,5 @@
 """Prevent advisory NVRA strings from silently inventing epoch zero."""
+# Reason and test scope: ../docs/implementation.md#source-and-caller-inventory
 
 import unittest
 from pathlib import Path

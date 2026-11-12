@@ -1,4 +1,5 @@
 """Validate content-operation boundaries and actual command rendering."""
+# Reason and test scope: ../docs/implementation.md#source-and-caller-inventory
 
 import importlib.util
 from pathlib import Path

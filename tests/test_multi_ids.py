@@ -1,4 +1,5 @@
 """Multiple survey CVEs must all resolve live and receive independent proof."""
+# Reason and test scope: ../docs/implementation.md#source-and-caller-inventory
 
 import json
 from pathlib import Path

@@ -7,6 +7,7 @@
     that: sniper_proof.verified | bool
     fail_msg: "Fix verification failed: {{ sniper_proof | to_json }}"
 
+# Reason: Refuse success while the OS requests reboot. See ../docs/implementation.md#native-host-commands.
 - name: Read remaining reboot requirement
   ansible.builtin.command:
     argv: [needs-restarting, "-r"]

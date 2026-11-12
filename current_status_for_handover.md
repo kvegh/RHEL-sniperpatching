@@ -1,5 +1,8 @@
 # Current status for handover
 
+> Later work: the [12 November review evidence](docs/review-2026-11-12.md)
+> records the subsequent review/fix phase. This file remains the earlier checkpoint.
+
 Updated **2026-11-11**. This is a documentation checkpoint, not a fresh check of
 running systems. Beads remains the task tracker. No execution or code review
 was started while preparing this handover.

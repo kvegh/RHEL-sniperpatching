@@ -5,6 +5,7 @@
       requested_id: '{{ hostvars["localhost"].sniper_id }}'
       advisory_map: '{{ hostvars["localhost"].sniper_advisory_map }}'
 
+# Reason: Use native RPM comparison and the actual running kernel. See ../docs/implementation.md#native-rpm-proof.
 - name: Compare installed RPM versions and the running kernel against advisory metadata
   ansible.builtin.command:
     argv:

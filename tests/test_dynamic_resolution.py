@@ -1,4 +1,6 @@
 """Execute real resolver tasks against changing synthetic Satellite responses."""
+# Reason and test scope: ../docs/implementation.md#synthetic-test-modules
+
 
 import json
 import os

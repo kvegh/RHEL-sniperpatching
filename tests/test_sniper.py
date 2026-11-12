@@ -1,4 +1,5 @@
 """Offline contracts for metadata parsing and native-RPM proof decisions."""
+# Reason and test scope: ../docs/implementation.md#source-and-caller-inventory
 
 import contextlib
 import importlib.util

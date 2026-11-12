@@ -1,4 +1,6 @@
 """Small, pure validation helpers for Satellite content operations."""
+# Reason and interface: ../docs/implementation.md#validation-filters
+
 
 import re
 from datetime import date, timedelta

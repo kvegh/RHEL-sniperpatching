@@ -8,6 +8,8 @@ An unverified fix emits JSON and exits 0 so callers can inspect pre-patch state.
 Malformed metadata or unavailable native RPM bindings/database exit 2. Callers
 must assert verified after patching/reboot. Nothing is written to disk.
 """
+# Reason and interface: ../docs/implementation.md#native-rpm-proof
+
 
 from __future__ import print_function
 import json

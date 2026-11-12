@@ -1,4 +1,6 @@
 """Exercise the real publication playbook with bounded local module fixtures."""
+# Reason and test scope: ../docs/implementation.md#synthetic-test-modules
+
 
 import importlib.util
 import json

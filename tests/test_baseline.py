@@ -1,4 +1,5 @@
 """Validate cutoff selection from the entire host-pair security advisory set."""
+# Reason and test scope: ../docs/implementation.md#source-and-caller-inventory
 
 import importlib.util
 from pathlib import Path

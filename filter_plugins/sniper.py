@@ -1,4 +1,6 @@
 """Pure data filters for patch IDs, Satellite metadata, and RPM inventories."""
+# Reason and interface: ../docs/implementation.md#validation-filters
+
 
 import re
 

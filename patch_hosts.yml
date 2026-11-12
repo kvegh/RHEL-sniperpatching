@@ -1,4 +1,5 @@
 ---
+# Reason: validate exact content and input contracts. See docs/implementation.md#validation-filters.
 - name: Resolve the selected patch target
   hosts: localhost
   gather_facts: false
@@ -32,12 +33,14 @@
           - not ansible_check_mode
         fail_msg: Choose targeted or full scope for the selected host.
 
+    # Reason: Measure real installed package changes. See docs/implementation.md#native-host-commands.
     - name: Snapshot installed RPM versions before patching
       ansible.builtin.command:
         argv: [rpm, "-qa", "--qf", "%{NAME}|%{EPOCHNUM}|%{VERSION}|%{RELEASE}|%{ARCH}\\n"]
       register: sniper_packages_before
       changed_when: false
 
+    # Reason: Apply exact advisory and repository constraints. See docs/implementation.md#native-host-commands.
     - name: Patch only the requested advisory or explicitly perform a full update
       ansible.builtin.command:
         argv: '{{ ["yum" if ansible_facts.distribution_major_version | int == 7 else "dnf", "-y"]
@@ -49,6 +52,7 @@
       when: sniper_patch_scope == 'full' or not sniper_proof.verified | bool
       changed_when: false
 
+    # Reason: Read actual post-transaction EVRs. See docs/implementation.md#native-host-commands.
     - name: Snapshot installed RPM versions after patching
       ansible.builtin.command:
         argv: [rpm, "-qa", "--qf", "%{NAME}|%{EPOCHNUM}|%{VERSION}|%{RELEASE}|%{ARCH}\\n"]
@@ -60,6 +64,7 @@
         sniper_changed_packages: "{{ sniper_packages_before.stdout_lines | sniper_package_delta(sniper_packages_after.stdout_lines) }}"
       changed_when: sniper_changed_packages | length > 0
 
+    # Reason: Use the OS reboot signal. See docs/implementation.md#native-host-commands.
     - name: Detect reboot requirement
       ansible.builtin.command:
         argv: [needs-restarting, "-r"]
@@ -67,11 +72,13 @@
       changed_when: false
       failed_when: sniper_reboot_hint.rc not in [0, 1]
 
+    # Reason: Protect full process argv while retaining reboot evidence. See docs/implementation.md#native-host-commands.
     - name: Detect running processes still using replaced binaries
       ansible.builtin.command:
         argv: [needs-restarting]
       register: sniper_stale_processes
       changed_when: false
+      no_log: true
 
     - name: Reboot when required by the system, kernel proof, or outdated running processes
       ansible.builtin.reboot:
@@ -90,6 +97,7 @@
     - name: Verify the effective fix after any required reboot and run smoke tests
       ansible.builtin.import_tasks: tasks/check_final.yml
 
+    # Reason: Require a fresh repository completion check. See docs/implementation.md#native-host-commands.
     - name: Check for remaining updates in the selected repositories
       ansible.builtin.command:
         argv: '{{ ["yum" if ansible_facts.distribution_major_version | int == 7 else "dnf"]

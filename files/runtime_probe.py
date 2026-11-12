@@ -1,4 +1,6 @@
 """Inspect installed Ansible content and parse stages; never install or run them."""
+# Reason and interface: ../docs/implementation.md#runtime-inspection
+
 
 import json
 import platform

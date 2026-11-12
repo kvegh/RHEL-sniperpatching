@@ -1,4 +1,5 @@
 ---
+# Reason: validate exact content and input contracts. See docs/implementation.md#validation-filters.
 - name: Add requested fixes to the selected frozen baseline
   hosts: localhost
   gather_facts: false
@@ -95,6 +96,7 @@
             - name: Create one minor only when no recoverable version exists
               when: sniper_recovered_minor | length == 0
               block:
+                # Reason: The selected collection has no incremental-update action. See docs/implementation.md#incremental-update-api.
                 - name: Request a genuine incremental update without promotion or host patching
                   ansible.builtin.uri:
                     url: '{{ sniper_server_url | regex_replace("/$", "") }}/katello/api/content_view_versions/incremental_update'

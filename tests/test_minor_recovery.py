@@ -1,4 +1,6 @@
 """Exercise minor creation/recovery and normal Library to Test promotion."""
+# Reason and test scope: ../docs/implementation.md#synthetic-test-modules
+
 import json
 import os
 from pathlib import Path

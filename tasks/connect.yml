@@ -1,4 +1,5 @@
 ---
+# Reason: validate exact content and input contracts. See ../docs/implementation.md#validation-filters.
 - name: Validate Satellite connection inputs
   ansible.builtin.assert:
     that:
