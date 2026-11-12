@@ -1,5 +1,45 @@
 # Design decisions history
 
+## 2026-11-12 — Protect process diagnostics and preserve read-only check mode
+
+Implementation: `7fd172ac84871ad7c08ca81a1d660e1be8badae6`, version **0.5.8**.
+
+The user requested review and focused fixes before the next AAP re-test, using
+Agent_generated_code_review. Two real local Ansible regressions reproduced
+unprotected stale-process command arguments and a runtime probe skipped during
+check mode. The corrections protect that process output while retaining its
+registered reboot evidence, and execute only the read-only probe in check mode.
+No other functional behavior or Python helper implementation changed.
+
+The review added linked supporting-code rationale, all nineteen filter
+interfaces, source/caller/alternative dispositions, inputs/output/recovery
+instructions, a TLDR, a manual process diagram and reproducible checks. The
+existing read-only Check patch job is documented as a repeatable deployed
+functional test. The retained standard RHEL 7.9 kernel scope and existing manual
+Test-before-Prod stages are explicit; no new EE, workflow or platform support.
+
+All 98 local tests and the six stage interfaces/syntax plus diagnostic syntax
+passed under both Core 2.16.19 and isolated Core 2.15.11, using supplemental
+Python 3.12.14. Strict production lint passed. Both behavioral regressions failed
+before the fixes and passed afterward. Current-source, baseline-history and
+exact staged-patch Gitleaks checks reported no leaks. Independent content and
+host assessments found no further worthwhile functional defect.
+
+The owner approved an isolated local APME service and analysis dependencies.
+Public Galaxy could not supply the pinned Satellite collection; its existing
+3.14.0 source was imported only for supplemental analysis. All six validators
+returned, and 237 leads were dispositioned without applying generated changes.
+Two internal coverage failures, upstream analysis dependency advisories and
+actual vendor-image/CaC provenance remain explicit gaps. No remote jobs or host
+changes occurred. The temporary service is separate from AAP and other reviews.
+
+The [dated evidence](docs/review-2026-11-12.md) and
+[directive matrix](docs/review-coverage.md) preserve exact policy revisions,
+accepted deviations, contradictions and limitations. This is a completed focused
+fix batch, **not full review acceptance**. Required tool/security evidence and the
+subsequent complete AAP end-to-end re-test remain outstanding; no successful
+Code_Review report is claimed.
+
 ## 2026-11-11 — Record a handover without claiming full policy review
 
 Documentation commit: `9143b410bec8713744c000e97b06d82d5459773f`.
