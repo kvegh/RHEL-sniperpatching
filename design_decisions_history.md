@@ -442,3 +442,18 @@ Focused documentation checks preserved all 14 advisories, 40 distinct CVEs,
 ten procedure steps, survey labels and local links; independent review and
 whitespace checks passed. Only documentation changed; automation stays at 0.5.7,
 and this work launched no jobs or deployments.
+
+## 2026-11-12 — Use native project requirements with the official Core 2.20 EE
+
+Implementation `06066d831bf5405992ea8d73b9f71edb87bdc1b0` (0.5.9) exposes the existing Satellite 3.14.0 pin
+through the standard collections requirements file used by AAP project updates.
+The configured certified Hub source and existing use-case prerequisite route
+supply that same version; no alternate source, credential or custom image is
+introduced. This follows the owner's decision to use the official unmodified
+Core 2.20 EE with runtime collection mapping.
+
+All 98 offline tests passed inside the actual official Core 2.20.10 EE. Test
+fixtures mark only repository-owned expressions as trusted through Ansible's
+native API, retaining legacy-Core compatibility and untrusted synthetic inputs.
+Live Satellite access, runtime readiness and host patching remain separate
+acceptance checks. Version 0.5.10 records this implementation decision.

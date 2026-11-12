@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Demo project version: 0.5.9.**
+**Demo project version: 0.5.10.**
 
 See [current handover status](current_status_for_handover.md) for recorded
 validation, review status and continuation boundaries.
