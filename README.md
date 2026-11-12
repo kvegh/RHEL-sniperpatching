@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Demo project version: 0.5.8.**
+**Demo project version: 0.5.9.**
 
 See [current handover status](current_status_for_handover.md) for recorded
 validation, review status and continuation boundaries.
@@ -78,10 +78,22 @@ settings and credentials remain in the private Vault-encrypted companion.
 ## Prerequisites
 
 - Two existing RHEL hosts registered to Satellite, an explicit Test/Prod pair, and matching non-modular RPM repositories. The catalog below is for RHEL 7.
-- An existing execution environment with redhat.satellite. Run check_runtime.yml after selecting it. The demonstrated runtime uses Ansible 2.15.11, Python 3.9.19 and Satellite collection 3.14.0.
+- The selected official AAP Core 2.20 execution environment and the pinned redhat.satellite collection 3.14.0, supplied through native project requirements. Run check_runtime.yml in the selected runtime before the demonstration.
 - Protected Satellite credentials, verified HTTPS and Machine SSH/become access. Save the organization, repositories and exact host pair in protected inputs; see [demo variables](examples/demo-vars.yml) and [inventory](inventory/example.ini).
 - Hosts already have subscription-manager, yum/dnf, native Python RPM bindings and needs-restarting. Allow a reboot when required.
 - Keep the AAP job limit empty so localhost and the selected host both run. Each stage is launched separately.
+
+`collections/requirements.yml` exposes the existing Satellite 3.14.0 pin from
+`dependencies/satellite.yml` to AAP's native project update. The receiving
+organization's existing authenticated Galaxy sources must serve that exact
+version before the project synchronizes. The existing use-case prerequisite
+preparation admits the pin to its certified PAH repository. AAP then mounts the
+resolved project collection alongside the unmodified official EE image.
+The historical Core 2.15.11/Python 3.9.19 runs above remain the recorded functional
+baseline; selecting Core 2.20 requires its own runtime and host-access verification.
+
+All 98 offline tests passed inside the official unmodified Core 2.20.10 EE.
+These checks do not establish fresh Satellite access or live patching acceptance.
 
 ## How to demonstrate the functionality
 

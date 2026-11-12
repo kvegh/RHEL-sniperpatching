@@ -7,6 +7,13 @@ import yaml
 from ansible.parsing.dataloader import DataLoader
 from ansible.plugins.loader import filter_loader
 from ansible.template import Templar
+
+# Trust only expressions read from repository task YAML, never fixture data.
+try:
+    from ansible.template import trust_as_template
+except ImportError:  # Core 2.16 predates explicit template trust.
+    def trust_as_template(value):
+        return value
 from test_sniper import ADVISORY, FakeRPM, filters, fixed, installed, proof
 
 
@@ -113,25 +120,31 @@ class AdvisoryEpochs(unittest.TestCase):
             if t["name"] == "Build bounded exact package searches"
         )
         variables["sniper_package_searches"] = templar.template(
-            search["ansible.builtin.set_fact"]["sniper_package_searches"]
+            trust_as_template(search["ansible.builtin.set_fact"]["sniper_package_searches"])
         )
         templar = Templar(loader=DataLoader(), variables=variables)
         query = next(
             t for t in tasks if "redhat.satellite.resource_info" in t
             and t["redhat.satellite.resource_info"]["resource"] == "packages"
         )
-        pairs = templar.template(query["loop"])
+        pairs = templar.template(trust_as_template(query["loop"]))
         self.assertEqual([pair[0]["id"] for pair in pairs], [7, 8])
         for pair in pairs:
             rendered = Templar(
                 loader=DataLoader(), variables=dict(variables, item=pair)
-            ).template(query["redhat.satellite.resource_info"])
+            ).template({
+                **query["redhat.satellite.resource_info"],
+                "params": {key: trust_as_template(value)
+                           for key, value in query["redhat.satellite.resource_info"]["params"].items()},
+                "search": trust_as_template(query["redhat.satellite.resource_info"]["search"]),
+                "organization": trust_as_template(query["redhat.satellite.resource_info"]["organization"]),
+            })
             self.assertEqual(int(rendered["params"]["repository_id"]), pair[0]["id"])
             self.assertEqual(
                 rendered["search"], 'filename = "demo-2.0-1.el7.x86_64.rpm"'
             )
         expression = tasks[-1]["ansible.builtin.set_fact"]["sniper_requirements"]
-        self.assertEqual(templar.template(expression), [fixed(epoch="1")])
+        self.assertEqual(templar.template(trust_as_template(expression)), [fixed(epoch="1")])
 
     def test_empty_and_contradictory_embedded_epochs_fail(self):
         for package in (

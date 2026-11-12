@@ -9,6 +9,13 @@ from ansible.errors import AnsibleFilterError
 from ansible.parsing.dataloader import DataLoader
 from ansible.template import Templar
 
+# Trust only expressions read from repository task YAML, never fixture data.
+try:
+    from ansible.template import trust_as_template
+except ImportError:  # Core 2.16 predates explicit template trust.
+    def trust_as_template(value):
+        return value
+
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location(
     "content_filters", ROOT / "filter_plugins/content.py"
@@ -63,7 +70,7 @@ class ContentBoundaries(unittest.TestCase):
             },
         }
         rendered = Templar(loader=DataLoader(), variables=variables).template(
-            task["ansible.builtin.command"]["argv"]
+            trust_as_template(task["ansible.builtin.command"]["argv"])
         )
         self.assertEqual(
             rendered,
@@ -80,7 +87,7 @@ class ContentBoundaries(unittest.TestCase):
         variables["sniper_patch_scope"] = "full"
         variables["ansible_facts"]["distribution_major_version"] = "8"
         rendered = Templar(loader=DataLoader(), variables=variables).template(
-            task["ansible.builtin.command"]["argv"]
+            trust_as_template(task["ansible.builtin.command"]["argv"])
         )
         self.assertEqual(
             rendered, ["dnf", "-y", "--disablerepo=*", "--enablerepo=repo-a", "--setopt=metadata_expire=0", "upgrade"]
@@ -139,18 +146,19 @@ class ContentBoundaries(unittest.TestCase):
             )
         )
 
-    def test_aap_scm_does_not_auto_install_runtime_dependencies(self):
+    def test_aap_scm_maps_the_reviewed_satellite_pin_through_native_galaxy(self):
         for name in [
             "requirements.yml",
             "requirements.yaml",
-            "collections/requirements.yml",
             "roles/requirements.yml",
         ]:
             self.assertFalse((ROOT / name).exists())
         declared = yaml.safe_load((ROOT / "dependencies/satellite.yml").read_text())
+        native = yaml.safe_load((ROOT / "collections/requirements.yml").read_text())
         self.assertEqual(
             declared["collections"], [{"name": "redhat.satellite", "version": "3.14.0"}]
         )
+        self.assertEqual(native, declared)
 
     def test_rpm_snapshot_format_contains_one_rpm_newline_escape(self):
         plays = yaml.safe_load((ROOT / "patch_hosts.yml").read_text())
