@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Demo project version: 0.5.10.**
+**Demo project version: 0.6.0.**
 
 See [current handover status](current_status_for_handover.md) for recorded
 validation, review status and continuation boundaries.
@@ -8,6 +8,31 @@ validation, review status and continuation boundaries.
 [Quick guide](TLDR.md) · [Process diagram](docs/process.md) ·
 [Inputs and recovery](docs/operations.md) · [Implementation rationale](docs/implementation.md) ·
 [Review evidence](docs/review-2026-11-12.md)
+
+## OLD and NEW tracks
+
+Both tracks remain available in this public repository:
+
+| Directory | Purpose | Verification |
+|---|---|---|
+| `playbooks/old/` | Preserve the older Satellite/AAP workshop demo and its runtime helpers. | Three Test-to-Prod cycles passed before this path-only reorganization. |
+| `playbooks/new/` | Independent starting point for the new local Satellite and Core 2.20 demo. | Copied from the same reviewed logic; new-environment installation and end-to-end acceptance remain pending. |
+
+Each directory contains all seven entry points, tasks, variables, filter plugins,
+native RPM/runtime helpers, synthetic inventory and collection declarations.
+Surveys remain shared generic input definitions under `surveys/`. AAP Job
+Templates must save the full path for their selected track. Existing protected
+CaC templates select `playbooks/old/`; new-track templates must use the new
+Satellite's own protected inputs before they are enabled or launched.
+
+There are no root-level forwarding playbooks. Update a template's playbook path
+and synchronize the matching source revision together. The private companion
+keeps populated environment inputs and CaC encrypted; no live import, patching
+or Satellite installation is performed by this repository reorganization.
+
+For the new Satellite build, follow [the installation sequence](docs/new-satellite.md):
+finalize the FQDN and forward/reverse DNS, update RHEL and reboot as required,
+verify prerequisites, and only then install Satellite.
 
 ## What this project does
 
@@ -78,8 +103,8 @@ settings and credentials remain in the private Vault-encrypted companion.
 ## Prerequisites
 
 - Two existing RHEL hosts registered to Satellite, an explicit Test/Prod pair, and matching non-modular RPM repositories. The catalog below is for RHEL 7.
-- The selected official AAP Core 2.20 execution environment and the pinned redhat.satellite collection 3.14.0, supplied through native project requirements. Run check_runtime.yml in the selected runtime before the demonstration.
-- Protected Satellite credentials, verified HTTPS and Machine SSH/become access. Save the organization, repositories and exact host pair in protected inputs; see [demo variables](examples/demo-vars.yml) and [inventory](inventory/example.ini).
+- A compatible EE for the selected track. OLD was exercised with Core 2.15.11; NEW targets Core 2.20. Both starting trees pin redhat.satellite 3.14.0. Run the selected track's full `check_runtime.yml` path before its demonstration.
+- Protected Satellite credentials, verified HTTPS and Machine SSH/become access. Save the organization, repositories and exact host pair in protected inputs; see [demo variables](examples/demo-vars.yml) and [inventory](playbooks/old/inventory/example.ini).
 - Hosts already have subscription-manager, yum/dnf, native Python RPM bindings and needs-restarting. Allow a reboot when required.
 - Keep the AAP job limit empty so localhost and the selected host both run. Each stage is launched separately.
 
@@ -371,10 +396,13 @@ collection on its search path, and matching Ansible CLI programs on `PATH`.
 Do not install or upgrade content as part of a normal demonstration job.
 
 ```sh
-python3 -B -m unittest discover -s tests -v
-ansible-lint --profile production --strict
-python3 files/runtime_probe.py .
-ansible-playbook --syntax-check check_runtime.yml
+SNIPER_TRACK=old python3 -B -m unittest discover -s tests -v
+SNIPER_TRACK=new python3 -B -m unittest discover -s tests -v
+ansible-lint --profile production --strict playbooks/old playbooks/new
+python3 playbooks/old/files/runtime_probe.py playbooks/old
+python3 playbooks/new/files/runtime_probe.py playbooks/new
+ansible-playbook --syntax-check playbooks/old/check_runtime.yml
+ansible-playbook --syntax-check playbooks/new/check_runtime.yml
 ```
 
 The runtime probe checks all six demonstration entry points and their Satellite
@@ -385,7 +413,7 @@ Record the actual interpreter/core/collection versions alongside results.
 ### Repeatable functional test of a deployed client
 
 Use the existing **RHEL-sniperpatching - Check patch** Job Template
-(`check_patch.yml`). Select `test` or `prod` and the same already-applied RHSA/CVE
+(`playbooks/old/check_patch.yml`). Select `test` or `prod` and the same already-applied RHSA/CVE
 input; retain the protected inventory, credential and exact authorized pair.
 Keep Limit empty and require existing SSH/become, native RPM/reboot tools and
 Satellite read access. The job checks current CV/consumer binding, every requested

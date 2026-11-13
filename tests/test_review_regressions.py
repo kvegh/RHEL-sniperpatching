@@ -14,7 +14,9 @@ import unittest
 
 import yaml
 
-ROOT = Path(__file__).resolve().parents[1]
+from track_paths import TRACK_ROOT
+
+ROOT = TRACK_ROOT
 
 
 class ReviewRegressions(unittest.TestCase):

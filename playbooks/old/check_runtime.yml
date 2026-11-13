@@ -1,0 +1,50 @@
+---
+- name: Inspect the existing execution environment and read Satellite metadata
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files: [vars/main.yml]
+  tasks:
+    # Reason: Inspect the selected EE without installing or running stages. See docs/implementation.md#runtime-inspection.
+    - name: Inspect installed collections and syntax without installing or executing stages
+      ansible.builtin.command:
+        argv:
+          - "{{ ansible_playbook_python }}"
+          - "{{ playbook_dir }}/files/runtime_probe.py"
+          - "{{ playbook_dir }}"
+      register: sniper_runtime_command
+      changed_when: false
+      check_mode: false
+
+    - name: Decode the runtime report
+      ansible.builtin.set_fact:
+        sniper_runtime: "{{ sniper_runtime_command.stdout | from_json }}"
+
+    - name: Report installed versions and stage syntax results
+      ansible.builtin.debug:
+        var: sniper_runtime
+
+    - name: Read Satellite with the installed collection
+      ansible.builtin.include_tasks: tasks/runtime_satellite.yml
+      when: "'redhat.satellite.resource_info' in sniper_runtime.modules"
+
+    - name: Require every stage to parse and the Satellite query to succeed
+      ansible.builtin.assert:
+        that:
+          - sniper_runtime.missing_modules | length == 0
+          - sniper_runtime.syntax_failures | length == 0
+          - sniper_runtime.module_argument_failures | length == 0
+          - sniper_runtime_organizations.resources | default([]) | length > 0
+        fail_msg: Review the runtime report for missing modules, unsupported module arguments, syntax errors or Satellite access failure.
+
+    - name: Record read-only runtime verification
+      ansible.builtin.set_stats:
+        aggregate: false
+        data:
+          sniper_runtime_result:
+            ansible_core: "{{ sniper_runtime.ansible_core }}"
+            python: "{{ sniper_runtime.python }}"
+            satellite_collections: "{{ sniper_runtime.satellite_collections }}"
+            syntax_checked: "{{ sniper_runtime.syntax_checked }}"
+            module_arguments_verified: true
+            satellite_read_verified: true

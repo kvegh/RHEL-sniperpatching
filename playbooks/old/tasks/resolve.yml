@@ -1,0 +1,65 @@
+---
+# Reason: validate exact content and input contracts. See ../docs/implementation.md#validation-filters.
+- name: Validate the requested RHSA or CVE list
+  ansible.builtin.set_fact:
+    sniper_ids: "{{ sniper_patch_id | sniper_patch_ids }}"
+    sniper_id: "{{ sniper_patch_id | sniper_patch_ids | join(', ') }}"
+
+- name: Resolve each input live within the selected Content View repositories
+  redhat.satellite.resource_info:
+    resource: errata
+    organization: "{{ sniper_organization }}"
+    search: '{{ "errata_id = " ~ item.1 if item.1.startswith("RHSA-") else omit }}'
+    params: '{{ {"repository_id": item.0.id} | combine({"cve": item.1} if item.1.startswith("CVE-") else {}) }}'
+  loop: "{{ sniper_repo_details | product(sniper_ids) | list }}"
+  loop_control:
+    label: "{{ item.1 }} in {{ item.0.name }}"
+  register: sniper_errata_queries
+
+- name: Require a live security advisory resolution for every input
+  ansible.builtin.set_fact:
+    sniper_resolution: "{{ sniper_errata_queries.results | sniper_resolve_queries(sniper_ids) }}"
+
+- name: Collect the deduplicated advisory union
+  ansible.builtin.set_fact:
+    sniper_errata: "{{ sniper_resolution.advisories }}"
+
+- name: Read complete advisory package metadata
+  redhat.satellite.resource_info:
+    resource: errata
+    params:
+      id: "{{ item.id }}"
+      organization_id: "{{ sniper_org.id }}"
+  loop: "{{ sniper_errata }}"
+  loop_control:
+    label: "{{ item.errata_id }}"
+  register: sniper_detail_queries
+
+- name: Build the fixed-RPM verification requirements
+  ansible.builtin.set_fact:
+    sniper_advisory_details: '{{ sniper_detail_queries.results | map(attribute="resources") | flatten }}'
+    sniper_resolved_ids: '{{ sniper_errata | map(attribute="errata_id") | sort | list }}'
+
+- name: Confirm every requested CVE in complete live advisory metadata
+  ansible.builtin.set_fact:
+    sniper_advisory_map: "{{ sniper_resolution.by_input | sniper_validate_resolution(sniper_advisory_details) }}"
+
+- name: Build bounded exact package searches
+  ansible.builtin.set_fact:
+    sniper_package_searches: "{{ sniper_advisory_details | sniper_package_searches }}"
+
+- name: Read authoritative package epochs from the selected repositories
+  redhat.satellite.resource_info:
+    resource: packages
+    organization: "{{ sniper_organization }}"
+    search: "{{ item.1 }}"
+    params:
+      repository_id: "{{ item.0.id }}"
+  loop: "{{ sniper_repo_details | product(sniper_package_searches) | list }}"
+  loop_control:
+    label: "{{ item.0.name }}"
+  register: sniper_package_queries
+
+- name: Require usable non-modular fixed-package data
+  ansible.builtin.set_fact:
+    sniper_requirements: '{{ sniper_advisory_details | sniper_package_requirements(sniper_package_queries.results | map(attribute="resources") | flatten) }}'

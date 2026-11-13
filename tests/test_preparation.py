@@ -11,7 +11,9 @@ import tempfile
 import unittest
 import yaml
 
-ROOT = Path(__file__).resolve().parents[1]
+from track_paths import TRACK_ROOT
+
+ROOT = TRACK_ROOT
 TEST = "RHEL-sniperpatching_Test"
 PROD = "RHEL-sniperpatching_Prod"
 FIRST = "RHSA-2025:1234"

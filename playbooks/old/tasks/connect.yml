@@ -1,0 +1,44 @@
+---
+# Reason: validate exact content and input contracts. See ../docs/implementation.md#validation-filters.
+- name: Validate Satellite connection inputs
+  ansible.builtin.assert:
+    that:
+      - sniper_server_url is match('^https://[^/@?#]+/?$')
+      - sniper_organization | length > 0
+      - sniper_username | length > 0
+      - sniper_password | length > 0
+    fail_msg: Supply verified HTTPS Satellite access through SATELLITE_* variables or protected AAP inputs.
+  no_log: true
+
+- name: Validate isolated resource names and the explicit host pair
+  ansible.builtin.assert:
+    that:
+      - sniper_namespace is match('^RHEL-sniperpatching(?:[-_][A-Za-z0-9]+)*$')
+      - sniper_content_view == sniper_namespace
+      - sniper_test_environment == sniper_namespace ~ '_Test'
+      - sniper_prod_environment == sniper_namespace ~ '_Prod'
+      - sniper_test_host is match('^[A-Za-z0-9][A-Za-z0-9_.-]+$')
+      - sniper_prod_host is match('^[A-Za-z0-9][A-Za-z0-9_.-]+$')
+      - sniper_test_host != sniper_prod_host
+    fail_msg: Supply distinct exact test/prod Satellite host names and an isolated project namespace.
+
+- name: Find the organization
+  redhat.satellite.resource_info:
+    resource: organizations
+    search: 'name = "{{ sniper_organization }}"'
+  register: sniper_org_query
+
+- name: Require one organization
+  ansible.builtin.set_fact:
+    sniper_org: '{{ sniper_org_query.resources | sniper_one("organization") }}'
+
+- name: Find the project content view
+  redhat.satellite.resource_info:
+    resource: content_views
+    organization: "{{ sniper_organization }}"
+    search: 'name = "{{ sniper_content_view }}"'
+  register: sniper_cv_query
+
+- name: Refuse an unowned content view
+  ansible.builtin.set_fact:
+    sniper_existing_views: '{{ sniper_cv_query.resources | sniper_owned(sniper_owner, "Content View") }}'

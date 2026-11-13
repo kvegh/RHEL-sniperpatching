@@ -1,0 +1,6 @@
+---
+# Native AAP project updates resolve this reviewed pin through the organization's
+# existing authenticated Galaxy sources. Keep dependencies/satellite.yml aligned.
+collections:
+  - name: redhat.satellite
+    version: 3.14.0

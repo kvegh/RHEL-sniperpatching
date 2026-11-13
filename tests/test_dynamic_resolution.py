@@ -11,7 +11,9 @@ import tempfile
 import unittest
 import yaml
 
-ROOT = Path(__file__).resolve().parents[1]
+from track_paths import TRACK_ROOT
+
+ROOT = TRACK_ROOT
 CVE1 = "CVE-2050-1000"
 CVE2 = "CVE-2050-1001"
 A = "RHSA-2050:1000"

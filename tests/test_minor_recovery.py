@@ -10,7 +10,9 @@ import tempfile
 import unittest
 import yaml
 
-ROOT = Path(__file__).resolve().parents[1]
+from track_paths import TRACK_ROOT
+
+ROOT = TRACK_ROOT
 A = "RHSA-2050:1000"
 DESCRIPTION = "RHEL-sniperpatching requested " + A + " from 1.0"
 MODULES = ("resource_info", "wait_for_task", "content_view_version", "fixture_incremental")

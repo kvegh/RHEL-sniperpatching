@@ -1,0 +1,59 @@
+---
+# Reason: validate exact content and input contracts. See ../docs/implementation.md#validation-filters.
+- name: Validate access and isolate project objects
+  ansible.builtin.import_tasks: connect.yml
+
+- name: Require the prepared content view
+  ansible.builtin.set_fact:
+    sniper_cv: '{{ sniper_existing_views | sniper_one("prepared Content View") }}'
+
+- name: Validate the selected stage
+  ansible.builtin.assert:
+    that: sniper_environment in ['test', 'prod']
+    fail_msg: Select sniper_environment=test or prod explicitly. No automatic production rollout is performed.
+
+- name: Select the environment and host
+  ansible.builtin.set_fact:
+    sniper_environment_name: '{{ sniper_test_environment if sniper_environment == "test" else sniper_prod_environment }}'
+    sniper_host_name: '{{ sniper_test_host if sniper_environment == "test" else sniper_prod_host }}'
+
+- name: Find the selected lifecycle environment
+  redhat.satellite.resource_info:
+    resource: lifecycle_environments
+    organization: "{{ sniper_organization }}"
+    search: 'name = "{{ sniper_environment_name }}"'
+  register: sniper_env_query
+
+- name: Require an owned environment
+  ansible.builtin.set_fact:
+    sniper_env: '{{ sniper_env_query.resources | sniper_owned(sniper_owner, "environment") | sniper_one("environment") }}'
+
+- name: Read the version currently serving this environment
+  redhat.satellite.resource_info:
+    resource: content_view_versions
+    params:
+      content_view_id: "{{ sniper_cv.id }}"
+      environment_id: "{{ sniper_env.id }}"
+  register: sniper_baseline_query
+
+- name: Require an exact serving baseline
+  ansible.builtin.set_fact:
+    sniper_baseline: '{{ sniper_baseline_query.resources | sniper_one("serving Content View version") }}'
+
+- name: Read source repositories and RHSM content labels
+  redhat.satellite.resource_info:
+    resource: repositories
+    params:
+      id: "{{ item.id }}"
+  loop: "{{ sniper_cv.repositories }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: sniper_repo_query
+
+- name: Record repository boundaries
+  ansible.builtin.set_fact:
+    sniper_repo_details: '{{ sniper_repo_query.results | map(attribute="resources") | flatten }}'
+
+- name: Validate exact host repository selectors
+  ansible.builtin.set_fact:
+    sniper_repo_args: '{{ sniper_repo_details | map(attribute="content_label") | list | sniper_repo_options }}'

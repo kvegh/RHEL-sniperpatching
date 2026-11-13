@@ -5,7 +5,9 @@ import importlib.util
 from pathlib import Path
 import unittest
 
-ROOT = Path(__file__).resolve().parents[1]
+from track_paths import TRACK_ROOT
+
+ROOT = TRACK_ROOT
 spec = importlib.util.spec_from_file_location(
     "runtime_probe", ROOT / "files/runtime_probe.py"
 )

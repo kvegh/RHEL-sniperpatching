@@ -1,0 +1,25 @@
+---
+sniper_namespace: RHEL-sniperpatching
+sniper_owner: "Managed by RHEL-sniperpatching."
+sniper_content_view: "{{ sniper_namespace }}"
+sniper_test_environment: "{{ sniper_namespace }}_Test"
+sniper_prod_environment: "{{ sniper_namespace }}_Prod"
+sniper_organization: '{{ lookup("ansible.builtin.env", "SATELLITE_ORGANIZATION") }}'
+sniper_server_url: '{{ lookup("ansible.builtin.env", "SATELLITE_SERVER_URL") }}'
+sniper_username: '{{ lookup("ansible.builtin.env", "SATELLITE_USERNAME") }}'
+sniper_password: '{{ lookup("ansible.builtin.env", "SATELLITE_PASSWORD") }}'
+sniper_environment: ""
+sniper_test_host: ""
+sniper_prod_host: ""
+sniper_patch_id: ""
+sniper_repositories: []
+sniper_baseline_end_date: ""
+sniper_update_end_date: ""
+sniper_baseline_filter: "{{ sniper_namespace }}_baseline_cutoff"
+sniper_original_filter: "{{ sniper_namespace }}_original_packages"
+sniper_patch_scope: targeted
+sniper_version: ""
+sniper_task_timeout: 1800
+sniper_reboot_timeout: 900
+sniper_smoke_services: [sshd]
+sniper_smoke_urls: []

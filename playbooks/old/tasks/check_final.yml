@@ -1,0 +1,40 @@
+---
+- name: Read final package and running-kernel proof
+  ansible.builtin.import_tasks: proof.yml
+
+- name: Require every requested advisory to be fixed
+  ansible.builtin.assert:
+    that: sniper_proof.verified | bool
+    fail_msg: "Fix verification failed: {{ sniper_proof | to_json }}"
+
+# Reason: Refuse success while the OS requests reboot. See ../docs/implementation.md#native-host-commands.
+- name: Read remaining reboot requirement
+  ansible.builtin.command:
+    argv: [needs-restarting, "-r"]
+  register: sniper_pending_reboot
+  changed_when: false
+  failed_when: sniper_pending_reboot.rc not in [0, 1]
+  check_mode: false
+
+- name: Require no outstanding reboot
+  ansible.builtin.assert:
+    that: sniper_pending_reboot.rc == 0
+    fail_msg: The fixed RPMs are installed but the system still requires a reboot.
+
+- name: Run smoke tests
+  ansible.builtin.import_tasks: smoke.yml
+
+- name: Record proof completion for the final controller assertion
+  ansible.builtin.set_fact:
+    sniper_verified_id: '{{ hostvars["localhost"].sniper_id }}'
+    sniper_verified_environment: "{{ sniper_environment }}"
+
+- name: Report verified fix evidence
+  ansible.builtin.debug:
+    msg:
+      requested: '{{ hostvars["localhost"].sniper_id }}'
+      requested_ids: '{{ hostvars["localhost"].sniper_ids }}'
+      advisory_map: '{{ hostvars["localhost"].sniper_advisory_map }}'
+      resolved_advisories: '{{ hostvars["localhost"].sniper_resolved_ids }}'
+      environment: "{{ sniper_environment }}"
+      proof: "{{ sniper_proof }}"

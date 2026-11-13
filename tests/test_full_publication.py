@@ -13,7 +13,9 @@ import unittest
 import yaml
 from ansible.errors import AnsibleFilterError
 
-ROOT = Path(__file__).resolve().parents[1]
+from track_paths import TRACK_ROOT
+
+ROOT = TRACK_ROOT
 spec = importlib.util.spec_from_file_location("cutoff_content", ROOT / "filter_plugins/content.py")
 content = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(content)

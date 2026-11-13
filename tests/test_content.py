@@ -16,7 +16,9 @@ except ImportError:  # Core 2.16 predates explicit template trust.
     def trust_as_template(value):
         return value
 
-ROOT = Path(__file__).resolve().parents[1]
+from track_paths import TRACK_ROOT
+
+ROOT = TRACK_ROOT
 spec = importlib.util.spec_from_file_location(
     "content_filters", ROOT / "filter_plugins/content.py"
 )

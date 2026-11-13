@@ -1,0 +1,279 @@
+---
+# Reason: validate exact content and input contracts. See docs/implementation.md#validation-filters.
+- name: Prepare an isolated demonstration without patching hosts
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  vars_files:
+    - vars/main.yml
+  module_defaults:
+    group/redhat.satellite.satellite:
+      server_url: "{{ sniper_server_url }}"
+      username: "{{ sniper_username }}"
+      password: "{{ sniper_password }}"
+      validate_certs: true
+  tasks:
+    - name: Validate access and ownership
+      ansible.builtin.import_tasks: tasks/connect.yml
+    - name: Validate baseline and repository inputs
+      ansible.builtin.assert:
+        that:
+          - sniper_repositories | length > 0
+          - sniper_baseline_end_date == '' or sniper_baseline_end_date is match('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+          - not ansible_check_mode
+        fail_msg: >-
+          Supply explicit repositories and an optional earlier cutoff; the default precedes all outstanding security RHSAs.
+          Use inspection instead of check mode for a new baseline.
+    - name: Inspect both intended hosts before creating resources
+      redhat.satellite.resource_info:
+        resource: hosts
+        organization: "{{ sniper_organization }}"
+        search: name = "{{ item }}"
+        full_details: true
+      loop: "{{ [sniper_test_host, sniper_prod_host] }}"
+      register: sniper_prep_host_queries
+    - name: Require distinct existing RHEL hosts in the selected organization
+      ansible.builtin.assert:
+        that:
+          - item.resources | length == 1
+          - (item.resources | sniper_one).organization_id | int == sniper_org.id | int
+          - (item.resources | sniper_one).operatingsystem_name is search('RedHat|RHEL')
+      loop: "{{ sniper_prep_host_queries.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+    - name: Inspect both intended lifecycle environment names
+      redhat.satellite.resource_info:
+        resource: lifecycle_environments
+        organization: "{{ sniper_organization }}"
+        search: name = "{{ item }}"
+      loop: "{{ [sniper_test_environment, sniper_prod_environment] }}"
+      register: sniper_prep_env_queries
+    - name: Refuse any pre-existing foreign environment
+      ansible.builtin.set_fact:
+        sniper_owned_environments: '{{ sniper_prep_env_queries.results | map(attribute="resources") | flatten
+          | sniper_owned(sniper_owner, "lifecycle environment")
+          }}'
+    - name: Create the separate lifecycle path
+      redhat.satellite.lifecycle_environment:
+        organization: "{{ sniper_organization }}"
+        name: "{{ item.name }}"
+        prior: "{{ item.prior }}"
+        description: "{{ sniper_owner }}"
+        state: present
+      loop:
+        - name: "{{ sniper_test_environment }}"
+          prior: Library
+        - name: "{{ sniper_prod_environment }}"
+          prior: "{{ sniper_test_environment }}"
+    - name: Create the dedicated content view once
+      redhat.satellite.content_view:
+        organization: "{{ sniper_organization }}"
+        name: "{{ sniper_content_view }}"
+        description: "{{ sniper_owner }}"
+        repositories: "{{ sniper_repositories }}"
+        solve_dependencies: false
+        state: present
+      when: sniper_existing_views | length == 0
+    - name: Read the dedicated view and version history
+      redhat.satellite.resource_info:
+        resource: content_views
+        organization: "{{ sniper_organization }}"
+        search: name = "{{ sniper_content_view }}"
+      register: sniper_created_cv_query
+    - name: Record the isolated content view
+      ansible.builtin.set_fact:
+        sniper_cv: "{{ sniper_created_cv_query.resources | sniper_owned(sniper_owner) | sniper_one }}"
+    - name: Inspect existing versions
+      redhat.satellite.resource_info:
+        resource: content_view_versions
+        params:
+          content_view_id: "{{ sniper_cv.id }}"
+      register: sniper_prep_versions
+    - name: Require a serving version in each new environment before moving a host
+      redhat.satellite.resource_info:
+        resource: lifecycle_environments
+        organization: "{{ sniper_organization }}"
+        search: name = "{{ item }}"
+      loop: "{{ [sniper_test_environment, sniper_prod_environment] }}"
+      register: sniper_ready_environments
+    - name: Inspect the ready version for each destination
+      redhat.satellite.resource_info:
+        resource: content_view_versions
+        params:
+          content_view_id: "{{ sniper_cv.id }}"
+          environment_id: "{{ (item.resources | sniper_one).id }}"
+      loop: "{{ sniper_ready_environments.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+      register: sniper_ready_versions
+    - name: Determine whether an initial baseline needs publication or recovery
+      ansible.builtin.set_fact:
+        sniper_prep_initialization_required: >-
+          {{ sniper_prep_versions.resources | length == 0 or
+             sniper_ready_versions.results | map(attribute='resources') | select('equalto', []) | list | length > 0 }}
+    - name: Plan a cutoff before all outstanding security advisories
+      when: sniper_prep_initialization_required
+      block:
+        - name: Read outstanding errata for only the selected host pair
+          redhat.satellite.resource_info:
+            resource: host_errata
+            params:
+              host_id: "{{ (item.resources | sniper_one).id }}"
+          loop: "{{ sniper_prep_host_queries.results }}"
+          loop_control:
+            label: "{{ item.item }}"
+          register: sniper_prep_host_errata
+        - name: Collect the full security advisory set for the demonstration
+          ansible.builtin.set_fact:
+            sniper_prep_advisory_ids: >-
+              {{ sniper_prep_host_errata.results | map(attribute='resources') | flatten | sniper_baseline_ids }}
+        - name: Resolve the selected advisories only in this view's repositories
+          redhat.satellite.resource_info:
+            resource: errata
+            params:
+              repository_id: "{{ item.0.id }}"
+            search: "{{ item.1 }}"
+          loop: >-
+            {{ (sniper_cv.repositories | product(sniper_prep_advisory_ids | sniper_baseline_searches) | list)
+               if sniper_prep_initialization_required else [] }}
+          loop_control:
+            label: "{{ item.0.name }}"
+          register: sniper_prep_advisory_queries
+        - name: Choose or validate the cutoff without changing a published baseline
+          ansible.builtin.set_fact:
+            sniper_prep_baseline: >-
+              {{ sniper_prep_advisory_ids | sniper_baseline_plan(
+                   sniper_prep_advisory_queries.results | map(attribute='resources') | flatten,
+                   sniper_baseline_end_date, sniper_prep_versions.resources) }}
+    - name: Retain RPMs without errata in a separate owned package filter
+      redhat.satellite.content_view_filter:
+        organization: "{{ sniper_organization }}"
+        content_view: "{{ sniper_content_view }}"
+        name: "{{ sniper_original_filter }}"
+        filter_type: rpm
+        inclusion: true
+        original_packages: true
+        filter_state: present
+        rule_state: absent
+      when: sniper_prep_versions.resources | length == 0
+    - name: Create the frozen baseline cutoff before the first publication
+      redhat.satellite.content_view_filter:
+        organization: "{{ sniper_organization }}"
+        content_view: "{{ sniper_content_view }}"
+        name: "{{ sniper_baseline_filter }}"
+        filter_type: erratum
+        inclusion: true
+        filter_state: present
+      when: sniper_prep_versions.resources | length == 0 and sniper_prep_baseline.cutoff | length > 0
+    - name: Include advisory content only through the chosen baseline date
+      redhat.satellite.content_view_filter_rule:
+        organization: "{{ sniper_organization }}"
+        content_view: "{{ sniper_content_view }}"
+        content_view_filter: "{{ sniper_baseline_filter }}"
+        end_date: "{{ sniper_prep_baseline.cutoff }}"
+        date_type: issued
+        types:
+          - security
+          - bugfix
+          - enhancement
+        state: present
+      when: sniper_prep_versions.resources | length == 0 and sniper_prep_baseline.cutoff | length > 0
+    - name: Publish the first cutoff baseline in Library for verification
+      redhat.satellite.content_view_version:
+        organization: "{{ sniper_organization }}"
+        content_view: "{{ sniper_content_view }}"
+        description: Initial demonstration baseline; cutoff={{ sniper_prep_baseline.cutoff }}
+      when: sniper_prep_versions.resources | length == 0
+    - name: Verify the initial baseline before any promotion or host reassignment
+      when: sniper_prep_initialization_required
+      block:
+        - name: Read the newly published or recoverable initial version
+          redhat.satellite.resource_info:
+            resource: content_view_versions
+            params:
+              content_view_id: "{{ sniper_cv.id }}"
+          register: sniper_prep_initial_versions
+        - name: Require one identifiable initial baseline
+          ansible.builtin.set_fact:
+            sniper_verified_initial_baseline: "{{ sniper_prep_initial_versions.resources | sniper_initial_baseline }}"
+        - name: Inspect the baseline's actual published advisories
+          redhat.satellite.resource_info:
+            resource: errata
+            params:
+              content_view_version_id: "{{ sniper_verified_initial_baseline.id }}"
+          register: sniper_prep_baseline_content
+        - name: Require every demonstration RHSA to be absent from the baseline
+          ansible.builtin.assert:
+            that:
+              - sniper_prep_advisory_ids | intersect(sniper_prep_baseline_content.resources | map(attribute='errata_id') | list) | length == 0
+              - sniper_verified_initial_baseline.description == 'Initial demonstration baseline; cutoff=' ~ sniper_prep_baseline.cutoff
+            fail_msg: >-
+              The initial baseline contains a selected RHSA or has an inconsistent cutoff.
+              It remains in Library; no promotion or host reassignment is allowed.
+    - name: Promote the verified initial baseline only into empty destinations
+      redhat.satellite.content_view_version:
+        organization: "{{ sniper_organization }}"
+        content_view: "{{ sniper_content_view }}"
+        version: "{{ sniper_verified_initial_baseline.version }}"
+        lifecycle_environments: "{{ [item.item.item] }}"
+      loop: "{{ sniper_ready_versions.results }}"
+      loop_control:
+        label: "{{ item.item.item }}"
+      when: sniper_prep_initialization_required and item.resources | length == 0
+    - name: Read back destination versions after any recovered promotion
+      redhat.satellite.resource_info:
+        resource: content_view_versions
+        params:
+          content_view_id: "{{ sniper_cv.id }}"
+          environment_id: "{{ (item.resources | sniper_one).id }}"
+      loop: "{{ sniper_ready_environments.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+      register: sniper_ready_versions
+    - name: Require both destinations to have a single promoted version
+      ansible.builtin.assert:
+        that: item.resources | length == 1
+      loop: "{{ sniper_ready_versions.results }}"
+      loop_control:
+        label: "{{ item.item.item }}"
+    - name: Assign only the selected pair to the new content path
+      redhat.satellite.host:
+        name: "{{ item.host }}"
+        organization: "{{ sniper_organization }}"
+        content_view: "{{ sniper_content_view }}"
+        lifecycle_environment: "{{ item.environment }}"
+        state: present
+      loop:
+        - host: "{{ sniper_test_host }}"
+          environment: "{{ sniper_test_environment }}"
+        - host: "{{ sniper_prod_host }}"
+          environment: "{{ sniper_prod_environment }}"
+    - name: Read back both final host assignments
+      redhat.satellite.resource_info:
+        resource: hosts
+        organization: "{{ sniper_organization }}"
+        search: name = "{{ item.host }}"
+        full_details: true
+      loop:
+        - host: "{{ sniper_test_host }}"
+          environment: "{{ sniper_test_environment }}"
+        - host: "{{ sniper_prod_host }}"
+          environment: "{{ sniper_prod_environment }}"
+      register: sniper_final_host_queries
+    - name: Verify the isolated assignments
+      ansible.builtin.assert:
+        that:
+          - (item.resources | sniper_one).content_facet_attributes.content_view.id | int == sniper_cv.id | int
+          - (item.resources | sniper_one).content_facet_attributes.lifecycle_environment.name == item.item.environment
+      loop: "{{ sniper_final_host_queries.results }}"
+      loop_control:
+        label: "{{ item.item.host }}"
+    - name: Report the verified initial baseline and excluded security advisory set
+      ansible.builtin.debug:
+        msg:
+          content_view: "{{ sniper_content_view }}"
+          version: "{{ sniper_verified_initial_baseline.version }}"
+          cutoff: "{{ sniper_prep_baseline.cutoff }}"
+          earliest_advisory_issue_date: "{{ sniper_prep_baseline.earliest_issue_date }}"
+          excluded_security_advisories: "{{ sniper_prep_baseline.advisories }}"
+      when: sniper_prep_initialization_required

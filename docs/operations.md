@@ -28,7 +28,7 @@ configuration, not a security sandbox against an authorized AAP administrator.
 | `sniper_rpm_python` | Optional trusted override for the operating-system Python with native RPM bindings. Normally inferred for the declared OS. |
 | `sniper_smoke_services`, `sniper_smoke_urls` | Defaults are `[sshd]` and `[]`. Add application service names and `{url, status}` checks when meaningful; the default does not establish application-level coverage. |
 
-Shared inputs live in `vars/main.yml`. Runtime facts are derived separately;
+Track defaults live in each `playbooks/<track>/vars/main.yml`. Runtime facts are derived separately;
 protected AAP extra variables can override play defaults. Do not place secrets
 in public examples, survey defaults, inventory files or logged URLs. The full
 survey JSON files are under `surveys/`; real credential bindings stay private.
@@ -44,9 +44,9 @@ repository-update check. A missing/skipped selected-host proof fails the final
 controller assertion. Keep the job Limit empty so both controller and client
 plays run.
 
-`check_runtime.yml` reads installed versions/module interfaces and Satellite
+`playbooks/old/check_runtime.yml` reads installed versions/module interfaces and Satellite
 organizations. Its probe is read-only and also runs under `--check`.
-`check_patch.yml` performs real identity/RPM/reboot/service reads and optional
+`playbooks/old/check_patch.yml` performs real identity/RPM/reboot/service reads and optional
 HTTP GET smoke requests, including in check mode. It never installs or reboots.
 Preparation, minor creation, host patching and full publication are not simulated
 planning interfaces: they refuse mutation in check mode. Use explicit read-only

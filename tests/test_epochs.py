@@ -3,6 +3,7 @@
 
 import unittest
 from pathlib import Path
+from track_paths import TRACK_ROOT
 import yaml
 from ansible.parsing.dataloader import DataLoader
 from ansible.plugins.loader import filter_loader
@@ -103,7 +104,7 @@ class AdvisoryEpochs(unittest.TestCase):
 
 
     def test_resolver_templates_query_each_repository_and_use_its_results(self):
-        root = Path(__file__).resolve().parents[1]
+        root = TRACK_ROOT
         tasks = yaml.safe_load((root / "tasks/resolve.yml").read_text())
         filter_loader.add_directory(str(root / "filter_plugins"))
         variables = {

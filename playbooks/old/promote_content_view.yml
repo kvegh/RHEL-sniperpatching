@@ -1,0 +1,63 @@
+---
+# Reason: validate exact content and input contracts. See docs/implementation.md#validation-filters.
+- name: Promote the exact tested Content View version to Prod
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  vars_files: [vars/main.yml]
+  module_defaults:
+    group/redhat.satellite.satellite:
+      server_url: "{{ sniper_server_url }}"
+      username: "{{ sniper_username }}"
+      password: "{{ sniper_password }}"
+      validate_certs: true
+  tasks:
+    - name: Read the destination context
+      ansible.builtin.import_tasks: tasks/context.yml
+
+    - name: Require an explicit production destination and version
+      ansible.builtin.assert:
+        that:
+          - sniper_environment == 'prod'
+          - sniper_version is match('^[0-9]+[.][0-9]+$')
+
+    - name: Find our Test environment
+      redhat.satellite.resource_info:
+        resource: lifecycle_environments
+        organization: "{{ sniper_organization }}"
+        search: 'name = "{{ sniper_test_environment }}"'
+      register: sniper_promote_test
+
+    - name: Read the exact version currently promoted to Test
+      redhat.satellite.resource_info:
+        resource: content_view_versions
+        params:
+          content_view_id: "{{ sniper_cv.id }}"
+          environment_id: "{{ (sniper_promote_test.resources | sniper_owned(sniper_owner) | sniper_one).id }}"
+      register: sniper_test_version
+
+    - name: Require the selected version to be the Test version and the normal lifecycle path
+      ansible.builtin.assert:
+        that:
+          - (sniper_test_version.resources | sniper_one).version == sniper_version
+          - sniper_env.prior.id | int == (sniper_promote_test.resources | sniper_one).id | int
+        fail_msg: Promote the exact Test version through the project path; force promotion is never used.
+
+    - name: Promote the selected tested version
+      redhat.satellite.content_view_version:
+        organization: "{{ sniper_organization }}"
+        content_view: "{{ sniper_content_view }}"
+        version: "{{ sniper_version }}"
+        lifecycle_environments: "{{ [sniper_prod_environment] }}"
+
+    - name: Read back production version
+      redhat.satellite.resource_info:
+        resource: content_view_versions
+        params:
+          content_view_id: "{{ sniper_cv.id }}"
+          environment_id: "{{ sniper_env.id }}"
+      register: sniper_promoted_version
+
+    - name: Confirm production serves the selected version
+      ansible.builtin.assert:
+        that: (sniper_promoted_version.resources | sniper_one).version == sniper_version
