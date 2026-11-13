@@ -488,3 +488,39 @@ requires correct hostname/forward/reverseDNS and a RHEL package upgrade before
 Satellite installation, including required reboot and subsequent verification.
 No host, live template, patching, reboot, installation or CaC import ran for
 this repository reorganization.
+
+## 2026-11-13 — Add NEW DNS and RHEL host-preparation stages
+
+Implementation: `c15fb7f61671411ea506a2753538524e4adb1130` (0.7.0). The user fixed OLD to the remote
+Satellite and its own remote AAP, and NEW to the local Satellite and selected
+current production AAP. The NEW setup stages therefore use their own inventory,
+protected SSH identities and exact VM ownership, without changing OLD runtime.
+
+DNS preparation validates both native scopes before additive DHCP/DNS updates;
+it does not restart the shared network or overwrite conflicting resources.
+Host preparation refuses installed Satellite packages, configures the documented
+repositories, upgrades installed RHEL packages, reboots as required, and verifies
+native RPM/running-kernel, FQDN/DNS, swap, SELinux, time and remaining updates.
+The NEW SSH pins explicitly enable per-host checking rather than inheriting a
+controller-wide disabled setting. No persistent trust or credential source changes.
+
+Fourteen focused tests, two syntax checks, sixteen builtin interfaces, a real
+Ansible repository-expression fixture and SSH option checks passed in the
+unchanged cached official Core2.20.10 EE with networking disabled. Production
+lint passed with zero findings. The offline checker initially misclassified
+set_fact's documented open keys; that check was corrected and the actual
+expressions were exercised. A test-harness string-escaping defect was fixed;
+these failures did not execute live operations. Local links and whitespace pass.
+
+Companion implementation `e00bd02abbb49e6d5039059fd841e40b30dbace9` defines NEW setup only,
+preserving the preceding OLD ciphertext byte-for-byte in a separate encrypted
+archive. The existing shared importer contract/counts, protected input source,
+and literal-template roundtrip passed. No new importer or wrapper was added.
+
+No live import, setup, DNS/swap change, RHEL update or Satellite application
+installation was performed. Production is absent from the importer's current
+destination inventory and token store; the existing registered AAP is a different
+installation. Registry presence was checked against the live credential hash
+without printing tokens. Adding production's API access to the shared store
+requires a separate explicit decision. Satellite application setup, dedicated
+NEW demo EE and full NEW end-to-end acceptance remain unfinished.
