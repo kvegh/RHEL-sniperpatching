@@ -1,3 +1,23 @@
+# Current checkpoint — 2026-11-13
+
+Version0.6.0 separates `playbooks/old/` and `playbooks/new/`; see the current
+[README](README.md#old-and-new-tracks). Both preserve the reviewed runtime logic.
+The replacement OLD environment completed three Test-to-Prod cycles on0.5.8;
+full policy/tooling/provenance acceptance remains separate and incomplete.
+The directory reorganization passed98 local synthetic tests per track, fourteen
+syntax checks and production lint. The private companion updates the seven
+existing CaC paths to OLD. No live template update or import was performed.
+
+The new VM and read-only prerequisite checks are complete. New Satellite
+installation, its own protected AAP configuration and complete NEW demo remain
+pending. Follow the [documented installation sequence](docs/new-satellite.md),
+including correct forward/reverseDNS and RHEL update before installation.
+
+The earlier handover below is historical; its pending functional re-test and
+next-cycle statements are superseded by this checkpoint.
+
+---
+
 # Current status for handover
 
 > Later work: the [12 November review evidence](docs/review-2026-11-12.md)

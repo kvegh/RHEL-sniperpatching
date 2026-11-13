@@ -457,3 +457,34 @@ fixtures mark only repository-owned expressions as trusted through Ansible's
 native API, retaining legacy-Core compatibility and untrusted synthetic inputs.
 Live Satellite access, runtime readiness and host patching remain separate
 acceptance checks. Version 0.5.10 records this implementation decision.
+
+## 2026-11-13 — Preserve independent OLD and NEW demo tracks
+
+Implementation: `1353b73ed7c8a535bb205cf67165cf737ce804b5` (0.6.0).
+The user requested both environments remain available in separate directories,
+with public automation and matching private CaC maintained together. Each tree
+now contains seven entry points and its own unchanged runtime tasks, variables,
+filters and helpers. Root forwarding playbooks were not added. Generic surveys
+remain shared; tests choose a tree explicitly. Native AAP project requirements
+retain the reviewed Satellite collection pin.
+
+Existing private CaC template paths were updated in companion implementation
+`8a6a77e577f6665630bc2ec30652cdce6bd6e61a`; all other logical protected values
+and literal tags were preserved. Existing names and environment/runtime bindings
+were retained. New-environment templates will be configured with their own
+protected inputs during setup; the copied NEW tree is not deployment acceptance.
+
+OLD passed all98 synthetic tests on supplemental Core2.16.19 in170.393s. NEW
+passed all98 in the actual cached official Core2.20.10 image in246.280s, offline
+without image changes. Fourteen entry-point syntax checks and all nine Satellite
+module interfaces passed using installed3.14.0. Production lint passed both
+trees; four existing Jinja inspection exceptions for runtime-only inputs were
+reported and were not suppressed. Runtime file bytes, local Markdown targets
+and whitespace checks passed. These checks do not establish a new live OLD
+re-test, NEW Satellite installation or resolution of broader review gaps.
+
+The new installation sequence references Red Hat's6.19 connected guide and
+requires correct hostname/forward/reverseDNS and a RHEL package upgrade before
+Satellite installation, including required reboot and subsequent verification.
+No host, live template, patching, reboot, installation or CaC import ran for
+this repository reorganization.
