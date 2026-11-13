@@ -1,0 +1,43 @@
+---
+- name: Configure only the NEW Satellite VM's libvirt DNS and DHCP reservation
+  hosts: sniper_satellite_hypervisor
+  gather_facts: false
+  become: true
+  pre_tasks:
+    - name: Load the management-verified SSH identity for the NEW hypervisor
+      ansible.builtin.import_tasks: tasks/ssh_pin.yml
+  tasks:
+    - name: Apply and verify only the exact NEW VM's additive DNS entries
+      block:
+        # Native net-update avoids a shared network restart; all identity and conflict checks precede writes.
+        - name: Reconcile the exact NEW VM reservation and DNS in both native scopes
+          ansible.builtin.command:
+            argv:
+              - /usr/bin/python3
+              - -c
+              - "{{ lookup('ansible.builtin.file', playbook_dir ~ '/files/satellite_dns.py') }}"
+            stdin: >-
+              {{ {'vm_name': sniper_new_vm_name, 'uuid': sniper_new_vm_uuid,
+                  'mac': sniper_new_vm_mac, 'address': sniper_new_vm_address,
+                  'fqdn': sniper_satellite_fqdn, 'network': sniper_new_vm_network,
+                  'check': ansible_check_mode} | to_json }}
+          register: sniper_new_dns_command
+          changed_when: (sniper_new_dns_command.stdout | from_json).changed
+          check_mode: false
+          no_log: true
+
+        - name: Record the NEW DNS configuration result without environment values
+          ansible.builtin.set_stats:
+            aggregate: false
+            data:
+              sniper_new_dns_result: "{{ sniper_new_dns_command.stdout | from_json }}"
+      always:
+        - name: Remove the execution-local hypervisor public pin
+          ansible.builtin.file:
+            path: "{{ sniper_new_trust_file.path }}"
+            state: absent
+          delegate_to: localhost
+          become: false
+          changed_when: false
+          no_log: true
+          check_mode: false

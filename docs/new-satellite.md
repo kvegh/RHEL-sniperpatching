@@ -2,7 +2,8 @@
 
 The new track includes installing Satellite, then building and verifying the
 Core 2.20 execution environment and running the demo through the selected AAP.
-The VM provision and read-only prerequisite check are complete. Satellite itself
+OLD is the remote demo and its own AAP; NEW is our local Satellite and current
+production AAP. The VM provision and read-only prerequisite check are complete. Satellite itself
 is not installed yet. No installation playbook has been executed.
 
 Follow Red Hat Satellite 6.19's connected-installation guide:
@@ -34,3 +35,28 @@ References:
 This is the implementation sequence, not a claim that the installation or
 new-environment acceptance has passed. Keep CaC current with the actual deployed
 state as each new-track stage is implemented and verified.
+
+## Implemented NEW preparation stages
+
+| Public playbook | Managed target | Behavior |
+|---|---|---|
+| `playbooks/new/configure_satellite_dns.yml` | Selected hypervisor | Verify exact VM identity and lease, refuse conflicting resources, add only its DHCP/DNS entries in live/persistent libvirt state without restarting the network. Check mode plans only. |
+| `playbooks/new/prepare_satellite_host.yml` | Exact NEW guest | Verify SSH/VM identity and supported RHEL; configure documented repositories; upgrade installed RHEL packages; reboot as required; compare running/native installed kernels; verify DNS, swap, SELinux, time and no remaining updates. |
+
+These stages have local validation, not live acceptance. Satellite application
+package installation and initial configuration are the next separate stage.
+A copied NEW demo playbook does not mean the fresh environment is operational.
+
+## Deploying the AAP project configuration
+
+Use the existing **Deploy RHEL Sniperpatching CaC** template. Its shared
+`deploy-cac-project.yml` importer reads the fixed private encrypted capture and
+requires the destination's registered inventory name and matching protected API
+record. The current capture defines only the NEW setup project, inventory,
+credential and templates. OLD definitions remain a separate encrypted historical
+archive for the remote environment. No second importer or forwarding job is added.
+
+The selected destination must already have the declared native hypervisor
+Machine credential and compatible Core 2.20 EE. Importing configuration does not
+launch setup, install Satellite or patch a host. Registering a destination and
+its API access is distinct from successful API access through a worker's MCP.

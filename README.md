@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Demo project version: 0.6.0.**
+**Demo project version: 0.7.0.**
 
 See [current handover status](current_status_for_handover.md) for recorded
 validation, review status and continuation boundaries.
@@ -15,15 +15,21 @@ Both tracks remain available in this public repository:
 
 | Directory | Purpose | Verification |
 |---|---|---|
-| `playbooks/old/` | Preserve the older Satellite/AAP workshop demo and its runtime helpers. | Three Test-to-Prod cycles passed before this path-only reorganization. |
-| `playbooks/new/` | Independent starting point for the new local Satellite and Core 2.20 demo. | Copied from the same reviewed logic; new-environment installation and end-to-end acceptance remain pending. |
+| `playbooks/old/` | Remote demo Satellite and its own remote AAP, with the tested runtime helpers. | Three Test-to-Prod cycles passed before this path-only reorganization. |
+| `playbooks/new/` | Our local Satellite and up-to-date production AAP; includes separate NEW setup stages. | Copied from the same reviewed logic; new-environment installation and end-to-end acceptance remain pending. |
 
-Each directory contains all seven entry points, tasks, variables, filter plugins,
+Each directory contains all seven demo entry points, tasks, variables, filter plugins,
 native RPM/runtime helpers, synthetic inventory and collection declarations.
 Surveys remain shared generic input definitions under `surveys/`. AAP Job
-Templates must save the full path for their selected track. Existing protected
-CaC templates select `playbooks/old/`; new-track templates must use the new
-Satellite's own protected inputs before they are enabled or launched.
+Templates must save the full path for their selected track. OLD always runs
+through the remote environment's own AAP. NEW runs through our production AAP.
+The current private CaC describes NEW setup only; the historical OLD capture is
+preserved separately and must never be imported into the NEW controller.
+
+NEW adds `configure_satellite_dns.yml` and `prepare_satellite_host.yml`. Their
+[documented sequence](docs/new-satellite.md) includes strict SSH identity, exact
+VM ownership, RHEL update/reboot/kernel proof, matching FQDN/DNS and swap.
+Satellite package installation/configuration and the new demo EE remain pending.
 
 There are no root-level forwarding playbooks. Update a template's playbook path
 and synchronize the matching source revision together. The private companion

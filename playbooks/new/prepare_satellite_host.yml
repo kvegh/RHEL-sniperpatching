@@ -1,0 +1,223 @@
+---
+- name: Prepare only the NEW Satellite host before installing Satellite
+  hosts: sniper_satellite_new
+  gather_facts: false
+  become: true
+  vars:
+    sniper_satellite_repositories:
+      - rhel-9-for-x86_64-baseos-rpms
+      - rhel-9-for-x86_64-appstream-rpms
+      - satellite-6.19-for-rhel-9-x86_64-rpms
+      - satellite-maintenance-6.19-for-rhel-9-x86_64-rpms
+    sniper_satellite_swap_file: /swapfile-satellite
+  handlers:
+    - name: Initialize new Satellite swap
+      ansible.builtin.include_tasks: tasks/initialize_swap.yml
+  pre_tasks:
+    - name: Require a normal NEW host preparation run
+      ansible.builtin.assert:
+        that: not ansible_check_mode
+        fail_msg: Fresh RHEL upgrade, reboot and swap preparation requires a normal run; use the separate DNS check mode or read-only preflight for inspection.
+
+    - name: Load the management-verified SSH identity for the NEW guest
+      ansible.builtin.import_tasks: tasks/ssh_pin.yml
+  tasks:
+    - name: Prepare the identity-verified NEW guest and retain native verification
+      block:
+        - name: Read the NEW guest's operating system and machine identity
+          ansible.builtin.setup:
+
+        - name: Require the exact fresh supported NEW Satellite VM
+          ansible.builtin.assert:
+            that:
+              - ansible_facts.product_uuid | lower == sniper_new_vm_uuid | lower
+              - ansible_facts.distribution == 'RedHat'
+              - ansible_facts.distribution_major_version == '9'
+              - ansible_facts.architecture == 'x86_64'
+              - ansible_facts.processor_vcpus | int >= 4
+              - ansible_facts.memtotal_mb | int * 1048576 >= 20000000000
+              - sniper_satellite_fqdn is match('^[a-z0-9][a-z0-9.-]+[a-z0-9]$')
+              - "'.' in sniper_satellite_fqdn"
+              - sniper_satellite_fqdn.split('.')[0] == sniper_new_vm_name
+            fail_msg: The selected guest must be the exact supported NEW Satellite VM, never an OLD remote demo host.
+          no_log: true
+
+        - name: Inspect the Satellite installer scenario without reading secrets
+          ansible.builtin.stat:
+            path: /etc/foreman-installer/scenarios.d/satellite.yaml
+          register: sniper_existing_satellite_scenario
+
+        - name: Refuse fresh-host preparation after Satellite packages are installed
+          ansible.builtin.assert:
+            that: not sniper_existing_satellite_scenario.stat.exists
+            fail_msg: Satellite packages are already present; use their supported maintenance workflow instead of repeating fresh RHEL preparation.
+
+        - name: Set the final NEW FQDN before package installation
+          ansible.builtin.hostname:
+            name: "{{ sniper_satellite_fqdn }}"
+            use: systemd
+
+        - name: Verify the existing Red Hat registration without changing it
+          ansible.builtin.command:
+            argv: [subscription-manager, identity]
+          changed_when: false
+          no_log: true
+          check_mode: false
+
+        - name: Read the enabled repositories
+          ansible.builtin.command:
+            argv: [subscription-manager, repos, --list-enabled]
+          register: sniper_enabled_repository_command
+          changed_when: false
+
+        - name: Derive the exact currently enabled repository IDs
+          ansible.builtin.set_fact:
+            sniper_enabled_repository_ids: >-
+              {{ sniper_enabled_repository_command.stdout |
+                 regex_findall('(?m)^\s*Repo ID:\s*(\S+)') | sort }}
+
+        - name: Configure only the repositories required by the Satellite guide
+          ansible.builtin.command:
+            argv: >-
+              {{ ['subscription-manager', 'repos', '--disable=*'] +
+                 (sniper_satellite_repositories | map('regex_replace', '^', '--enable=') | list) }}
+          when: sniper_enabled_repository_ids != sniper_satellite_repositories | sort
+          changed_when: true
+
+        - name: Update RHEL completely before installing Satellite
+          ansible.builtin.dnf:
+            name: '*'
+            state: latest
+            update_only: true
+            update_cache: true
+
+        - name: Ensure native DNS and reboot-verification tools are present
+          ansible.builtin.dnf:
+            name: [bind-utils, dnf-utils]
+            state: present
+
+        - name: Determine whether the RHEL upgrade requires a reboot
+          ansible.builtin.command:
+            argv: [needs-restarting, -r]
+          register: sniper_rhel_reboot_hint
+          changed_when: false
+          failed_when: sniper_rhel_reboot_hint.rc not in [0, 1]
+
+        - name: Reboot the NEW guest when its RHEL update requires it
+          ansible.builtin.reboot:
+            reboot_timeout: 1200
+          when: sniper_rhel_reboot_hint.rc == 1
+
+        - name: Refresh the actual running RHEL facts after the update
+          ansible.builtin.setup:
+
+        - name: Verify the running kernel against the newest installed native RPM
+          ansible.builtin.command:
+            argv:
+              - /usr/bin/python3
+              - -c
+              - "{{ lookup('ansible.builtin.file', playbook_dir ~ '/files/new_kernel_check.py') }}"
+          register: sniper_new_kernel_command
+          changed_when: false
+
+        - name: Require the newest installed RHEL kernel to be running
+          ansible.builtin.assert:
+            that: (sniper_new_kernel_command.stdout | from_json).running_latest_kernel
+            fail_msg: Boot the newest installed RHEL kernel before Satellite installation.
+
+        - name: Query forward DNS from the NEW host
+          ansible.builtin.command:
+            argv: [dig, +short, A, "{{ sniper_satellite_fqdn }}"]
+          register: sniper_satellite_forward_dns
+          changed_when: false
+
+        - name: Query reverse DNS from the NEW host
+          ansible.builtin.command:
+            argv: [dig, +short, -x, "{{ sniper_new_vm_address }}"]
+          register: sniper_satellite_reverse_dns
+          changed_when: false
+
+        - name: Read the system FQDN after any reboot
+          ansible.builtin.command:
+            argv: [hostname, --fqdn]
+          register: sniper_satellite_actual_fqdn
+          changed_when: false
+
+        - name: Require unique matching forward and reverse DNS and the final FQDN
+          ansible.builtin.assert:
+            that:
+              - sniper_satellite_actual_fqdn.stdout | trim == sniper_satellite_fqdn
+              - sniper_satellite_forward_dns.stdout_lines | unique | list == [sniper_new_vm_address]
+              - sniper_satellite_reverse_dns.stdout_lines | map('regex_replace', '\.$', '') | unique | list == [sniper_satellite_fqdn]
+            fail_msg: Correct the NEW host's real forward and reverse DNS before Satellite installation; hosts-file aliases do not establish DNS correctness.
+          no_log: true
+
+        - name: Inspect the project-managed swap file without replacing it
+          ansible.builtin.stat:
+            path: "{{ sniper_satellite_swap_file }}"
+          register: sniper_satellite_swap_stat
+
+        - name: Refuse to overwrite an existing unverified swap file
+          ansible.builtin.assert:
+            that: not sniper_satellite_swap_stat.stat.exists
+            fail_msg: Insufficient swap and an existing project swap path require inspection before any overwrite.
+          when: ansible_facts.swaptotal_mb | int < 4095
+
+        - name: Allocate the documented swap on the fresh NEW host
+          ansible.builtin.command:
+            argv: [fallocate, --length, 4GiB, "{{ sniper_satellite_swap_file }}"]
+            creates: "{{ sniper_satellite_swap_file }}"
+          when: ansible_facts.swaptotal_mb | int < 4095
+          notify: Initialize new Satellite swap
+
+        - name: Finish new swap initialization before checking prerequisites
+          ansible.builtin.meta: flush_handlers
+
+        - name: Confirm enabled SELinux and synchronized time
+          ansible.builtin.command:
+            argv: [timedatectl, show, --property=NTPSynchronized, --value]
+          register: sniper_satellite_time_status
+          changed_when: false
+          until: sniper_satellite_time_status.stdout | trim == 'yes'
+          retries: 20
+          delay: 3
+
+        - name: Verify that RHEL has no remaining package updates
+          ansible.builtin.command:
+            argv: [dnf, --quiet, check-update, --refresh]
+          register: sniper_remaining_rhel_updates
+          changed_when: false
+          failed_when: sniper_remaining_rhel_updates.rc not in [0, 100]
+
+        - name: Refresh and verify swap, SELinux and the final RHEL update state
+          ansible.builtin.setup:
+
+        - name: Require every installation prerequisite to be satisfied
+          ansible.builtin.assert:
+            that:
+              - ansible_facts.swaptotal_mb | int >= 4095
+              - ansible_facts.selinux.status == 'enabled'
+              - sniper_remaining_rhel_updates.rc == 0
+            fail_msg: NEW Satellite installation remains blocked until swap, SELinux, DNS and RHEL update verification pass.
+
+        - name: Record NEW host preparation without connection or secret values
+          ansible.builtin.set_stats:
+            aggregate: false
+            data:
+              sniper_new_preparation_result:
+                track: new
+                rhel: "{{ ansible_facts.distribution_version }}"
+                running_kernel: "{{ ansible_facts.kernel }}"
+                fqdn_and_dns_verified: true
+                swap_verified: true
+                no_remaining_updates: true
+                satellite_installed: false
+      always:
+        - name: Remove the execution-local guest public pin
+          ansible.builtin.file:
+            path: "{{ sniper_new_trust_file.path }}"
+            state: absent
+          delegate_to: localhost
+          become: false
+          changed_when: false
+          no_log: true

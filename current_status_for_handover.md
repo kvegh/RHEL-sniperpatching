@@ -1,3 +1,23 @@
+# NEW setup checkpoint — 2026-11-13
+
+Version0.7.0 adds NEW-only DNS and RHEL-preparation stages plus matching
+private CaC definitions. OLD always means the remote Satellite AND its own AAP;
+NEW means our local Satellite and current production AAP. The prior OLD capture
+is preserved encrypted separately, and the current capture contains NEW setup
+only. It has not been imported or executed.
+
+The existing shared CaC template is present. Production is absent from its
+destination inventory and current shared token store; the registered test AAP
+is a different installation, verified through HTTPS instance identity. No token
+or credential source was changed. Production registration needs resolution
+before this importer can select it. Worker MCP access remains operational and
+separate. No setup, RHEL update, DNS/swap mutation or Satellite install has run.
+
+The NEW local-client OS choice is pending independently. The earlier directory
+reorganization below is published0.6.0 with its recorded regression results.
+
+---
+
 # Current checkpoint — 2026-11-13
 
 Version0.6.0 separates `playbooks/old/` and `playbooks/new/`; see the current

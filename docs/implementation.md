@@ -162,3 +162,26 @@ These native modules and the previously selected certified Satellite release
 were assessed before retaining custom behavior. A source checkout or converted
 analysis wheel does not prove certified binary provenance. Exact target-image
 and entitled collection-artifact provenance remain review evidence gaps.
+
+## NEW setup support and boundaries
+
+These helpers are used only by NEW setup; OLD retains its independent runtime.
+
+| Source/caller | Reason and scope |
+|---|---|
+| `playbooks/new/files/satellite_dns.py`, called by `configure_satellite_dns.yml` | Parse native domain/network XML, bind the exact UUID/MAC/current lease, and reject conflicting entries in both live and persistent scopes before writes. Use existing virsh additive updates without a shared network restart. The helper adds no service or third-party dependency and does not replace native libvirt management. Synthetic tests cover check mode, conflicts, idempotency, partial state and preservation of other guests. |
+| `playbooks/new/files/new_kernel_check.py`, called by `prepare_satellite_host.yml` | Use the guest's native RPM EVR comparison to select its newest installed architecture-matching kernel, then compare the real running release. Missing metadata or an old running kernel cannot produce a successful preparation result. No guest write or additional Python dependency. |
+| `playbooks/new/tasks/ssh_pin.yml` | Create an execution-local, private public-key pin from protected management-verified data before the first SSH connection. Require strict checking, preserve persistent trust and remove the temporary pin. Native Machine credentials provide authentication. |
+
+The NEW preparation playbook upgrades installed RHEL packages with update-only
+semantics before any Satellite installation. It refuses a host that already has
+Satellite packages, follows the documented repositories, reboots when required,
+and verifies kernel, DNS, swap, SELinux, synchronized time and no remaining
+updates. Swap formatting is notified only by a newly created owned file and is
+completed by a handler before prerequisite verification. It never overwrites an
+existing insufficient/unknown swap file. Application installation is separate.
+
+These local checks do not prove a live setup run. The shared CaC importer still
+requires the destination inventory entry and matching protected API record;
+worker MCP access is a different authentication path. OLD belongs to its remote
+AAP, while NEW belongs to our selected production AAP.

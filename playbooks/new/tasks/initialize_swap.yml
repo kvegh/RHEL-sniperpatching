@@ -1,0 +1,22 @@
+---
+- name: Restrict the newly allocated swap file
+  ansible.builtin.file:
+    path: "{{ sniper_satellite_swap_file }}"
+    mode: '0600'
+
+- name: Format only the newly allocated project swap file
+  ansible.builtin.command:
+    argv: [mkswap, "{{ sniper_satellite_swap_file }}"]
+  changed_when: true
+
+- name: Activate only the newly formatted project swap file
+  ansible.builtin.command:
+    argv: [swapon, "{{ sniper_satellite_swap_file }}"]
+  changed_when: true
+
+- name: Persist only the newly created project swap entry
+  ansible.builtin.lineinfile:
+    path: /etc/fstab
+    line: "{{ sniper_satellite_swap_file }} none swap defaults 0 0"
+    state: present
+    validate: findmnt --verify --tab-file %s

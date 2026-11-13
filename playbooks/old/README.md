@@ -10,3 +10,6 @@ See the [project guide](../../README.md) and [operations](../../docs/operations.
 The OLD tree preserves the previously tested runtime behavior. Existing AAP
 template names and protected inputs are preserved; their CaC paths now point
 to this directory. Historical exact-revision test results remain historical.
+
+OLD always means the remote demo environment, including its own AAP controller.
+Do not configure or execute these OLD templates on our NEW production controller.
