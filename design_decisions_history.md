@@ -557,3 +557,25 @@ Core2.20.10 base and adds only the SHA256-verified certified operations4.0.0
 collection. The local image, vendor layer/runtime preservation and installer
 role syntax passed. Publication awaits an established protected registry login;
 no credential changes or installer execution are implied. OLD is unchanged.
+
+## 2026-11-14 — Configure NEW Satellite with certified operations and current API content
+
+Implementation: `a62db6b5cdf193deb358d2245040ccc46bcd2035`, version **0.9.0**.
+
+Run the certified installer after the verified NEW package stage. Validate
+the installed native scenario, answer mapping and Puppet parameter definitions
+before writing only the initial administrator fields as root0600. Preserve all
+other answers and refuse a different existing credential. Credentials come
+from the existing native project pattern and never enter command arguments.
+The role uses the exact verified setup EE; final service and authenticated
+HTTPS checks require the installed native CA with certificate validation.
+Fourteen builtin interfaces, syntax and seven real Ansible preservation,
+idempotence, redaction and refusal fixtures passed on Core2.20.10. Installed
+package/schema evidence is verified; live application configuration is pending.
+
+NEW pins certified redhat.satellite6.0.0 and follows its filter-only API.
+Remove three obsolete rule_state arguments while retaining explicit rule tasks.
+The certified source establishes this behavior since4.0.0. Twenty-four NEW
+fixtures, nine installed module interfaces and six stage syntaxes passed on
+Core2.20.10; the same24 shared regressions passed on OLD Core2.15.11. OLD source
+and3.14.0 pin are unchanged. Full demo EE and live acceptance remain separate.
