@@ -95,13 +95,14 @@ digest explicitly; publication alone does not establish those live bindings.
 
 ## Job-local Satellite CA trust
 
-The existing project Satellite credential can supply an optional `server_ca`
-PEM certificate through native AAP file injection. Its temporary path is exposed
-as `SATELLITE_CA_PATH`. Certified collection 6.0.0 uses that path directly, and
-the incremental-update URI passes the same path to its `ca_path` argument.
-An empty input retains normal trust. Certificate validation stays enabled.
-The image and system trust stores are unchanged; populated CA data belongs only
-in the private Vault capture and the existing native credential.
+Protected project configuration can supply an optional `sniper_satellite_ca_pem`
+public certificate. Native Ansible tasks write a mode0600 file inside Ansible's
+own temporary directory, with a forced handler that removes it on success or failure. Its path is passed
+explicitly to certified collection 6.0.0 and the incremental-update URI.
+An existing `SATELLITE_CA_PATH` remains a supported initial path. Empty input
+retains normal trust and certificate validation stays enabled. The image,
+system trust stores and existing credential schemas are unchanged; populated
+CA data belongs in private Vault configuration.
 
 The NEW read-only runtime template uses its dedicated demo EE and API credential,
 with become disabled. It checks installed content and syntax, then authenticates

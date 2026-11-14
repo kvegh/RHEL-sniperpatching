@@ -4,6 +4,10 @@
   connection: local
   gather_facts: false
   vars_files: [vars/main.yml]
+  force_handlers: true
+  handlers:
+    - name: Remove job-local Satellite CA
+      ansible.builtin.include_tasks: tasks/api_ca_cleanup.yml
   tasks:
     # Reason: Inspect the selected EE without installing or running stages. See docs/implementation.md#runtime-inspection.
     - name: Inspect installed collections and syntax without installing or executing stages

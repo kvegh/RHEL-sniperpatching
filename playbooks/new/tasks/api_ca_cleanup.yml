@@ -1,0 +1,7 @@
+---
+- name: Remove this job's public Satellite CA file
+  ansible.builtin.file:
+    path: "{{ sniper_satellite_job_ca.path }}"
+    state: absent
+  when: sniper_satellite_job_ca.path is defined
+  no_log: true

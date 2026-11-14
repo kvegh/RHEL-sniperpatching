@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Demo project version: 0.11.1.**
+**Demo project version: 0.11.2.**
 
 See [current handover status](current_status_for_handover.md) for recorded
 validation, review status and continuation boundaries.
@@ -130,12 +130,14 @@ requirements in each track's `dependencies/satellite.yml` and build its own EE;
 bind each demo job template explicitly to that EE's immutable image.
 See [Red Hat's collection precedence documentation](https://docs.redhat.com/en/documentation/red_hat_ansible_automation_platform/2.7/develop-ref_projects_collections_support).
 
-For a Satellite with its own CA, protected AAP credential file injection can
-supply `SATELLITE_CA_PATH` to the unchanged NEW EE. Certified collection 6.0.0
-uses that file directly; the incremental-update URI uses the same optional path.
-The runtime check verifies both authenticated collection and native URI reads.
-An unset path preserves normal trust, and certificate validation stays enabled.
-Keep populated certificates and receiving-environment settings in private CaC.
+For a Satellite with its own CA, protected project configuration can supply
+`sniper_satellite_ca_pem`. NEW writes this public certificate as mode0600 inside
+Ansible's native temporary directory and passes its path to both API clients.
+An existing `SATELLITE_CA_PATH` can also supply the initial path. The runtime
+check verifies authenticated collection and native URI reads. Empty configuration
+preserves normal trust, and certificate validation stays enabled. Keep populated
+certificates and receiving-environment settings in private CaC; existing native
+credential types and credentials retain their input schemas.
 
 OLD retains its verified Core 2.15.11/Satellite collection 3.14.0 baseline.
 NEW pins certified redhat.satellite 6.0.0, resolved from Red Hat Automation Hub.

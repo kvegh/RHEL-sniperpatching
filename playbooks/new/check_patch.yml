@@ -10,6 +10,11 @@
       username: "{{ sniper_username }}"
       password: "{{ sniper_password }}"
       validate_certs: true
+      ca_path: "{{ sniper_satellite_ca_path | default(omit, true) }}"
+  force_handlers: true
+  handlers:
+    - name: Remove job-local Satellite CA
+      ansible.builtin.include_tasks: tasks/api_ca_cleanup.yml
   tasks:
     - name: Resolve the exact target and requested fixes
       ansible.builtin.import_tasks: tasks/host_context.yml

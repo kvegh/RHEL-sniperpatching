@@ -12,6 +12,11 @@
       username: "{{ sniper_username }}"
       password: "{{ sniper_password }}"
       validate_certs: true
+      ca_path: "{{ sniper_satellite_ca_path | default(omit, true) }}"
+  force_handlers: true
+  handlers:
+    - name: Remove job-local Satellite CA
+      ansible.builtin.include_tasks: tasks/api_ca_cleanup.yml
   tasks:
     - name: Read the explicit serving baseline
       ansible.builtin.import_tasks: tasks/context.yml
@@ -107,7 +112,7 @@
                     use_netrc: false
                     follow_redirects: none
                     validate_certs: true
-                    ca_path: "{{ lookup('ansible.builtin.env', 'SATELLITE_CA_PATH') | default(omit, true) }}"
+                    ca_path: "{{ sniper_satellite_ca_path | default(omit, true) }}"
                     body_format: json
                     body:
                       content_view_version_environments:

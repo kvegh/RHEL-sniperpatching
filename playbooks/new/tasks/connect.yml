@@ -22,6 +22,9 @@
       - sniper_test_host != sniper_prod_host
     fail_msg: Supply distinct exact test/prod Satellite host names and an isolated project namespace.
 
+- name: Prepare optional job-local Satellite trust
+  ansible.builtin.include_tasks: api_ca.yml
+
 - name: Find the organization
   redhat.satellite.resource_info:
     resource: organizations

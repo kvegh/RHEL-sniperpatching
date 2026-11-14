@@ -8,12 +8,16 @@
     fail_msg: Supply protected SATELLITE_* connection inputs with verified HTTPS.
   no_log: true
 
+- name: Prepare optional job-local Satellite trust
+  ansible.builtin.include_tasks: api_ca.yml
+
 - name: Read organizations without changing Satellite or contacting managed hosts
   redhat.satellite.resource_info:
     server_url: "{{ sniper_server_url }}"
     username: "{{ sniper_username }}"
     password: "{{ sniper_password }}"
     validate_certs: true
+    ca_path: "{{ sniper_satellite_ca_path | default(omit, true) }}"
     resource: organizations
   register: sniper_runtime_organizations
   no_log: true
@@ -28,7 +32,7 @@
     use_netrc: false
     follow_redirects: none
     validate_certs: true
-    ca_path: "{{ lookup('ansible.builtin.env', 'SATELLITE_CA_PATH') | default(omit, true) }}"
+    ca_path: "{{ sniper_satellite_ca_path | default(omit, true) }}"
     status_code: 200
     timeout: 30
   changed_when: false

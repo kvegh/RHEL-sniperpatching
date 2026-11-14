@@ -1,0 +1,22 @@
+---
+- name: Prepare optional public Satellite CA in the native job temporary directory
+  when: sniper_satellite_ca_pem | default('') | length > 0
+  no_log: true
+  block:
+    - name: Allocate the job-local CA file
+      ansible.builtin.tempfile:
+        state: file
+        path: "{{ lookup('ansible.builtin.config', 'DEFAULT_LOCAL_TMP') }}"
+        suffix: -sniper-satellite-ca.pem
+      register: sniper_satellite_job_ca
+      notify: Remove job-local Satellite CA
+
+    - name: Supply the protected project public CA
+      ansible.builtin.copy:
+        content: "{{ sniper_satellite_ca_pem }}"
+        dest: "{{ sniper_satellite_job_ca.path }}"
+        mode: "0600"
+
+    - name: Select this job's verified CA path
+      ansible.builtin.set_fact:
+        sniper_satellite_ca_path: "{{ sniper_satellite_job_ca.path }}"

@@ -8,6 +8,7 @@ sniper_organization: '{{ lookup("ansible.builtin.env", "SATELLITE_ORGANIZATION")
 sniper_server_url: '{{ lookup("ansible.builtin.env", "SATELLITE_SERVER_URL") }}'
 sniper_username: '{{ lookup("ansible.builtin.env", "SATELLITE_USERNAME") }}'
 sniper_password: '{{ lookup("ansible.builtin.env", "SATELLITE_PASSWORD") }}'
+sniper_satellite_ca_path: '{{ lookup("ansible.builtin.env", "SATELLITE_CA_PATH") }}'
 sniper_environment: ""
 sniper_test_host: ""
 sniper_prod_host: ""

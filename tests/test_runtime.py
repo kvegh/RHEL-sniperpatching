@@ -6,6 +6,9 @@ from pathlib import Path
 import unittest
 from unittest.mock import patch
 import os
+import json
+import subprocess
+import tempfile
 import yaml
 from ansible.parsing.dataloader import DataLoader
 from ansible.plugins.loader import init_plugin_loader
@@ -29,6 +32,51 @@ spec.loader.exec_module(m)
 
 class RuntimeArguments(unittest.TestCase):
     @unittest.skipUnless(TRACK == "new", "Job-local CA support belongs to NEW.")
+    def test_public_ca_file_is_private_and_cleaned_after_success_or_failure(self):
+        with tempfile.TemporaryDirectory(prefix="sniper-ca-test-") as directory:
+            root = Path(directory)
+            for provided, fail in ((False, False), (True, False), (True, True)):
+                report = root / "report.json"
+                tasks = [{"ansible.builtin.include_tasks": str(ROOT / "tasks/api_ca.yml")}]
+                if provided:
+                    tasks.extend([
+                        {"ansible.builtin.stat": {"path": "{{ sniper_satellite_ca_path }}"}, "register": "ca_stat"},
+                        {"ansible.builtin.slurp": {"src": "{{ sniper_satellite_ca_path }}"}, "register": "ca_content"},
+                        {"ansible.builtin.stat": {"path": "{{ sniper_satellite_ca_path | dirname }}"}, "register": "ca_dir_stat"},
+                        {"ansible.builtin.assert": {"that": [
+                            "ca_stat.stat.mode == '0600'",
+                            "ca_content.content | b64decode == sniper_satellite_ca_pem",
+                            "ca_dir_stat.stat.mode == '0700'",
+                            "ca_dir_stat.stat.isdir",
+                        ]}},
+                        {"ansible.builtin.copy": {
+                            "content": "{{ {'path': sniper_satellite_ca_path} | to_json }}",
+                            "dest": str(report), "mode": "0600",
+                        }},
+                    ])
+                else:
+                    tasks.append({"ansible.builtin.assert": {"that": [
+                        "sniper_satellite_job_ca.skipped | default(false)",
+                        "sniper_satellite_job_ca.path is not defined",
+                    ]}})
+                if fail:
+                    tasks.append({"ansible.builtin.fail": {"msg": "Expected fixture failure after CA preparation"}})
+                runtime = yaml.safe_load((ROOT / "check_runtime.yml").read_text())[0]
+                handlers = runtime["handlers"]
+                for handler in handlers:
+                    handler["ansible.builtin.include_tasks"] = str(ROOT / handler["ansible.builtin.include_tasks"])
+                play = [{"name": "Exercise native public CA lifetime", "hosts": "localhost", "connection": "local",
+                         "gather_facts": False, "vars": {"sniper_satellite_ca_pem": "synthetic-public-ca\n" if provided else ""},
+                         "force_handlers": runtime["force_handlers"], "handlers": handlers, "tasks": tasks}]
+                fixture = root / "play.yml"
+                fixture.write_text(yaml.safe_dump(play, sort_keys=False))
+                result = subprocess.run(["ansible-playbook", "-i", "localhost,", str(fixture)],
+                                        capture_output=True, text=True, timeout=90)
+                self.assertEqual(result.returncode, 2 if fail else 0, result.stdout + result.stderr)
+                if provided:
+                    self.assertFalse(Path(json.loads(report.read_text())["path"]).exists())
+
+    @unittest.skipUnless(TRACK == "new", "Job-local CA support belongs to NEW.")
     def test_satellite_uri_trust_uses_provided_ca_and_preserves_default_trust(self):
         init_plugin_loader()
         def uri_arguments(value):
@@ -51,7 +99,12 @@ class RuntimeArguments(unittest.TestCase):
                 with self.subTest(file=name, ca_provided=bool(value)):
                     with patch.dict(os.environ, {"SATELLITE_CA_PATH": value}):
                         actual = Templar(
-                            loader=DataLoader(), variables={"omit": "__omit_ca__"}
+                            loader=DataLoader(), variables={
+                                "omit": "__omit_ca__",
+                                "sniper_satellite_ca_path": trust_as_template(
+                                    yaml.safe_load((ROOT / "vars/main.yml").read_text())["sniper_satellite_ca_path"]
+                                ),
+                            }
                         ).template(trust_as_template(call["ca_path"]))
                     self.assertEqual(actual, value or "__omit_ca__")
 
