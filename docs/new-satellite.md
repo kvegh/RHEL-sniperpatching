@@ -73,3 +73,15 @@ runtime. NEW uses the current certified Satellite collection from Red Hat
 Automation Hub, resolved and then exactly pinned in its Core 2.20 EE. Bind demo
 templates explicitly to the appropriate immutable EE image. The later NEW-to-OLD
 compatibility test uses that same NEW EE against the old targets.
+
+## Selected installer implementation
+
+Use the certified `redhat.satellite_operations.installer` role for the application
+installation step after the documented RHEL/DNS prerequisites. Red Hat's
+[Satellite 6.19 RHEL 9 package manifest](https://docs.redhat.com/en/documentation/red_hat_satellite/6.19/html/package_manifest/sat-6-19-rhel9)
+includes the operations collection, and the vendor's
+[installer role documentation](https://github.com/RedHatSatellite/satellite-operations-collection/blob/master/roles/installer/README.md)
+defines the Satellite scenario and supported options. Resolve and qualify the
+certified release for the selected Core 2.20 runtime before pinning it. Keep
+secret inputs in protected configuration and suppress secret-bearing output.
+This records the selected implementation; no installer role has run yet.

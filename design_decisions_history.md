@@ -524,3 +524,18 @@ installation. Registry presence was checked against the live credential hash
 without printing tokens. Adding production's API access to the shared store
 requires a separate explicit decision. Satellite application setup, dedicated
 NEW demo EE and full NEW end-to-end acceptance remain unfinished.
+
+## 2026-11-14 — Keep collection selection in each track's EE
+
+Implementation `80b785e1066daef32d1a7c57f721115235103b45` (0.7.1)
+removes the shared root collection requirement. AAP project content takes
+precedence over EE collections regardless of version, so the inherited shared
+Satellite pin could replace NEW's selected version. Each track retains its
+own dependency manifest and must use an explicitly selected immutable EE.
+OLD's source tree and runtime are unchanged. Built-in DNS/RHEL preparation
+can run in the existing Core 2.20 management EE before the dedicated NEW demo
+runtime is qualified. Both existing track-manifest checks and whitespace
+validation passed. Live import and host preparation remain separate outcomes.
+The owner subsequently selected the certified Satellite operations installer
+role where compatible with the target; its release qualification and actual
+installation are unfinished.
