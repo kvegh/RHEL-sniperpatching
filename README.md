@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Demo project version: 0.8.1.**
+**Demo project version: 0.9.0.**
 
 See [current handover status](current_status_for_handover.md) for recorded
 validation, review status and continuation boundaries.
@@ -26,13 +26,16 @@ through the remote environment's own AAP. NEW runs through our production AAP.
 The current private CaC describes NEW setup only; the historical OLD capture is
 preserved separately and must never be imported into the NEW controller.
 
-NEW adds `configure_satellite_dns.yml` and `prepare_satellite_host.yml`. Their
+NEW provides separate DNS, RHEL preparation, package installation and certified
+installer stages under `playbooks/new/`. Their
 [documented sequence](docs/new-satellite.md) includes strict SSH identity, exact
 VM ownership, RHEL update/reboot/kernel proof, matching FQDN/DNS and swap.
-The NEW package-installation stage is implemented; live installation and
-configuration acceptance remain pending. The prepared [installer EE](playbooks/new/execution-environment/README.md)
-contains the certified operations role; publication and binding remain pending,
-separately from demo-runtime qualification.
+The DNS, RHEL-preparation and Satellite6.19 package stages have passed through
+AAP. Initial application configuration uses the certified installer role and a
+protected native answer file; its live acceptance remains separate. The verified
+[installer EE](playbooks/new/execution-environment/README.md) has been published;
+the private CaC pins its receiving-Hub digest explicitly. Demo-runtime
+qualification remains separate.
 
 There are no root-level forwarding playbooks. Update a template's playbook path
 and synchronize the matching source revision together. The private companion
@@ -112,7 +115,7 @@ settings and credentials remain in the private Vault-encrypted companion.
 ## Prerequisites
 
 - Two existing RHEL hosts registered to Satellite, an explicit Test/Prod pair, and matching non-modular RPM repositories. The catalog below is for RHEL 7.
-- A compatible EE for the selected track. OLD was exercised with Core 2.15.11; NEW targets Core 2.20. Both starting trees pin redhat.satellite 3.14.0. Run the selected track's full `check_runtime.yml` path before its demonstration.
+- A compatible EE for the selected track. OLD was exercised with Core 2.15.11; NEW targets Core 2.20. OLD pins redhat.satellite 3.14.0; NEW pins the current certified 6.0.0 release. Run the selected track's full `check_runtime.yml` path before its demonstration.
 - Protected Satellite credentials, verified HTTPS and Machine SSH/become access. Save the organization, repositories and exact host pair in protected inputs; see [demo variables](examples/demo-vars.yml) and [inventory](playbooks/old/inventory/example.ini).
 - Hosts already have subscription-manager, yum/dnf, native Python RPM bindings and needs-restarting. Allow a reboot when required.
 - Keep the AAP job limit empty so localhost and the selected host both run. Each stage is launched separately.
@@ -126,9 +129,11 @@ bind each demo job template explicitly to that EE's immutable image.
 See [Red Hat's collection precedence documentation](https://docs.redhat.com/en/documentation/red_hat_ansible_automation_platform/2.7/develop-ref_projects_collections_support).
 
 OLD retains its verified Core 2.15.11/Satellite collection 3.14.0 baseline.
-NEW must resolve and qualify the current certified release from Red Hat
-Automation Hub, then pin that exact version in its Core 2.20 EE. Its inherited
-manifest is pending that update; do not treat it as current-release acceptance.
+NEW pins certified redhat.satellite 6.0.0, resolved from Red Hat Automation Hub.
+Its filter calls follow the current split between filters and explicit rules.
+The exact module interfaces, six stage syntaxes and 24 focused fixtures pass
+with Core 2.20.10. Building the complete NEW demo EE and live acceptance remain
+separate from these source and interface checks.
 The two NEW DNS/RHEL preparation templates use built-in modules and the existing
 Core 2.20 management EE. They do not require a Satellite collection to bootstrap
 the server. The historical OLD runs remain separate from NEW acceptance.

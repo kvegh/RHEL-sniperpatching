@@ -16,7 +16,7 @@ except ImportError:  # Core 2.16 predates explicit template trust.
     def trust_as_template(value):
         return value
 
-from track_paths import TRACK_ROOT
+from track_paths import TRACK, TRACK_ROOT
 
 ROOT = TRACK_ROOT
 spec = importlib.util.spec_from_file_location(
@@ -158,7 +158,8 @@ class ContentBoundaries(unittest.TestCase):
         declared = yaml.safe_load((ROOT / "dependencies/satellite.yml").read_text())
         native = yaml.safe_load((ROOT / "collections/requirements.yml").read_text())
         self.assertEqual(
-            declared["collections"], [{"name": "redhat.satellite", "version": "3.14.0"}]
+            declared["collections"], [{"name": "redhat.satellite",
+                                       "version": "6.0.0" if TRACK == "new" else "3.14.0"}]
         )
         self.assertEqual(native, declared)
 

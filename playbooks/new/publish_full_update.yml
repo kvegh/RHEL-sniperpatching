@@ -55,6 +55,7 @@
       loop_control:
         label: "{{ item.name }}"
 
+    # Collection 6 manages only the filter here; rules use content_view_filter_rule.
     - name: Retain RPMs without errata in a separate owned package filter
       redhat.satellite.content_view_filter:
         organization: "{{ sniper_organization }}"
@@ -64,7 +65,6 @@
         inclusion: true
         original_packages: true
         filter_state: present
-        rule_state: absent
       when: sniper_full_cutoff | length > 0
 
     - name: Retain our date filter for a bounded repository upgrade
@@ -104,7 +104,6 @@
         name: "{{ sniper_original_filter }}"
         filter_type: rpm
         filter_state: absent
-        rule_state: absent
       when: sniper_full_cutoff | length == 0
 
     - name: Publish the candidate in Library before verification

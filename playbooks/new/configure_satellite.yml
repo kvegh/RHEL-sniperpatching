@@ -1,0 +1,223 @@
+---
+- name: Configure only the prepared NEW Satellite with the certified installer role
+  hosts: sniper_satellite_new
+  gather_facts: false
+  become: true
+  vars:
+    sniper_installer_answers_file: /etc/foreman-installer/scenarios.d/satellite-answers.yaml
+    sniper_installer_username: "{{ lookup('ansible.builtin.env', 'SATELLITE_USERNAME') }}"
+    sniper_installer_password: "{{ lookup('ansible.builtin.env', 'SATELLITE_PASSWORD') }}"
+    sniper_installer_server_url: "{{ lookup('ansible.builtin.env', 'SATELLITE_SERVER_URL') | regex_replace('/$', '') }}"
+  pre_tasks:
+    - name: Require a normal run with the protected NEW Satellite credential
+      ansible.builtin.assert:
+        that:
+          - not ansible_check_mode
+          - sniper_installer_answers_file == '/etc/foreman-installer/scenarios.d/satellite-answers.yaml'
+          - sniper_installer_server_url == 'https://' ~ sniper_satellite_fqdn
+          - sniper_installer_username | length > 0
+          - sniper_installer_password | length >= 20
+      no_log: true
+
+    - name: Load the management-verified SSH identity for the NEW guest
+      ansible.builtin.import_tasks: tasks/ssh_pin.yml
+  tasks:
+    - name: Configure and verify the identity-bound NEW Satellite
+      block:
+        - name: Read the exact NEW guest identity and prepared prerequisites
+          ansible.builtin.setup:
+
+        - name: Require the prepared dedicated RHEL 9 guest
+          ansible.builtin.assert:
+            that:
+              - ansible_facts.product_uuid | lower == sniper_new_vm_uuid | lower
+              - ansible_facts.distribution == 'RedHat'
+              - ansible_facts.distribution_major_version == '9'
+              - ansible_facts.architecture == 'x86_64'
+              - ansible_facts.processor_vcpus | int >= 4
+              - ansible_facts.memtotal_mb | int * 1048576 >= 20000000000
+              - ansible_facts.swaptotal_mb | int >= 4095
+              - ansible_facts.selinux.status == 'enabled'
+          no_log: true
+
+        - name: Read the final system FQDN
+          ansible.builtin.command:
+            argv: [hostname, --fqdn]
+          register: sniper_installer_fqdn
+          changed_when: false
+          no_log: true
+
+        - name: Read forward DNS
+          ansible.builtin.command:
+            argv: [dig, +short, A, "{{ sniper_satellite_fqdn }}"]
+          register: sniper_installer_forward
+          changed_when: false
+          no_log: true
+
+        - name: Read reverse DNS
+          ansible.builtin.command:
+            argv: [dig, +short, -x, "{{ sniper_new_vm_address }}"]
+          register: sniper_installer_reverse
+          changed_when: false
+          no_log: true
+
+        - name: Require the final FQDN and unique matching DNS
+          ansible.builtin.assert:
+            that:
+              - sniper_installer_fqdn.stdout | trim == sniper_satellite_fqdn
+              - sniper_installer_forward.stdout_lines | unique | list == [sniper_new_vm_address]
+              - sniper_installer_reverse.stdout_lines | map('regex_replace', '\.$', '') | unique | list == [sniper_satellite_fqdn]
+          no_log: true
+
+        - name: Read the installed Satellite package version
+          ansible.builtin.command:
+            argv: [rpm, --query, --queryformat, '%{VERSION}', satellite]
+          register: sniper_installer_package_version
+          changed_when: false
+
+        - name: Require the selected Satellite 6.19 package release
+          ansible.builtin.assert:
+            that: sniper_installer_package_version.stdout is match('^6\.19(?:\.|$)')
+
+        - name: Inspect the packaged installer scenario and its native answer file
+          ansible.builtin.stat:
+            path: "{{ item }}"
+            follow: false
+          loop:
+            - /etc/foreman-installer/scenarios.d/satellite.yaml
+            - /etc/foreman-installer/scenarios.d/satellite-answers.yaml
+            - /usr/share/foreman-installer/modules/foreman/manifests/init.pp
+          register: sniper_installer_native_files
+          no_log: true
+
+        - name: Require root-owned regular native installer files
+          ansible.builtin.assert:
+            that:
+              - item.stat.isreg | default(false)
+              - not (item.stat.islnk | default(false))
+              - item.stat.uid == 0
+              - item.stat.size | int < 1048576
+          loop: "{{ sniper_installer_native_files.results }}"
+          no_log: true
+
+        - name: Read the native scenario, answer mapping and parameter definitions privately
+          ansible.builtin.slurp:
+            src: "{{ item }}"
+          loop:
+            - /etc/foreman-installer/scenarios.d/satellite.yaml
+            - /etc/foreman-installer/scenarios.d/satellite-answers.yaml
+            - /usr/share/foreman-installer/modules/foreman/manifests/init.pp
+          register: sniper_installer_native_contents
+          no_log: true
+
+        - name: Decode only the native configuration inputs
+          ansible.builtin.set_fact:
+            sniper_installer_scenario: "{{ sniper_installer_native_contents.results[0].content | b64decode | from_yaml }}"
+            sniper_installer_original_answers: "{{ sniper_installer_native_contents.results[1].content | b64decode | from_yaml }}"
+            sniper_installer_parameter_source: "{{ sniper_installer_native_contents.results[2].content | b64decode }}"
+          no_log: true
+
+        - name: Require the native scenario to select this exact private answer file
+          ansible.builtin.assert:
+            that:
+              - sniper_installer_scenario is mapping
+              - sniper_installer_scenario[':answer_file'] == sniper_installer_answers_file
+              - sniper_installer_original_answers.foreman.server_ssl_ca is match('^/etc/pki/katello/certs/[A-Za-z0-9_.-]+\.crt$')
+          no_log: true
+
+        - name: Seed only the native initial administrator answers
+          ansible.builtin.include_tasks: tasks/satellite_installer_answers.yml
+
+        - name: Configure Satellite through the exact certified installer role
+          ansible.builtin.include_role:
+            name: redhat.satellite_operations.installer
+            apply:
+              no_log: true
+          vars:
+            satellite_installer_scenario: satellite
+            satellite_installer_package: satellite
+            satellite_installer_verbose: false
+            satellite_installer_no_colors: true
+            satellite_installer_timeout: 7200
+            satellite_installer_options: []
+          no_log: true
+
+        - name: Read current service state without changing firewall ownership
+          ansible.builtin.service_facts:
+
+        - name: Apply the documented Satellite profile only when firewalld is running
+          when: ansible_facts.services.get('firewalld.service', {}).get('state', '') == 'running'
+          block:
+            - name: Query only the selected Satellite firewall profile
+              ansible.builtin.command:
+                argv: "{{ ['firewall-cmd'] + item + ['--query-service=RH-Satellite-6'] }}"
+              loop: [[], [--permanent]]
+              register: sniper_installer_firewall
+              changed_when: false
+              failed_when: sniper_installer_firewall.rc not in [0, 1]
+
+            - name: Add only the missing runtime or permanent Satellite service profile
+              ansible.builtin.command:
+                argv: "{{ ['firewall-cmd'] + item.item + ['--add-service=RH-Satellite-6'] }}"
+              loop: "{{ sniper_installer_firewall.results }}"
+              when: item.rc == 1
+              changed_when: true
+
+        - name: Require all native Satellite services to be healthy
+          ansible.builtin.command:
+            argv: [satellite-maintain, service, status]
+          changed_when: false
+          no_log: true
+
+        - name: Inspect the native server CA selected by the installed answer file
+          ansible.builtin.stat:
+            path: "{{ sniper_installer_original_answers.foreman.server_ssl_ca }}"
+            follow: true
+          register: sniper_installer_ca
+          no_log: true
+
+        - name: Require a nonempty public CA certificate before HTTPS verification
+          ansible.builtin.assert:
+            that:
+              - sniper_installer_ca.stat.isreg | default(false)
+              - sniper_installer_ca.stat.size | int > 0
+          no_log: true
+
+        - name: Verify authenticated Satellite HTTPS with its native CA
+          ansible.builtin.uri:
+            url: "{{ sniper_installer_server_url }}/api/organizations?per_page=1"
+            url_username: "{{ sniper_installer_username }}"
+            url_password: "{{ sniper_installer_password }}"
+            force_basic_auth: true
+            validate_certs: true
+            ca_path: "{{ sniper_installer_original_answers.foreman.server_ssl_ca }}"
+            follow_redirects: none
+            status_code: 200
+            return_content: false
+          register: sniper_installer_api
+          until: sniper_installer_api.status | default(0) == 200
+          retries: 30
+          delay: 10
+          no_log: true
+
+        - name: Record verified installation without credentials or connection values
+          ansible.builtin.set_stats:
+            aggregate: false
+            data:
+              sniper_new_installation_result:
+                track: new
+                satellite_package_version: "{{ sniper_installer_package_version.stdout }}"
+                certified_installer: redhat.satellite_operations.installer
+                native_services_healthy: true
+                authenticated_https_verified: true
+                satellite_configured: true
+      always:
+        - name: Remove the execution-local guest public pin
+          ansible.builtin.file:
+            path: "{{ sniper_new_trust_file.path }}"
+            state: absent
+          delegate_to: localhost
+          become: false
+          changed_when: false
+          no_log: true
+          when: sniper_new_trust_file is defined

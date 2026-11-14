@@ -145,6 +145,7 @@
               {{ sniper_prep_advisory_ids | sniper_baseline_plan(
                    sniper_prep_advisory_queries.results | map(attribute='resources') | flatten,
                    sniper_baseline_end_date, sniper_prep_versions.resources) }}
+    # Collection 6 manages only the filter here; rules use content_view_filter_rule.
     - name: Retain RPMs without errata in a separate owned package filter
       redhat.satellite.content_view_filter:
         organization: "{{ sniper_organization }}"
@@ -154,7 +155,6 @@
         inclusion: true
         original_packages: true
         filter_state: present
-        rule_state: absent
       when: sniper_prep_versions.resources | length == 0
     - name: Create the frozen baseline cutoff before the first publication
       redhat.satellite.content_view_filter:

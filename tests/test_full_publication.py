@@ -13,7 +13,7 @@ import unittest
 import yaml
 from ansible.errors import AnsibleFilterError
 
-from track_paths import TRACK_ROOT
+from track_paths import TRACK, TRACK_ROOT
 
 ROOT = TRACK_ROOT
 spec = importlib.util.spec_from_file_location("cutoff_content", ROOT / "filter_plugins/content.py")
@@ -26,12 +26,15 @@ import json, os
 from pathlib import Path
 from ansible.module_utils.basic import AnsibleModule
 name = __MODULE__
+SPLIT_FILTER_RULES = __SPLIT_FILTER_RULES__
 spec = {}
 for key in ("server_url", "username", "password", "organization", "name", "search",
             "resource", "description", "state", "filter_type", "filter_state", "rule_state",
             "content_view", "content_view_filter", "end_date", "date_type",
             "version", "product", "repository"):
     spec[key] = {"type": "str"}
+if SPLIT_FILTER_RULES:
+    spec.pop("rule_state")
 spec["password"]["no_log"] = True
 for key in ("validate_certs", "full_details", "inclusion", "original_packages"):
     spec[key] = {"type": "bool"}
@@ -44,7 +47,7 @@ path = Path(os.environ["SNIPER_FULL_TEST_STATE"])
 s = json.loads(path.read_text())
 if name == "content_view_filter" and p["filter_type"] == "erratum" and p["original_packages"] is not None:
     m.fail_json(msg="setting original_packages not supported for Katello::ContentViewErratumFilter")
-if name == "content_view_filter" and p["filter_type"] == "rpm" and p["filter_state"] == "present" and p["rule_state"] != "absent":
+if name == "content_view_filter" and p["filter_type"] == "rpm" and p["filter_state"] == "present" and not SPLIT_FILTER_RULES and p.get("rule_state") != "absent":
     m.fail_json(msg="The original-only RPM filter must not create a package-name rule")
 s["calls"].append({"module": name, "resource": p.get("resource"),
                    "filter_type": p.get("filter_type"), "original_packages": p.get("original_packages"),
@@ -137,7 +140,8 @@ class FullPublicationPlaybook(unittest.TestCase):
             }))
             for name in MODULES:
                 (coll / ("plugins/modules/" + name + ".py")).write_text(
-                    MODULE.replace("__MODULE__", repr(name)))
+                    MODULE.replace("__MODULE__", repr(name)).replace(
+                        "__SPLIT_FILTER_RULES__", repr(TRACK == "new")))
             state = {"calls": [], "promoted": False, "candidate": None,
                      "cutoff": "2025-02-28", "contaminated": contaminated, "lost": lost,
                      "candidate_read_failures": candidate_read_failures}
@@ -180,7 +184,7 @@ class FullPublicationPlaybook(unittest.TestCase):
         originals = [c for c in calls if c["module"] == "content_view_filter" and c["filter_type"] == "rpm"]
         self.assertEqual(len(originals), 1)
         self.assertTrue(originals[0]["original_packages"])
-        self.assertEqual(originals[0]["rule_state"], "absent")
+        self.assertEqual(originals[0]["rule_state"], None if TRACK == "new" else "absent")
 
     def test_candidate_read_retries_are_bounded_and_never_repeat_publication(self):
         for failures in (2, 3):

@@ -11,7 +11,7 @@ import tempfile
 import unittest
 import yaml
 
-from track_paths import TRACK_ROOT
+from track_paths import TRACK, TRACK_ROOT
 
 ROOT = TRACK_ROOT
 TEST = "RHEL-sniperpatching_Test"
@@ -27,12 +27,15 @@ import json, os
 from pathlib import Path
 from ansible.module_utils.basic import AnsibleModule
 NAME = __MODULE__
+SPLIT_FILTER_RULES = __SPLIT_FILTER_RULES__
 spec = {}
 for key in ("server_url", "username", "password", "organization", "name", "search",
             "resource", "prior", "description", "state", "filter_type", "filter_state", "rule_state",
             "content_view", "content_view_filter", "end_date", "date_type",
             "version", "lifecycle_environment"):
     spec[key] = {"type": "str"}
+if SPLIT_FILTER_RULES:
+    spec.pop("rule_state")
 spec["password"]["no_log"] = True
 for key in ("validate_certs", "full_details", "solve_dependencies", "inclusion", "original_packages"):
     spec[key] = {"type": "bool"}
@@ -45,7 +48,7 @@ path = Path(os.environ["SNIPER_PREP_TEST_STATE"])
 state = json.loads(path.read_text())
 if NAME == "content_view_filter" and p["filter_type"] == "erratum" and p["original_packages"] is not None:
     module.fail_json(msg="setting original_packages not supported for Katello::ContentViewErratumFilter")
-if NAME == "content_view_filter" and p["filter_type"] == "rpm" and p["filter_state"] == "present" and p["rule_state"] != "absent":
+if NAME == "content_view_filter" and p["filter_type"] == "rpm" and p["filter_state"] == "present" and not SPLIT_FILTER_RULES and p.get("rule_state") != "absent":
     module.fail_json(msg="The original-only RPM filter must not create a package-name rule")
 state["calls"].append({
     "module": NAME, "resource": p.get("resource"), "params": p["params"],
@@ -134,7 +137,8 @@ class PreparationPlaybook(unittest.TestCase):
             }))
             for name in MODULES:
                 (modules / (name + ".py")).write_text(
-                    MODULE.replace("__MODULE__", repr(name))
+                    MODULE.replace("__MODULE__", repr(name)).replace(
+                        "__SPLIT_FILTER_RULES__", repr(TRACK == "new"))
                 )
             state = {"view": False, "environments": [], "versions": [],
                      "serving": {}, "placements": {}, "calls": [],
@@ -195,7 +199,7 @@ class PreparationPlaybook(unittest.TestCase):
         original = [c for c in calls if c["module"] == "content_view_filter" and c["filter_type"] == "rpm"]
         self.assertEqual(len(original), 1)
         self.assertTrue(original[0]["original_packages"])
-        self.assertEqual(original[0]["rule_state"], "absent")
+        self.assertEqual(original[0]["rule_state"], None if TRACK == "new" else "absent")
         publication = next(i for i, c in enumerate(calls)
                            if c["module"] == "content_view_version")
         verification = next(i for i, c in enumerate(calls)

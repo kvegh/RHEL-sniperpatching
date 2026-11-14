@@ -1,0 +1,41 @@
+---
+- name: Require a native answer mapping and supported initial-admin parameters
+  ansible.builtin.assert:
+    that:
+      - sniper_installer_original_answers is mapping
+      - sniper_installer_original_answers.foreman is mapping
+      - sniper_installer_parameter_source is search('\$initial_admin_username\s*=')
+      - sniper_installer_parameter_source is search('\$initial_admin_password\s*=')
+      - sniper_installer_username is string
+      - sniper_installer_username is match('^[A-Za-z0-9_.@-]+$')
+      - sniper_installer_password is string
+      - sniper_installer_password | length >= 20
+      - "'\n' not in sniper_installer_password"
+      - "'\r' not in sniper_installer_password"
+      - >-
+        (sniper_installer_original_answers.foreman.initial_admin_username | default('', true))
+        in ['', sniper_installer_username]
+      - >-
+        (sniper_installer_original_answers.foreman.initial_admin_password | default('', true))
+        in ['', sniper_installer_password]
+    fail_msg: Refuse unsupported answer schema or replacement of an existing different initial administrator credential.
+  no_log: true
+
+- name: Preserve every existing answer while binding only the initial administrator
+  ansible.builtin.set_fact:
+    sniper_installer_updated_answers: >-
+      {{ sniper_installer_original_answers | combine(
+           {'foreman': sniper_installer_original_answers.foreman | combine(
+              {'initial_admin_username': sniper_installer_username,
+               'initial_admin_password': sniper_installer_password})}) }}
+  no_log: true
+
+- name: Write initial credentials only to the native root-owned private answer file
+  ansible.builtin.copy:
+    dest: "{{ sniper_installer_answers_file }}"
+    content: "{{ sniper_installer_updated_answers | to_nice_yaml(indent=2, sort_keys=false) }}"
+    owner: root
+    group: root
+    mode: '0600'
+    backup: false
+  no_log: true

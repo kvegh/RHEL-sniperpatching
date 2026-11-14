@@ -1,6 +1,6 @@
 # NEW track
 
-This directory is self-contained for its seven demo playbooks and two NEW setup stages. Select its full
+This directory contains seven demo playbooks and separate NEW setup stages. Select its full
 `playbooks/new/<stage>.yml` path in AAP, with this track's protected environment
 inputs, inventory and execution environment. Generic survey definitions remain
 at the repository's `surveys/` directory.
@@ -17,3 +17,11 @@ NEW always means our local Satellite and up-to-date production AAP. Run
 these do not install the Satellite application. The shared CaC importer creates
 their definitions but does not launch them. It requires an explicitly registered
 destination with protected API access and the declared hypervisor/EE dependencies.
+
+The NEW demo dependency manifests pin certified `redhat.satellite` **6.0.0**.
+Its filter module manages filters only; explicit rules remain in
+`content_view_filter_rule`, so the original-only RPM inclusion filter does not
+create a package-name rule. OLD retains its independent **3.14.0** pin and source.
+The [installer EE](execution-environment/README.md) independently pins certified
+`redhat.satellite_operations` **4.0.0**. Offline interface and fixture checks are
+separate from NEW EE publication and live demo acceptance.

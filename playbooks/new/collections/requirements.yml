@@ -1,6 +1,7 @@
 ---
-# Native AAP project updates resolve this reviewed pin through the organization's
-# existing authenticated Galaxy sources. Keep dependencies/satellite.yml aligned.
+# Build the NEW demo EE from this exact certified collection pin. The shared
+# project has no root requirement that could override the selected track's EE.
+# Keep dependencies/satellite.yml aligned.
 collections:
   - name: redhat.satellite
-    version: 3.14.0
+    version: 6.0.0

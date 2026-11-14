@@ -3,8 +3,8 @@
 The new track includes installing Satellite, then building and verifying the
 Core 2.20 execution environment and running the demo through the selected AAP.
 OLD is the remote demo and its own AAP; NEW is our local Satellite and current
-production AAP. The VM provision and read-only prerequisite check are complete. Satellite itself
-is not installed yet. No installation playbook has been executed.
+production AAP. The VM provision and read-only prerequisite check are complete. Satellite6.19 packages are installed. Initial application configuration and
+authenticated service acceptance remain separate from package installation.
 
 Follow Red Hat Satellite 6.19's connected-installation guide:
 
@@ -42,6 +42,8 @@ state as each new-track stage is implemented and verified.
 |---|---|---|
 | `playbooks/new/configure_satellite_dns.yml` | Selected hypervisor | Verify exact VM identity and lease, refuse conflicting resources, add only its DHCP/DNS entries in live/persistent libvirt state without restarting the network. Check mode plans only. |
 | `playbooks/new/prepare_satellite_host.yml` | Exact NEW guest | Verify SSH/VM identity and supported RHEL; configure documented repositories; upgrade installed RHEL packages; reboot as required; compare running/native installed kernels; verify DNS, swap, SELinux, time and no remaining updates. |
+| `playbooks/new/install_satellite_packages.yml` | Exact prepared NEW guest | Recheck identity, DNS, resources, repositories, kernel and zero RHEL updates; install only the Satellite6.19 package family. |
+| `playbooks/new/configure_satellite.yml` | Exact packaged NEW guest | Validate installed native answer schema, seed only the protected initial login, run the certified installer role and verify services plus authenticated TLS. |
 
 The DNS and RHEL-preparation stages have passed through the selected AAP.
 The next stage, `playbooks/new/install_satellite_packages.yml`, rechecks the
@@ -93,5 +95,30 @@ This records the selected implementation; no installer role has run yet.
 
 The [installer EE recipe](../playbooks/new/execution-environment/README.md) pins
 the verified certified operations 4.0.0 archive and official Core 2.20.10 base.
-Its local image and installer syntax checks passed. Registry publication and
-live installer-template binding remain separate pending steps.
+Its local image, vendor runtime/layer preservation and installer syntax checks
+passed. Publication was independently verified through a fresh manifest/blob
+readback. The private CaC binds its immutable digest and existing registry
+credential; this does not establish live application configuration success.
+
+## Protected initial configuration
+
+The initial configuration job reads the existing project credential pattern's
+`SATELLITE_USERNAME`, `SATELLITE_PASSWORD` and `SATELLITE_SERVER_URL`. The NEW
+initial password is generated into the whole-file private Vault capture and
+stored as a secret native credential input; it is never a public playbook
+variable, a command-line option or a reported artifact. OLD credentials remain
+unchanged.
+
+The job checks the installed scenario's exact answer-file path and the native
+Puppet parameter definitions, preserves every other answer, refuses a different
+existing administrator credential, and writes the selected fields as root0600.
+The certified role runs with secret-bearing output suppressed and no credential
+options. Final checks require native service health and authenticated HTTPS
+using the CA selected by the installed answer file, with certificate validation
+enabled. Only the documented Satellite firewalld service is added when its
+existing daemon is running; unrelated policy is preserved.
+
+After deployment, the queued application-configuration handover uses CoP
+`infra.satellite_configuration`. That phase preserves OLD and the existing
+public-code/private-Vault split; its implementation is distinct from this
+initial installer and remains pending.
