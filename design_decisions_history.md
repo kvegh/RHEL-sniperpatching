@@ -607,3 +607,29 @@ unfinished application CaC, client registration and the NEW patching demo.
 It preserves the pending operator review of the normal-client deployment mode
 rather than treating successful VM creation as approval. Version 0.10.1 records
 this decision and the current handover checkpoint.
+
+## 2026-11-14 — Qualify NEW Satellite HTTPS through both API clients
+
+Implementation: `4f88a64c3a70107f12019f572018b33f681cc62c`, version **0.11.0**.
+
+The installed NEW Satellite uses its native CA. Capture that public certificate
+through the existing verified guest connection and retain populated values in
+private Vault data. The existing project credential can inject it as a temporary
+file through `SATELLITE_CA_PATH`, which certified collection 6.0.0 supports
+directly. The incremental-update URI now uses the same optional path. Empty
+input preserves default trust and certificate validation remains enabled.
+
+The read-only runtime check verifies authenticated collection and native URI
+requests because the demo uses both HTTP implementations. It does not contact
+managed clients or change content. The existing image is unchanged. Thirteen
+focused NEW fixtures, nine collection interfaces, six stage syntaxes and the
+runtime syntax passed on actual Core 2.20.10 with networking disabled. Offline
+production lint passed with zero findings; an existing dynamic survey-input
+inspection exception remains visible. OLD source and its runtime are unchanged.
+
+Companion implementation `bd79637ac501007e066e5015ba5532bdf33a89ff` extends the
+same credential type with an optional CA field and adds the normal read-only
+runtime template, retaining all existing usernames, passwords and setup bindings.
+Protected inverse comparison and native Vault/import checks passed. Publication
+is separate from live import and AAP-to-Satellite runtime acceptance. Version
+0.11.1 records this implementation decision.

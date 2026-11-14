@@ -1,6 +1,6 @@
 # NEW installation and demo-runtime checkpoint — 2026-11-14
 
-Version 0.11.0 adds optional job-local Satellite CA trust and collection/native
+Version 0.11.1 records optional job-local Satellite CA trust and collection/native
 URI runtime verification to the separate setup and demo EE recipes. NEW Satellite 6.19.6
 is installed and configured through the certified operations installer after
 verified DNS and a full RHEL update/reboot/kernel check. Native services and
