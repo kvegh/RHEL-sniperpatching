@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Demo project version: 0.7.0.**
+**Demo project version: 0.7.1.**
 
 See [current handover status](current_status_for_handover.md) for recorded
 validation, review status and continuation boundaries.
@@ -114,14 +114,21 @@ settings and credentials remain in the private Vault-encrypted companion.
 - Hosts already have subscription-manager, yum/dnf, native Python RPM bindings and needs-restarting. Allow a reboot when required.
 - Keep the AAP job limit empty so localhost and the selected host both run. Each stage is launched separately.
 
-`collections/requirements.yml` exposes the existing Satellite 3.14.0 pin from
-`dependencies/satellite.yml` to AAP's native project update. The receiving
-organization's existing authenticated Galaxy sources must serve that exact
-version before the project synchronizes. The existing use-case prerequisite
-preparation admits the pin to its certified PAH repository. AAP then mounts the
-resolved project collection alongside the unmodified official EE image.
-The historical Core 2.15.11/Python 3.9.19 runs above remain the recorded functional
-baseline; selecting Core 2.20 requires its own runtime and host-access verification.
+The shared project deliberately has no root `collections/requirements.yml`.
+AAP gives project-installed collections precedence over EE content, even when
+the project's collection is older. A shared Satellite pin would therefore
+silently replace the selected track's EE version. Keep exact collection
+requirements in each track's `dependencies/satellite.yml` and build its own EE;
+bind each demo job template explicitly to that EE's immutable image.
+See [Red Hat's collection precedence documentation](https://docs.redhat.com/en/documentation/red_hat_ansible_automation_platform/2.7/develop-ref_projects_collections_support).
+
+OLD retains its verified Core 2.15.11/Satellite collection 3.14.0 baseline.
+NEW must resolve and qualify the current certified release from Red Hat
+Automation Hub, then pin that exact version in its Core 2.20 EE. Its inherited
+manifest is pending that update; do not treat it as current-release acceptance.
+The two NEW DNS/RHEL preparation templates use built-in modules and the existing
+Core 2.20 management EE. They do not require a Satellite collection to bootstrap
+the server. The historical OLD runs remain separate from NEW acceptance.
 
 All 98 offline tests passed inside the official unmodified Core 2.20.10 EE.
 These checks do not establish fresh Satellite access or live patching acceptance.

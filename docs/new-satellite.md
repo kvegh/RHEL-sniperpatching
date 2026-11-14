@@ -60,3 +60,16 @@ The selected destination must already have the declared native hypervisor
 Machine credential and compatible Core 2.20 EE. Importing configuration does not
 launch setup, install Satellite or patch a host. Registering a destination and
 its API access is distinct from successful API access through a worker's MCP.
+
+## Runtime versions and bootstrap setup
+
+The DNS and RHEL-preparation stages use built-in modules in the existing Core
+2.20 management EE. They can prepare the server before the dedicated NEW demo
+EE is built. Keep the shared SCM project free of a root collection requirement
+that would override the job template's selected EE.
+
+The OLD demo keeps its established Core 2.15.11/Satellite collection 3.14.0
+runtime. NEW uses the current certified Satellite collection from Red Hat
+Automation Hub, resolved and then exactly pinned in its Core 2.20 EE. Bind demo
+templates explicitly to the appropriate immutable EE image. The later NEW-to-OLD
+compatibility test uses that same NEW EE against the old targets.
