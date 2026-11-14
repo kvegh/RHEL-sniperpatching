@@ -43,8 +43,13 @@ state as each new-track stage is implemented and verified.
 | `playbooks/new/configure_satellite_dns.yml` | Selected hypervisor | Verify exact VM identity and lease, refuse conflicting resources, add only its DHCP/DNS entries in live/persistent libvirt state without restarting the network. Check mode plans only. |
 | `playbooks/new/prepare_satellite_host.yml` | Exact NEW guest | Verify SSH/VM identity and supported RHEL; configure documented repositories; upgrade installed RHEL packages; reboot as required; compare running/native installed kernels; verify DNS, swap, SELinux, time and no remaining updates. |
 
-These stages have local validation, not live acceptance. Satellite application
-package installation and initial configuration are the next separate stage.
+The DNS and RHEL-preparation stages have passed through the selected AAP.
+The next stage, `playbooks/new/install_satellite_packages.yml`, rechecks the
+exact guest identity, final FQDN/forward/reverse DNS, swap, SELinux, time, enabled
+repositories, running kernel and absence of RHEL updates before installing the
+documented `satellite` package. It requires a 6.19 package version and reports
+package installation separately from initial configuration. The certified
+installer role configures the application afterward.
 A copied NEW demo playbook does not mean the fresh environment is operational.
 
 ## Deploying the AAP project configuration
@@ -85,3 +90,8 @@ defines the Satellite scenario and supported options. Resolve and qualify the
 certified release for the selected Core 2.20 runtime before pinning it. Keep
 secret inputs in protected configuration and suppress secret-bearing output.
 This records the selected implementation; no installer role has run yet.
+
+The [installer EE recipe](../playbooks/new/execution-environment/README.md) pins
+the verified certified operations 4.0.0 archive and official Core 2.20.10 base.
+Its local image and installer syntax checks passed. Registry publication and
+live installer-template binding remain separate pending steps.

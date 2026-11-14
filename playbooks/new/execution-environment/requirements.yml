@@ -1,0 +1,4 @@
+---
+collections:
+  - name: redhat.satellite_operations
+    version: 4.0.0

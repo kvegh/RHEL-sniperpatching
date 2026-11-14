@@ -1,0 +1,9 @@
+FROM registry.redhat.io/ansible-automation-platform-27/ee-minimal-rhel9@sha256:aea45867ebbfcb57bba69b3b6e33542dbbe95f237dfdf35e8b68773b4f3268f8
+
+# Add only the hash-verified certified collection. Preserve the base runtime.
+COPY collections/ansible_collections/redhat/satellite_operations /usr/share/ansible/collections/ansible_collections/redhat/satellite_operations
+LABEL org.opencontainers.image.title="RHEL sniperpatching NEW Satellite setup" \
+      org.opencontainers.image.version="0.1.0" \
+      io.rhel-sniperpatching.core="2.20.10" \
+      io.rhel-sniperpatching.satellite-operations="4.0.0" \
+      io.rhel-sniperpatching.collection-sha256="9595ac584856ac67ac1f93c97fb1169ac333e8be011727436f87871be299bc4a"

@@ -1,0 +1,144 @@
+---
+- name: Install Satellite 6.19 packages only after verified NEW host preparation
+  hosts: sniper_satellite_new
+  gather_facts: false
+  become: true
+  vars:
+    sniper_satellite_required_repositories:
+      - rhel-9-for-x86_64-baseos-rpms
+      - rhel-9-for-x86_64-appstream-rpms
+      - satellite-6.19-for-rhel-9-x86_64-rpms
+      - satellite-maintenance-6.19-for-rhel-9-x86_64-rpms
+  pre_tasks:
+    - name: Require a normal installation on the dedicated NEW guest
+      ansible.builtin.assert:
+        that: not ansible_check_mode
+        fail_msg: Package installation requires the verified dedicated NEW host and a normal run.
+
+    - name: Load the management-verified SSH identity for the NEW guest
+      ansible.builtin.import_tasks: tasks/ssh_pin.yml
+  tasks:
+    - name: Recheck the prepared guest before installing application packages
+      block:
+        - name: Read the actual NEW guest identity and prerequisites
+          ansible.builtin.setup:
+
+        - name: Require the exact supported NEW guest with documented resources
+          ansible.builtin.assert:
+            that:
+              - ansible_facts.product_uuid | lower == sniper_new_vm_uuid | lower
+              - ansible_facts.distribution == 'RedHat'
+              - ansible_facts.distribution_major_version == '9'
+              - ansible_facts.architecture == 'x86_64'
+              - ansible_facts.processor_vcpus | int >= 4
+              - ansible_facts.memtotal_mb | int * 1048576 >= 20000000000
+              - ansible_facts.swaptotal_mb | int >= 4095
+              - ansible_facts.selinux.status == 'enabled'
+              - sniper_satellite_fqdn.split('.')[0] == sniper_new_vm_name
+          no_log: true
+
+        - name: Read the final system FQDN
+          ansible.builtin.command:
+            argv: [hostname, --fqdn]
+          register: sniper_package_fqdn
+          changed_when: false
+          no_log: true
+
+        - name: Verify real forward DNS
+          ansible.builtin.command:
+            argv: [dig, +short, A, "{{ sniper_satellite_fqdn }}"]
+          register: sniper_package_forward
+          changed_when: false
+          no_log: true
+
+        - name: Verify real reverse DNS
+          ansible.builtin.command:
+            argv: [dig, +short, -x, "{{ sniper_new_vm_address }}"]
+          register: sniper_package_reverse
+          changed_when: false
+          no_log: true
+
+        - name: Require matching final hostname and unique forward and reverse DNS
+          ansible.builtin.assert:
+            that:
+              - sniper_package_fqdn.stdout | trim == sniper_satellite_fqdn
+              - sniper_package_forward.stdout_lines | unique | list == [sniper_new_vm_address]
+              - sniper_package_reverse.stdout_lines | map('regex_replace', '\.$', '') | unique | list == [sniper_satellite_fqdn]
+          no_log: true
+
+        - name: Verify the newest installed RHEL kernel is running
+          ansible.builtin.command:
+            argv:
+              - /usr/bin/python3
+              - -c
+              - "{{ lookup('ansible.builtin.file', playbook_dir ~ '/files/new_kernel_check.py') }}"
+          register: sniper_package_kernel
+          changed_when: false
+
+        - name: Require the updated running kernel
+          ansible.builtin.assert:
+            that: (sniper_package_kernel.stdout | from_json).running_latest_kernel
+
+        - name: Verify synchronized system time
+          ansible.builtin.command:
+            argv: [timedatectl, show, --property=NTPSynchronized, --value]
+          register: sniper_package_time
+          changed_when: false
+          failed_when: sniper_package_time.stdout | trim != 'yes'
+
+        - name: Read the currently enabled Red Hat repositories
+          ansible.builtin.command:
+            argv: [subscription-manager, repos, --list-enabled]
+          register: sniper_package_repositories
+          changed_when: false
+          no_log: true
+
+        - name: Require exactly the documented Satellite 6.19 repositories
+          ansible.builtin.assert:
+            that: >-
+              (sniper_package_repositories.stdout | regex_findall('(?m)^\s*Repo ID:\s*(\S+)') | sort)
+              == (sniper_satellite_required_repositories | sort)
+          no_log: true
+
+        - name: Require RHEL to have no remaining updates before package installation
+          ansible.builtin.command:
+            argv: [dnf, --quiet, check-update, --refresh]
+          register: sniper_package_updates
+          changed_when: false
+          failed_when: sniper_package_updates.rc != 0
+
+        - name: Install the documented Satellite server package
+          ansible.builtin.dnf:
+            name: satellite
+            state: present
+
+        - name: Read the installed Satellite package version
+          ansible.builtin.command:
+            argv: [rpm, --query, --queryformat, '%{VERSION}', satellite]
+          register: sniper_package_version
+          changed_when: false
+
+        - name: Require the requested Satellite 6.19 release
+          ansible.builtin.assert:
+            that: sniper_package_version.stdout is match('^6\.19(?:\.|$)')
+            fail_msg: The installed package must belong to Satellite 6.19 before configuration.
+
+        - name: Record package installation without credentials or connection values
+          ansible.builtin.set_stats:
+            aggregate: false
+            data:
+              sniper_new_package_result:
+                track: new
+                satellite_package_version: "{{ sniper_package_version.stdout }}"
+                prerequisites_rechecked: true
+                packages_installed: true
+                satellite_configured: false
+      always:
+        - name: Remove the execution-local guest public pin
+          ansible.builtin.file:
+            path: "{{ sniper_new_trust_file.path }}"
+            state: absent
+          delegate_to: localhost
+          become: false
+          changed_when: false
+          no_log: true

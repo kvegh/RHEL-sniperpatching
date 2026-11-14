@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Demo project version: 0.7.2.**
+**Demo project version: 0.8.0.**
 
 See [current handover status](current_status_for_handover.md) for recorded
 validation, review status and continuation boundaries.
@@ -29,7 +29,10 @@ preserved separately and must never be imported into the NEW controller.
 NEW adds `configure_satellite_dns.yml` and `prepare_satellite_host.yml`. Their
 [documented sequence](docs/new-satellite.md) includes strict SSH identity, exact
 VM ownership, RHEL update/reboot/kernel proof, matching FQDN/DNS and swap.
-Satellite package installation/configuration and the new demo EE remain pending.
+The NEW package-installation stage is implemented; live installation and
+configuration acceptance remain pending. The prepared [installer EE](playbooks/new/execution-environment/README.md)
+contains the certified operations role; publication and binding remain pending,
+separately from demo-runtime qualification.
 
 There are no root-level forwarding playbooks. Update a template's playbook path
 and synchronize the matching source revision together. The private companion
