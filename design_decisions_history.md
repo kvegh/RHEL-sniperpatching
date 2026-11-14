@@ -539,3 +539,21 @@ validation passed. Live import and host preparation remain separate outcomes.
 The owner subsequently selected the certified Satellite operations installer
 role where compatible with the target; its release qualification and actual
 installation are unfinished.
+
+## 2026-11-14 — Install NEW Satellite packages after live prerequisite verification
+
+Implementation: `a2db9865072902304a60636d3b8583eba73e8ff9`, version **0.8.0**.
+
+The user requires an updated RHEL9 host with final hostname/DNS before
+Satellite6.19 installation and selects the certified installer collection.
+Add a separate package stage that rechecks exact guest identity, resources,
+DNS, SELinux, synchronized time, documented repositories, newest running
+kernel and zero pending RHEL updates before installing the satellite package.
+Its result explicitly distinguishes packages from configured application.
+Actual cached Core2.20.10 passed seven builtin interfaces and playbook syntax.
+
+The separate installer EE recipe preserves the official digest-pinned
+Core2.20.10 base and adds only the SHA256-verified certified operations4.0.0
+collection. The local image, vendor layer/runtime preservation and installer
+role syntax passed. Publication awaits an established protected registry login;
+no credential changes or installer execution are implied. OLD is unchanged.
