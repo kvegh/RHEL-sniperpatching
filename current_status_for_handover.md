@@ -1,6 +1,6 @@
 # NEW installation and demo-runtime checkpoint — 2026-11-14
 
-Version 0.11.3 records protected project CA data and collection/native
+Version 0.11.4 records protected project CA data and collection/native
 URI runtime verification to the separate setup and demo EE recipes. NEW Satellite 6.19.6
 is installed and configured through the certified operations installer after
 verified DNS and a full RHEL update/reboot/kernel check. Native services and
@@ -13,8 +13,11 @@ Satellite collection 6.0.0. Its fourteen NEW fixtures, nine module interfaces an
 six stage syntaxes pass; uncached image verification passed. Private demo EE/JT
 bindings, CoP Satellite application configuration, client registration and the
 full NEW patching demo are unfinished. The verified public native CA is captured
-in Vault; applying its job-local trust and qualifying the NEW read-only
-runtime template remain separate live steps. OLD source/runtime are preserved.
+in Vault. The corrected CaC import and read-only runtime template have passed
+through AAP: actual Core2.20.10/Python3.12.15/Satellite6.0.0, six stage syntaxes,
+module interfaces and both authenticated HTTPS paths verified. No clients or
+content were changed. Remaining demo-stage bindings and application/client setup
+are unfinished. OLD source/runtime are preserved.
 
 Two NEW RHEL 9.4 clients were provisioned with deployment/cloud-init updates
 disabled and their package baselines verified. Selection of the separate normal

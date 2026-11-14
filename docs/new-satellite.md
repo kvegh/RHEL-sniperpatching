@@ -110,6 +110,13 @@ through both the collection and native URI HTTPS paths. Successful execution is
 required before claiming AAP-to-Satellite runtime acceptance. Client registration,
 content changes and host patching remain separate stages.
 
+Recorded live verification on 14 November 2026: the normal corrected CaC import
+and NEW read-only runtime job succeeded through AAP. Artifacts verified actual
+Core2.20.10, Python3.12.15, certified Satellite6.0.0, all six stage syntaxes,
+module interfaces and authenticated collection/native URI HTTPS. The job
+contacted no managed clients and changed no Satellite content. This is runtime
+readiness, separately from complete NEW patching-demo acceptance.
+
 ## Selected installer implementation
 
 Use the certified `redhat.satellite_operations.installer` role for the application

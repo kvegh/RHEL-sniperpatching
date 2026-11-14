@@ -659,3 +659,10 @@ Nine collection interfaces, six stage syntaxes and runtime syntax passed.
 Production lint passed on19files with zero findings and two existing dynamic
 inspection exceptions. OLD is unchanged. Live import and runtime acceptance
 remain separate. Version0.11.3 records the correction.
+
+Live follow-up: the corrected normal CaC import and read-only runtime job both
+succeeded on 14 November2026. Actual Core2.20.10/Python3.12.15/Satellite6.0.0,
+six stage syntaxes, module interfaces and both verified authenticated HTTPS
+paths passed, including CA-file cleanup. No clients or content were changed.
+Version0.11.4 records this acceptance of implementation260f94c; the complete
+NEW patching demo and remaining stage bindings are still unfinished.

@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Demo project version: 0.11.3.**
+**Demo project version: 0.11.4.**
 
 See [current handover status](current_status_for_handover.md) for recorded
 validation, review status and continuation boundaries.
@@ -37,7 +37,9 @@ services and authenticated HTTPS passed with certificate validation. The verifie
 the private CaC pins its receiving-Hub digest explicitly. The separate
 [demo EE](playbooks/new/demo-execution-environment/README.md) is built, qualified
 and published with Core 2.20.10 and certified Satellite collection 6.0.0. Its
-live demo-template bindings and end-to-end patching acceptance remain separate.
+read-only runtime template passed through AAP with authenticated collection and
+native URI HTTPS verification. Remaining demo-stage bindings and end-to-end
+patching acceptance are separate unfinished work.
 
 There are no root-level forwarding playbooks. Update a template's playbook path
 and synchronize the matching source revision together. The private companion
