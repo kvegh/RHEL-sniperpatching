@@ -1,0 +1,9 @@
+FROM registry.redhat.io/ansible-automation-platform-27/ee-minimal-rhel9@sha256:aea45867ebbfcb57bba69b3b6e33542dbbe95f237dfdf35e8b68773b4f3268f8
+
+# Mandatory Python dependencies already belong to this pinned vendor base.
+COPY collections/ansible_collections/redhat/satellite /usr/share/ansible/collections/ansible_collections/redhat/satellite
+LABEL org.opencontainers.image.title="RHEL sniperpatching NEW demo" \
+      org.opencontainers.image.version="0.1.0" \
+      io.rhel-sniperpatching.core="2.20.10" \
+      io.rhel-sniperpatching.satellite="6.0.0" \
+      io.rhel-sniperpatching.collection-sha256="67847d52685e27f3220b1e641f8294f221e341bfddca439172c4e9b88407fb2d"

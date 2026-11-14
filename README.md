@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Demo project version: 0.9.1.**
+**Demo project version: 0.10.0.**
 
 See [current handover status](current_status_for_handover.md) for recorded
 validation, review status and continuation boundaries.
@@ -16,7 +16,7 @@ Both tracks remain available in this public repository:
 | Directory | Purpose | Verification |
 |---|---|---|
 | `playbooks/old/` | Remote demo Satellite and its own remote AAP, with the tested runtime helpers. | Three Test-to-Prod cycles passed before this path-only reorganization. |
-| `playbooks/new/` | Our local Satellite and up-to-date production AAP; includes separate NEW setup stages. | Copied from the same reviewed logic; new-environment installation and end-to-end acceptance remain pending. |
+| `playbooks/new/` | Our local Satellite and up-to-date production AAP; includes separate NEW setup stages. | Satellite 6.19.6 installation, service health and authenticated HTTPS passed; the NEW patching demo remains unverified. |
 
 Each directory contains all seven demo entry points, tasks, variables, filter plugins,
 native RPM/runtime helpers, synthetic inventory and collection declarations.
@@ -30,12 +30,14 @@ NEW provides separate DNS, RHEL preparation, package installation and certified
 installer stages under `playbooks/new/`. Their
 [documented sequence](docs/new-satellite.md) includes strict SSH identity, exact
 VM ownership, RHEL update/reboot/kernel proof, matching FQDN/DNS and swap.
-The DNS, RHEL-preparation and Satellite6.19 package stages have passed through
-AAP. Initial application configuration uses the certified installer role and a
-protected native answer file; its live acceptance remains separate. The verified
+All four setup stages have passed through AAP. Initial application configuration
+uses the certified installer role and a protected native answer file; native
+services and authenticated HTTPS passed with certificate validation. The verified
 [installer EE](playbooks/new/execution-environment/README.md) has been published;
-the private CaC pins its receiving-Hub digest explicitly. Demo-runtime
-qualification remains separate.
+the private CaC pins its receiving-Hub digest explicitly. The separate
+[demo EE](playbooks/new/demo-execution-environment/README.md) is built, qualified
+and published with Core 2.20.10 and certified Satellite collection 6.0.0. Its
+live demo-template bindings and end-to-end patching acceptance remain separate.
 
 There are no root-level forwarding playbooks. Update a template's playbook path
 and synchronize the matching source revision together. The private companion
@@ -131,9 +133,12 @@ See [Red Hat's collection precedence documentation](https://docs.redhat.com/en/d
 OLD retains its verified Core 2.15.11/Satellite collection 3.14.0 baseline.
 NEW pins certified redhat.satellite 6.0.0, resolved from Red Hat Automation Hub.
 Its filter calls follow the current split between filters and explicit rules.
-The exact module interfaces, six stage syntaxes and 24 focused fixtures pass
-with Core 2.20.10. Building the complete NEW demo EE and live acceptance remain
-separate from these source and interface checks.
+The qualified NEW demo EE passes nine collection module interfaces, six stage
+syntaxes and twelve NEW content/runtime fixtures on Core 2.20.10. Its vendor
+Python/RPM inventory, runtime settings and base layers are preserved; no extra
+packages are needed. Image publication was verified through uncached manifest,
+configuration and every-blob hash checks. Live template bindings and patching
+acceptance remain separate from these image and source checks.
 The two NEW DNS/RHEL preparation templates use built-in modules and the existing
 Core 2.20 management EE. They do not require a Satellite collection to bootstrap
 the server. The historical OLD runs remain separate from NEW acceptance.

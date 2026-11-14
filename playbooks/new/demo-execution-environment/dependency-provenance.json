@@ -1,0 +1,67 @@
+{
+  "additional_python_packages": [],
+  "additional_rpm_packages": [],
+  "apypie_source": "vendored plugins/module_utils/_apypie.py in certified archive",
+  "base_image": {
+    "digest": "sha256:aea45867ebbfcb57bba69b3b6e33542dbbe95f237dfdf35e8b68773b4f3268f8",
+    "image_id": "6ac3ae57346f0900fab85077798225c3498793084662a3a9ee2a14dd5f0dc3a6"
+  },
+  "base_python_inventory_sha256": "87f59134d72c42b34153a74f0ac711b0642ac123372e62f151ebf766101870ec",
+  "base_rpm_inventory_sha256": "08a9fec1934f70d9e7da921b824e6222c29f05691a7160a0421ee42cc88f201f",
+  "collection": {
+    "artifact": "redhat-satellite-6.0.0.tar.gz",
+    "artifact_sha256": "67847d52685e27f3220b1e641f8294f221e341bfddca439172c4e9b88407fb2d",
+    "artifact_size": 514153,
+    "name": "redhat.satellite",
+    "version": "6.0.0"
+  },
+  "existing_vendor_dependency_tree": {
+    "PyYAML": {
+      "requires": [],
+      "version": "6.0.1"
+    },
+    "certifi": {
+      "requires": [],
+      "version": "2038.12.31"
+    },
+    "charset-normalizer": {
+      "requires": [],
+      "version": "3.3.0"
+    },
+    "idna": {
+      "requires": [],
+      "version": "3.20"
+    },
+    "requests": {
+      "requires": [
+        {
+          "installed": "3.3.0",
+          "requirement": "charset_normalizer<4,>=2"
+        },
+        {
+          "installed": "3.20",
+          "requirement": "idna<4,>=2.5"
+        },
+        {
+          "installed": "2.8.0",
+          "requirement": "urllib3<3,>=1.26"
+        },
+        {
+          "installed": "2038.12.31",
+          "requirement": "certifi>=2023.5.7"
+        }
+      ],
+      "version": "2.34.2"
+    },
+    "urllib3": {
+      "requires": [],
+      "version": "2.8.0"
+    }
+  },
+  "external_apypie_required": false,
+  "mandatory_python_requirements": [
+    "requests>=2.4.2",
+    "PyYAML"
+  ],
+  "scope": "Nine NEW demo API modules; optional RPM upload is not a qualified demo operation."
+}

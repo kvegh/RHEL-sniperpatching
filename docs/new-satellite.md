@@ -3,8 +3,11 @@
 The new track includes installing Satellite, then building and verifying the
 Core 2.20 execution environment and running the demo through the selected AAP.
 OLD is the remote demo and its own AAP; NEW is our local Satellite and current
-production AAP. The VM provision and read-only prerequisite check are complete. Satellite6.19 packages are installed. Initial application configuration and
-authenticated service acceptance remain separate from package installation.
+production AAP. As of 14 November 2026, all four server setup stages have passed:
+DNS, full RHEL preparation, Satellite 6.19.6 packages and certified initial
+configuration. Native service health and authenticated HTTPS passed with
+certificate validation. Demo content configuration and host patching acceptance
+remain unfinished.
 
 Follow Red Hat Satellite 6.19's connected-installation guide:
 
@@ -32,9 +35,9 @@ References:
 - [Environment preparation and DNS verification](https://docs.redhat.com/en/documentation/red_hat_satellite/6.19/html/installing_satellite_server_in_a_connected_network_environment/preparing-your-environment-for-satellite-server-installation)
 - [Repositories, package upgrade, installation and configuration](https://docs.redhat.com/en/documentation/red_hat_satellite/6.19/html/installing_satellite_server_in_a_connected_network_environment/installing-satellite-server)
 
-This is the implementation sequence, not a claim that the installation or
-new-environment acceptance has passed. Keep CaC current with the actual deployed
-state as each new-track stage is implemented and verified.
+The server installation has passed this sequence; the complete NEW patching demo
+has not. Keep CaC current with the actual deployed state as each later stage is
+implemented and verified.
 
 ## Implemented NEW preparation stages
 
@@ -45,14 +48,15 @@ state as each new-track stage is implemented and verified.
 | `playbooks/new/install_satellite_packages.yml` | Exact prepared NEW guest | Recheck identity, DNS, resources, repositories, kernel and zero RHEL updates; install only the Satellite6.19 package family. |
 | `playbooks/new/configure_satellite.yml` | Exact packaged NEW guest | Validate installed native answer schema, seed only the protected initial login, run the certified installer role and verify services plus authenticated TLS. |
 
-The DNS and RHEL-preparation stages have passed through the selected AAP.
-The next stage, `playbooks/new/install_satellite_packages.yml`, rechecks the
+All four stages have passed through the selected AAP.
+The package stage, `playbooks/new/install_satellite_packages.yml`, rechecks the
 exact guest identity, final FQDN/forward/reverse DNS, swap, SELinux, time, enabled
 repositories, running kernel and absence of RHEL updates before installing the
 documented `satellite` package. It requires a 6.19 package version and reports
 package installation separately from initial configuration. The certified
-installer role configures the application afterward.
-A copied NEW demo playbook does not mean the fresh environment is operational.
+installer role configured the application afterward and verified its services
+and authenticated API. A copied NEW demo playbook does not establish content
+configuration, client registration or patching acceptance.
 
 ## Deploying the AAP project configuration
 
@@ -81,6 +85,14 @@ Automation Hub, resolved and then exactly pinned in its Core 2.20 EE. Bind demo
 templates explicitly to the appropriate immutable EE image. The later NEW-to-OLD
 compatibility test uses that same NEW EE against the old targets.
 
+The [NEW demo EE recipe](../playbooks/new/demo-execution-environment/README.md)
+pins Core 2.20.10 and the exact certified Satellite 6.0.0 archive. The built image
+passed its vendored API import, twelve NEW fixtures, nine module interfaces and
+six stage syntaxes. It adds no packages and preserves the vendor base inventories,
+runtime settings and layer prefix. Publication passed uncached manifest/config
+and every-blob SHA-256/size verification. Private CaC must bind the receiving-Hub
+digest explicitly; publication alone does not establish those live bindings.
+
 ## Selected installer implementation
 
 Use the certified `redhat.satellite_operations.installer` role for the application
@@ -91,14 +103,15 @@ includes the operations collection, and the vendor's
 defines the Satellite scenario and supported options. Resolve and qualify the
 certified release for the selected Core 2.20 runtime before pinning it. Keep
 secret inputs in protected configuration and suppress secret-bearing output.
-This records the selected implementation; no installer role has run yet.
+The certified operations 4.0.0 installer completed successfully on the NEW server.
 
 The [installer EE recipe](../playbooks/new/execution-environment/README.md) pins
 the verified certified operations 4.0.0 archive and official Core 2.20.10 base.
 Its local image, vendor runtime/layer preservation and installer syntax checks
 passed. Publication was independently verified through a fresh manifest/blob
 readback. The private CaC binds its immutable digest and existing registry
-credential; this does not establish live application configuration success.
+credential. The subsequent initial configuration passed native service health
+and authenticated HTTPS checks; full demo acceptance remains separate.
 
 ## Protected initial configuration
 
