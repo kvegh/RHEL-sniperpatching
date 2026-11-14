@@ -579,3 +579,31 @@ The certified source establishes this behavior since4.0.0. Twenty-four NEW
 fixtures, nine installed module interfaces and six stage syntaxes passed on
 Core2.20.10; the same24 shared regressions passed on OLD Core2.15.11. OLD source
 and3.14.0 pin are unchanged. Full demo EE and live acceptance remain separate.
+
+## 2026-11-14 — Qualify the separate NEW demo execution environment
+
+Implementation: `248bddca7597169a5c762c0b1fe888c957e1eeb2`, version **0.10.0**.
+
+The user requires current certified Satellite content on NEW Core 2.20 and
+explicit per-track execution environments. Add a separate demo EE recipe with
+the exact certified Satellite 6.0.0 archive on the unchanged official Core
+2.20.10 base. The mandatory requests/PyYAML dependencies already belong to the
+vendor base, and the collection vendors its API utility. No additional package
+or unrelated runtime change is needed. OLD source and its legacy pin remain
+unchanged; the separate operations installer EE is preserved.
+
+The actual built demo image passed its vendored API import, twelve NEW fixtures,
+nine collection interfaces and six stage syntax checks. Python/RPM inventories,
+runtime configuration and the original base-layer prefix match the vendor base.
+Publication passed an uncached manifest, configuration and every-blob SHA-256
+and size check. Public source contains generic build provenance; receiving-Hub
+references and credentials remain in protected configuration. Private demo
+bindings and full patching acceptance are separate unfinished steps.
+
+The NEW Satellite 6.19.6 installation also passed all four AAP setup stages,
+including native service health and authenticated HTTPS with certificate
+validation. Documentation now distinguishes that verified installation from
+unfinished application CaC, client registration and the NEW patching demo.
+It preserves the pending operator review of the normal-client deployment mode
+rather than treating successful VM creation as approval. Version 0.10.1 records
+this decision and the current handover checkpoint.
