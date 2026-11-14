@@ -93,6 +93,22 @@ runtime settings and layer prefix. Publication passed uncached manifest/config
 and every-blob SHA-256/size verification. Private CaC must bind the receiving-Hub
 digest explicitly; publication alone does not establish those live bindings.
 
+## Job-local Satellite CA trust
+
+The existing project Satellite credential can supply an optional `server_ca`
+PEM certificate through native AAP file injection. Its temporary path is exposed
+as `SATELLITE_CA_PATH`. Certified collection 6.0.0 uses that path directly, and
+the incremental-update URI passes the same path to its `ca_path` argument.
+An empty input retains normal trust. Certificate validation stays enabled.
+The image and system trust stores are unchanged; populated CA data belongs only
+in the private Vault capture and the existing native credential.
+
+The NEW read-only runtime template uses its dedicated demo EE and API credential,
+with become disabled. It checks installed content and syntax, then authenticates
+through both the collection and native URI HTTPS paths. Successful execution is
+required before claiming AAP-to-Satellite runtime acceptance. Client registration,
+content changes and host patching remain separate stages.
+
 ## Selected installer implementation
 
 Use the certified `redhat.satellite_operations.installer` role for the application

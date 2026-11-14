@@ -107,6 +107,7 @@
                     use_netrc: false
                     follow_redirects: none
                     validate_certs: true
+                    ca_path: "{{ lookup('ansible.builtin.env', 'SATELLITE_CA_PATH') | default(omit, true) }}"
                     body_format: json
                     body:
                       content_view_version_environments:

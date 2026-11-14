@@ -48,3 +48,4 @@
             syntax_checked: "{{ sniper_runtime.syntax_checked }}"
             module_arguments_verified: true
             satellite_read_verified: true
+            native_uri_tls_verified: true

@@ -1,6 +1,7 @@
 # NEW installation and demo-runtime checkpoint — 2026-11-14
 
-Version 0.10.1 records separate setup and demo EE recipes. NEW Satellite 6.19.6
+Version 0.11.0 adds optional job-local Satellite CA trust and collection/native
+URI runtime verification to the separate setup and demo EE recipes. NEW Satellite 6.19.6
 is installed and configured through the certified operations installer after
 verified DNS and a full RHEL update/reboot/kernel check. Native services and
 authenticated HTTPS passed with certificate validation. The existing shared
@@ -11,7 +12,9 @@ The NEW demo EE is published and qualified with Core 2.20.10 and certified
 Satellite collection 6.0.0. Its twelve NEW fixtures, nine module interfaces and
 six stage syntaxes pass; uncached image verification passed. Private demo EE/JT
 bindings, CoP Satellite application configuration, client registration and the
-full NEW patching demo are unfinished. OLD source/runtime are preserved.
+full NEW patching demo are unfinished. The verified public native CA is captured
+in Vault; applying its job-local injection and qualifying the NEW read-only
+runtime template remain separate live steps. OLD source/runtime are preserved.
 
 Two NEW RHEL 9.4 clients were provisioned with deployment/cloud-init updates
 disabled and their package baselines verified. Selection of the separate normal

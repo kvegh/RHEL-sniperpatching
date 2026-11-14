@@ -18,6 +18,22 @@
   register: sniper_runtime_organizations
   no_log: true
 
+- name: Verify the native URI path with the same Satellite CA
+  ansible.builtin.uri:
+    url: '{{ sniper_server_url | regex_replace("/$", "") }}/api/organizations?per_page=1'
+    method: GET
+    url_username: "{{ sniper_username }}"
+    url_password: "{{ sniper_password }}"
+    force_basic_auth: true
+    use_netrc: false
+    follow_redirects: none
+    validate_certs: true
+    ca_path: "{{ lookup('ansible.builtin.env', 'SATELLITE_CA_PATH') | default(omit, true) }}"
+    status_code: 200
+    timeout: 30
+  changed_when: false
+  no_log: true
+
 - name: Report successful read-only Satellite access
   ansible.builtin.debug:
     msg: "Satellite collection returned {{ sniper_runtime_organizations.resources | length }} organization(s). No managed hosts were contacted."
