@@ -633,3 +633,29 @@ runtime template, retaining all existing usernames, passwords and setup bindings
 Protected inverse comparison and native Vault/import checks passed. Publication
 is separate from live import and AAP-to-Satellite runtime acceptance. Version
 0.11.1 records this implementation decision.
+
+## 2026-11-14 — Preserve in-use credential schemas during CA delivery
+
+Correction: `260f94c286ff094a57ffc5db5a58fbc32c1a2868`, version **0.11.2**.
+
+The initial live import failed at the credential-type update; its existing input
+schema and API credential remained unchanged. The upstream Controller API blocks
+input changes for a type already used by a credential. Keep that schema and
+the existing credential intact. Supply the public CA through the already chosen
+private project-configuration path instead of extending a native input schema.
+
+Standard Ansible tasks create a mode0600 CA file in a private native temporary
+directory and pass its path explicitly to the certified collection and native
+URI. A forced handler removes the file after success or failure. Existing
+environment-provided paths and default trust remain supported. This adds no
+credential type, credential, image change, global trust update or authentication
+source. Private correction `6d3178885ba55f97b2f73926b3df1cec35146b69` restores
+the original type/credential inputs and supplies only public CA configuration
+to the new read-only runtime template; all passwords and other values remain.
+
+Fourteen focused fixtures passed on the unchanged NEW Core2.20.10 EE, including
+real Ansible file permissions and cleanup on both success and deliberate failure.
+Nine collection interfaces, six stage syntaxes and runtime syntax passed.
+Production lint passed on19files with zero findings and two existing dynamic
+inspection exceptions. OLD is unchanged. Live import and runtime acceptance
+remain separate. Version0.11.3 records the correction.

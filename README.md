@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Demo project version: 0.11.2.**
+**Demo project version: 0.11.3.**
 
 See [current handover status](current_status_for_handover.md) for recorded
 validation, review status and continuation boundaries.
@@ -143,7 +143,7 @@ OLD retains its verified Core 2.15.11/Satellite collection 3.14.0 baseline.
 NEW pins certified redhat.satellite 6.0.0, resolved from Red Hat Automation Hub.
 Its filter calls follow the current split between filters and explicit rules.
 The qualified NEW demo EE passes nine collection module interfaces, six stage
-syntaxes and twelve NEW content/runtime fixtures on Core 2.20.10. Its vendor
+syntaxes and fourteen NEW content/runtime fixtures on Core 2.20.10. Its vendor
 Python/RPM inventory, runtime settings and base layers are preserved; no extra
 packages are needed. Image publication was verified through uncached manifest,
 configuration and every-blob hash checks. Live template bindings and patching
