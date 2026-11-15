@@ -22,115 +22,133 @@
 
 - name: Patch and prove the selected host
   hosts: sniper_targets
-  gather_facts: true
+  gather_facts: false
   become: true
   serial: 1
   any_errors_fatal: true
   vars_files: [vars/main.yml]
   tasks:
-    - name: Validate host identity, required tools, and advisory metadata
-      ansible.builtin.import_tasks: tasks/host_preflight.yml
+    - name: Patch and verify the selected host with its verified SSH identity
+      block:
+        - name: Load the management-verified SSH identity for the selected client
+          ansible.builtin.import_tasks: tasks/ssh_pin.yml
 
-    - name: Validate explicit update scope
-      ansible.builtin.assert:
-        that:
-          - sniper_patch_scope in ['targeted', 'full']
-          - not ansible_check_mode
-        fail_msg: Choose targeted or full scope for the selected host.
+        - name: Gather facts only after preparing strict SSH trust
+          ansible.builtin.setup:
 
-    # Reason: Measure real installed package changes. See docs/implementation.md#native-host-commands.
-    - name: Snapshot installed RPM versions before patching
-      ansible.builtin.command:
-        argv: [rpm, "-qa", "--qf", "%{NAME}|%{EPOCHNUM}|%{VERSION}|%{RELEASE}|%{ARCH}\\n"]
-      register: sniper_packages_before
-      changed_when: false
+        - name: Validate host identity, required tools, and advisory metadata
+          ansible.builtin.import_tasks: tasks/host_preflight.yml
 
-    # Reason: Apply exact advisory and repository constraints. See docs/implementation.md#native-host-commands.
-    - name: Patch only the requested advisory or explicitly perform a full update
-      ansible.builtin.command:
-        argv: '{{ ["yum" if ansible_facts.distribution_major_version | int == 7 else "dnf", "-y"]
-          + hostvars["localhost"].sniper_repo_args + (["upgrade-minimal"]
-          + (hostvars["localhost"].sniper_resolved_ids | map("regex_replace", "^", "--advisory=") | list)
-          if sniper_patch_scope == "targeted" else ["--setopt=metadata_expire=0", "upgrade"]) }}'
-      environment:
-        LC_ALL: C
-      when: sniper_patch_scope == 'full' or not sniper_proof.verified | bool
-      changed_when: false
+        - name: Validate explicit update scope
+          ansible.builtin.assert:
+            that:
+              - sniper_patch_scope in ['targeted', 'full']
+              - not ansible_check_mode
+            fail_msg: Choose targeted or full scope for the selected host.
 
-    # Reason: Read actual post-transaction EVRs. See docs/implementation.md#native-host-commands.
-    - name: Snapshot installed RPM versions after patching
-      ansible.builtin.command:
-        argv: [rpm, "-qa", "--qf", "%{NAME}|%{EPOCHNUM}|%{VERSION}|%{RELEASE}|%{ARCH}\\n"]
-      register: sniper_packages_after
-      changed_when: false
+        # Reason: Measure real installed package changes. See docs/implementation.md#native-host-commands.
+        - name: Snapshot installed RPM versions before patching
+          ansible.builtin.command:
+            argv: [rpm, "-qa", "--qf", "%{NAME}|%{EPOCHNUM}|%{VERSION}|%{RELEASE}|%{ARCH}\\n"]
+          register: sniper_packages_before
+          changed_when: false
 
-    - name: Record changed package names
-      ansible.builtin.set_fact:
-        sniper_changed_packages: "{{ sniper_packages_before.stdout_lines | sniper_package_delta(sniper_packages_after.stdout_lines) }}"
-      changed_when: sniper_changed_packages | length > 0
+        # Reason: Apply exact advisory and repository constraints. See docs/implementation.md#native-host-commands.
+        - name: Patch only the requested advisory or explicitly perform a full update
+          ansible.builtin.command:
+            argv: '{{ ["yum" if ansible_facts.distribution_major_version | int == 7 else "dnf", "-y"]
+              + hostvars["localhost"].sniper_repo_args + (["upgrade-minimal"]
+              + (hostvars["localhost"].sniper_resolved_ids | map("regex_replace", "^", "--advisory=") | list)
+              if sniper_patch_scope == "targeted" else ["--setopt=metadata_expire=0", "upgrade"]) }}'
+          environment:
+            LC_ALL: C
+          when: sniper_patch_scope == 'full' or not sniper_proof.verified | bool
+          changed_when: false
 
-    # Reason: Use the OS reboot signal. See docs/implementation.md#native-host-commands.
-    - name: Detect reboot requirement
-      ansible.builtin.command:
-        argv: [needs-restarting, "-r"]
-      register: sniper_reboot_hint
-      changed_when: false
-      failed_when: sniper_reboot_hint.rc not in [0, 1]
+        # Reason: Read actual post-transaction EVRs. See docs/implementation.md#native-host-commands.
+        - name: Snapshot installed RPM versions after patching
+          ansible.builtin.command:
+            argv: [rpm, "-qa", "--qf", "%{NAME}|%{EPOCHNUM}|%{VERSION}|%{RELEASE}|%{ARCH}\\n"]
+          register: sniper_packages_after
+          changed_when: false
 
-    # Reason: Protect full process argv while retaining reboot evidence. See docs/implementation.md#native-host-commands.
-    - name: Detect running processes still using replaced binaries
-      ansible.builtin.command:
-        argv: [needs-restarting]
-      register: sniper_stale_processes
-      changed_when: false
-      no_log: true
+        - name: Record changed package names
+          ansible.builtin.set_fact:
+            sniper_changed_packages: "{{ sniper_packages_before.stdout_lines | sniper_package_delta(sniper_packages_after.stdout_lines) }}"
+          changed_when: sniper_changed_packages | length > 0
 
-    - name: Reboot when required by the system, kernel proof, or outdated running processes
-      ansible.builtin.reboot:
-        reboot_timeout: "{{ sniper_reboot_timeout }}"
-        post_reboot_delay: 10
-      when: >-
-        sniper_reboot_hint.rc == 1 or sniper_proof.requires_kernel_reboot | bool or
-        (sniper_changed_packages | length > 0 and hostvars['localhost'].sniper_advisory_details
-        | selectattr('reboot_suggested', 'defined') | selectattr('reboot_suggested')
-        | list | length > 0) or
-        sniper_stale_processes.stdout_lines | select('match', '^[0-9]+\s*:') | list | length > 0 or
-        (sniper_changed_packages | intersect(['kernel', 'kernel-core', 'kernel-rt', 'glibc', 'systemd', 'udev', 'dbus', 'linux-firmware',
-        'microcode_ctl', 'openssl-libs',
-        'gnutls']) | length > 0)
+        # Reason: Use the OS reboot signal. See docs/implementation.md#native-host-commands.
+        - name: Detect reboot requirement
+          ansible.builtin.command:
+            argv: [needs-restarting, "-r"]
+          register: sniper_reboot_hint
+          changed_when: false
+          failed_when: sniper_reboot_hint.rc not in [0, 1]
 
-    - name: Verify the effective fix after any required reboot and run smoke tests
-      ansible.builtin.import_tasks: tasks/check_final.yml
+        # Reason: Protect full process argv while retaining reboot evidence. See docs/implementation.md#native-host-commands.
+        - name: Detect running processes still using replaced binaries
+          ansible.builtin.command:
+            argv: [needs-restarting]
+          register: sniper_stale_processes
+          changed_when: false
+          no_log: true
 
-    # Reason: Require a fresh repository completion check. See docs/implementation.md#native-host-commands.
-    - name: Check for remaining updates in the selected repositories
-      ansible.builtin.command:
-        argv: '{{ ["yum" if ansible_facts.distribution_major_version | int == 7 else "dnf"]
-          + hostvars["localhost"].sniper_repo_args
-          + ["--setopt=metadata_expire=0", "check-update"] }}'
-      environment:
-        LC_ALL: C
-      register: sniper_remaining_updates
-      changed_when: false
-      failed_when: sniper_remaining_updates.rc not in [0, 100]
-      when: sniper_patch_scope == 'full'
+        - name: Reboot when required by the system, kernel proof, or outdated running processes
+          ansible.builtin.reboot:
+            reboot_timeout: "{{ sniper_reboot_timeout }}"
+            post_reboot_delay: 10
+          when: >-
+            sniper_reboot_hint.rc == 1 or sniper_proof.requires_kernel_reboot | bool or
+            (sniper_changed_packages | length > 0 and hostvars['localhost'].sniper_advisory_details
+            | selectattr('reboot_suggested', 'defined') | selectattr('reboot_suggested')
+            | list | length > 0) or
+            sniper_stale_processes.stdout_lines | select('match', '^[0-9]+\s*:') | list | length > 0 or
+            (sniper_changed_packages | intersect(['kernel', 'kernel-core', 'kernel-rt', 'glibc', 'systemd', 'udev', 'dbus', 'linux-firmware',
+            'microcode_ctl', 'openssl-libs',
+            'gnutls']) | length > 0)
 
-    - name: Require the full update to leave no pending repository updates
-      ansible.builtin.assert:
-        that: sniper_remaining_updates.rc == 0
-        fail_msg: Packages remain available from the selected repositories after the full update.
-      when: sniper_patch_scope == 'full'
+        - name: Verify the effective fix after any required reboot and run smoke tests
+          ansible.builtin.import_tasks: tasks/check_final.yml
 
-    - name: Record the verified update result
-      ansible.builtin.set_fact:
-        sniper_update_result: "{{ 'already_current' if sniper_changed_packages | length == 0 else 'updated' }}"
-        sniper_full_repository_verified: "{{ sniper_patch_scope == 'full' and sniper_remaining_updates.rc | default(-1) == 0 }}"
+        # Reason: Require a fresh repository completion check. See docs/implementation.md#native-host-commands.
+        - name: Check for remaining updates in the selected repositories
+          ansible.builtin.command:
+            argv: '{{ ["yum" if ansible_facts.distribution_major_version | int == 7 else "dnf"]
+              + hostvars["localhost"].sniper_repo_args
+              + ["--setopt=metadata_expire=0", "check-update"] }}'
+          environment:
+            LC_ALL: C
+          register: sniper_remaining_updates
+          changed_when: false
+          failed_when: sniper_remaining_updates.rc not in [0, 100]
+          when: sniper_patch_scope == 'full'
 
-    - name: Report verified package update result
-      ansible.builtin.debug:
-        msg:
-          changed_packages: "{{ sniper_changed_packages }}"
-          update_result: "{{ sniper_update_result }}"
+        - name: Require the full update to leave no pending repository updates
+          ansible.builtin.assert:
+            that: sniper_remaining_updates.rc == 0
+            fail_msg: Packages remain available from the selected repositories after the full update.
+          when: sniper_patch_scope == 'full'
+
+        - name: Record the verified update result
+          ansible.builtin.set_fact:
+            sniper_update_result: "{{ 'already_current' if sniper_changed_packages | length == 0 else 'updated' }}"
+            sniper_full_repository_verified: "{{ sniper_patch_scope == 'full' and sniper_remaining_updates.rc | default(-1) == 0 }}"
+
+        - name: Report verified package update result
+          ansible.builtin.debug:
+            msg:
+              changed_packages: "{{ sniper_changed_packages }}"
+              update_result: "{{ sniper_update_result }}"
+      always:
+        - name: Remove the execution-local client public pin
+          ansible.builtin.file:
+            path: "{{ sniper_new_trust_file.path }}"
+            state: absent
+          delegate_to: localhost
+          become: false
+          when: sniper_new_trust_file.path is defined
+          changed_when: false
+          no_log: true
 
 - name: Require actual verification completion and publish job evidence
   hosts: localhost

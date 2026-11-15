@@ -1,0 +1,247 @@
+---
+- name: Gather facts only after strict SSH trust is ready
+  ansible.builtin.setup:
+
+- name: Require the exact original RHEL 9.4 guest identity
+  ansible.builtin.assert:
+    that:
+      - ansible_facts.distribution == 'RedHat'
+      - ansible_facts.distribution_version == '9.4'
+      - ansible_facts.architecture == 'x86_64'
+      - ansible_facts.fqdn == inventory_hostname
+      - ansible_facts.product_uuid | lower == sniper_expected_product_uuid | lower
+      - ansible_facts.machine_id | lower == sniper_expected_machine_id | lower
+    fail_msg: SSH must reach the exact original RHEL 9.4 client. Refuse a replacement, rebuilt or misaddressed guest.
+
+- name: Select this original client's verified registration context
+  ansible.builtin.set_fact:
+    sniper_registration_context: "{{ hostvars['localhost'].sniper_registration_contexts[inventory_hostname] }}"
+    sniper_registration_verified: false
+    sniper_registration_performed: false
+
+# Reason: Native RPM is the complete before/after package boundary; package_facts cannot prove no transaction.
+# Justification: ../../../docs/new-baseline.md#direct-registration-implementation
+- name: Snapshot every installed RPM before registration changes
+  ansible.builtin.command:
+    argv: [rpm, '-qa', '--qf', '%{NAME}|%{EPOCHNUM}|%{VERSION}|%{RELEASE}|%{ARCH}\n']
+  register: sniper_registration_rpms_before
+  changed_when: false
+
+- name: Preserve the package baseline through registration and every failure
+  block:
+    # Reason: Certified Satellite content does not read the local consumer identity.
+    # Justification: ../../../docs/new-baseline.md#direct-registration-implementation
+    - name: Read any existing native registration before changing the guest
+      ansible.builtin.command:
+        argv: [subscription-manager, identity]
+      environment:
+        LC_ALL: C
+      register: sniper_registration_identity_before
+      changed_when: false
+      failed_when: >-
+        sniper_registration_identity_before.rc not in [0, 1] or
+        (sniper_registration_identity_before.rc == 1 and 'not yet registered' not in
+         (sniper_registration_identity_before.stdout ~ sniper_registration_identity_before.stderr))
+
+    - name: Read this exact host's existing Satellite registration
+      redhat.satellite.resource_info:
+        resource: hosts
+        organization: "{{ sniper_organization }}"
+        search: 'name = "{{ inventory_hostname }}"'
+        full_details: true
+      delegate_to: localhost
+      become: false
+      register: sniper_registration_host_before
+
+    - name: Refuse stale, ambiguous or unrelated registration without force or unregister
+      ansible.builtin.assert:
+        that:
+          - >-
+            (sniper_registration_identity_before.rc == 1 and sniper_registration_host_before.resources | length == 0) or
+            (sniper_registration_identity_before.rc == 0 and sniper_registration_host_before.resources | length == 1)
+        fail_msg: Existing guest registration and Satellite host must agree exactly. Investigate conflicts; this playbook never unregisters or forces registration.
+
+    - name: Require an existing consumer to match this exact project mapping
+      ansible.builtin.assert:
+        that:
+          - (sniper_registration_host_before.resources | sniper_one).organization_id | int == sniper_registration_context.organization_id | int
+          - (sniper_registration_host_before.resources | sniper_one).name == inventory_hostname
+          - >-
+            (sniper_registration_host_before.resources | sniper_one).subscription_facet_attributes.uuid | lower in
+            (sniper_registration_identity_before.stdout | regex_findall('(?m)^system identity: ([a-fA-F0-9-]{36})$') | map('lower') | list)
+          - >-
+            (sniper_registration_host_before.resources | sniper_one).content_facet_attributes.content_view_environments
+            | map(attribute='id') | list == [sniper_registration_context.content_view_environment_id]
+        fail_msg: An existing consumer is not registered to the exact owned CV/environment. Preserve it and investigate.
+      when: sniper_registration_identity_before.rc == 0
+
+    - name: Register only an unregistered original client directly to its served path
+      when: sniper_registration_identity_before.rc == 1
+      block:
+        - name: Inspect the dedicated activation-key name before any change
+          redhat.satellite.resource_info:
+            resource: activation_keys
+            organization: "{{ sniper_organization }}"
+            search: 'name = "{{ sniper_registration_context.activation_key }}"'
+          delegate_to: localhost
+          become: false
+          register: sniper_registration_key_query
+
+        - name: Refuse an activation key without exact project ownership
+          ansible.builtin.assert:
+            that:
+              - sniper_registration_key_query.resources | length <= 1
+              - sniper_registration_key_query.resources | sniper_owned(sniper_owner, 'registration activation key') | length <= 1
+
+        # CoP 1.5.0's activation-key role forwards deprecated fields. Use certified 6.0.0's modern interface directly.
+        - name: Bind the dedicated activation key directly to the verified native CV environment
+          redhat.satellite.activation_key:
+            organization: "{{ sniper_organization }}"
+            name: "{{ sniper_registration_context.activation_key }}"
+            description: "{{ sniper_owner }}"
+            content_view_environments: "{{ [sniper_registration_context.content_view_environment_label] }}"
+            release_version: '9.4'
+            content_overrides:
+              - label: "{{ sniper_registration_context.content_labels[0] }}"
+                override: enabled
+              - label: "{{ sniper_registration_context.content_labels[1] }}"
+                override: enabled
+            state: present
+          delegate_to: localhost
+          become: false
+
+        - name: Inspect the project public-CA anchor without following links
+          ansible.builtin.stat:
+            path: "/etc/pki/ca-trust/source/anchors/{{ sniper_namespace }}-satellite-ca.pem"
+            follow: false
+          register: sniper_registration_ca_stat
+
+        - name: Preserve any unsafe or conflicting pre-existing anchor
+          ansible.builtin.assert:
+            that:
+              - not sniper_registration_ca_stat.stat.exists or (sniper_registration_ca_stat.stat.isreg and not sniper_registration_ca_stat.stat.islnk)
+            fail_msg: Refuse to replace an existing non-regular project CA anchor.
+
+        - name: Read an existing public-CA anchor for exact comparison
+          ansible.builtin.slurp:
+            src: "/etc/pki/ca-trust/source/anchors/{{ sniper_namespace }}-satellite-ca.pem"
+          register: sniper_registration_existing_ca
+          when: sniper_registration_ca_stat.stat.exists
+
+        - name: Refuse to overwrite a different existing public-CA anchor
+          ansible.builtin.assert:
+            that: sniper_registration_existing_ca.content | b64decode == sniper_satellite_ca_pem
+            fail_msg: The existing project CA anchor differs; preserve it and investigate.
+          when: sniper_registration_ca_stat.stat.exists
+
+        - name: Install only the approved public CA when its project anchor is absent
+          ansible.builtin.copy:
+            content: "{{ sniper_satellite_ca_pem }}"
+            dest: "/etc/pki/ca-trust/source/anchors/{{ sniper_namespace }}-satellite-ca.pem"
+            mode: '0644'
+            owner: root
+            group: root
+            force: false
+          register: sniper_registration_ca_copy
+          when: not sniper_registration_ca_stat.stat.exists
+
+        - name: Verify the actual anchor before trusting it
+          ansible.builtin.slurp:
+            src: "/etc/pki/ca-trust/source/anchors/{{ sniper_namespace }}-satellite-ca.pem"
+          register: sniper_registration_actual_ca
+
+        - name: Require exact public-CA preservation including a concurrent file creation
+          ansible.builtin.assert:
+            that: sniper_registration_actual_ca.content | b64decode == sniper_satellite_ca_pem
+
+        # Reason: curl in the native registration command needs guest OS trust, not the controller ca_path.
+        # Justification: ../../../docs/new-baseline.md#direct-registration-implementation
+        - name: Refresh native guest trust for the approved Satellite CA
+          ansible.builtin.command:
+            argv: [update-ca-trust, extract]
+          changed_when: sniper_registration_ca_copy.changed
+
+        - name: Generate a short-lived secure native command with all optional mutations disabled
+          redhat.satellite.registration_command:
+            organization: "{{ sniper_organization }}"
+            activation_keys: "{{ [sniper_registration_context.activation_key] }}"
+            jwt_expiration: 1
+            packages: ''
+            insecure: false
+            force: false
+            ignore_subman_errors: false
+            update_packages: false
+            setup_insights: false
+            setup_remote_execution: false
+            setup_remote_execution_pull: false
+            setup_container_registry_certs: false
+          delegate_to: localhost
+          become: false
+          register: sniper_registration_command
+          no_log: true
+
+        # Reason: Execute only Satellite's native generated pipeline, as documented by certified registration_command.
+        # Justification: ../../../docs/new-baseline.md#direct-registration-implementation
+        - name: Execute the protected native registration command once
+          ansible.builtin.shell:
+            cmd: "{{ sniper_registration_command.registration_command }}"
+            executable: /bin/bash
+          register: sniper_registration_execution
+          changed_when: sniper_registration_execution.rc == 0
+          no_log: true
+
+        - name: Record that this invocation performed registration
+          ansible.builtin.set_fact:
+            sniper_registration_performed: true
+
+    - name: Read the final exact Satellite registration
+      redhat.satellite.resource_info:
+        resource: hosts
+        organization: "{{ sniper_organization }}"
+        search: 'name = "{{ inventory_hostname }}"'
+        full_details: true
+      delegate_to: localhost
+      become: false
+      register: sniper_registration_host_after
+
+    # Reason: Tie the actual local consumer to the freshly returned Satellite record.
+    # Justification: ../../../docs/new-baseline.md#direct-registration-implementation
+    - name: Read the final native consumer identity
+      ansible.builtin.command:
+        argv: [subscription-manager, identity]
+      environment:
+        LC_ALL: C
+      register: sniper_registration_identity_after
+      changed_when: false
+
+    - name: Require exact final organization, consumer and sole CV-environment mapping
+      ansible.builtin.assert:
+        that:
+          - (sniper_registration_host_after.resources | sniper_one).organization_id | int == sniper_registration_context.organization_id | int
+          - (sniper_registration_host_after.resources | sniper_one).name == inventory_hostname
+          - >-
+            (sniper_registration_host_after.resources | sniper_one).subscription_facet_attributes.uuid | lower in
+            (sniper_registration_identity_after.stdout | regex_findall('(?m)^system identity: ([a-fA-F0-9-]{36})$') | map('lower') | list)
+          - >-
+            (sniper_registration_host_after.resources | sniper_one).content_facet_attributes.content_view_environments
+            | map(attribute='id') | list == [sniper_registration_context.content_view_environment_id]
+        fail_msg: Native registration did not confirm the exact expected consumer and project CV/environment. Investigate before retrying.
+  always:
+    # Reason: Registration must not consume any future package-update demonstration.
+    # Justification: ../../../docs/new-baseline.md#direct-registration-implementation
+    - name: Snapshot every installed RPM after registration or a failed attempt
+      ansible.builtin.command:
+        argv: [rpm, '-qa', '--qf', '%{NAME}|%{EPOCHNUM}|%{VERSION}|%{RELEASE}|%{ARCH}\n']
+      register: sniper_registration_rpms_after
+      changed_when: false
+
+    - name: Refuse any package-baseline change including signing-key records
+      ansible.builtin.assert:
+        that:
+          - sniper_registration_rpms_before.stdout_lines | length > 0
+          - sniper_registration_rpms_before.stdout_lines | sort == sniper_registration_rpms_after.stdout_lines | sort
+        fail_msg: Registration changed the full RPM baseline. Stop before patching and investigate; no rollback is attempted.
+
+- name: Record complete native registration and unchanged-package verification
+  ansible.builtin.set_fact:
+    sniper_registration_verified: true

@@ -1,5 +1,23 @@
 # Release notes
 
+## 0.14.0 — Register the original NEW pair directly to served GA content
+
+Add a separate NEW registration stage using certified modern activation-key
+bindings and native secure Global Registration. Require the existing original
+GA content, exact client/consumer identities, preserved installed RPMs and both
+clients’ completed results. Reuse protected API/CA and Machine credentials; do
+not publish missing content, bootstrap in Library, force registration or enable
+package updates and unrelated integrations. Runtime inspection includes the new
+stage and its certified module arguments.
+
+NEW patch/check jobs now establish their existing strict per-client SSH pin
+before facts and always remove the execution-local file. Focused offline tests
+exercise success and failure cleanup. Document the nine exact chronological
+RHSA/cutoff inputs for ten selected CVEs so a final-window full update cannot
+consume the later examples in the first cycle. OLD is unchanged. Full native
+registration and the complete NEW/CVE procedure remain unverified until the
+normal AAP jobs pass after synchronization and GA content readiness.
+
 ## 0.13.5 — Record storage readiness and dated foundation progress
 
 At the 2026-11-15 20:17 UTC checkpoint, the approved storage-readiness work had

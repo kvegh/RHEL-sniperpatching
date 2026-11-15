@@ -1,0 +1,144 @@
+---
+- name: Select the exact owned CV and original client's destination
+  ansible.builtin.set_fact:
+    sniper_cv: '{{ sniper_existing_views | sniper_one("prepared Content View") }}'
+    sniper_environment_name: '{{ sniper_test_environment if sniper_registration_stage == "test" else sniper_prod_environment }}'
+    sniper_host_name: '{{ sniper_test_host if sniper_registration_stage == "test" else sniper_prod_host }}'
+
+- name: Read the selected lifecycle destination
+  redhat.satellite.resource_info:
+    resource: lifecycle_environments
+    organization: "{{ sniper_organization }}"
+    search: 'name = "{{ sniper_environment_name }}"'
+  register: sniper_registration_env_query
+
+- name: Require one owned lifecycle destination
+  ansible.builtin.set_fact:
+    sniper_env: '{{ sniper_registration_env_query.resources | sniper_owned(sniper_owner, "environment") | sniper_one("environment") }}'
+
+- name: Read the version actually serving the selected destination
+  redhat.satellite.resource_info:
+    resource: content_view_versions
+    params:
+      content_view_id: "{{ sniper_cv.id }}"
+      environment_id: "{{ sniper_env.id }}"
+  register: sniper_registration_serving_query
+
+- name: Require a single serving version
+  ansible.builtin.set_fact:
+    sniper_baseline: '{{ sniper_registration_serving_query.resources | sniper_one("serving Content View version") }}'
+
+- name: Read the actual served repositories and RHSM labels
+  redhat.satellite.resource_info:
+    resource: repositories
+    params:
+      content_view_version_id: "{{ sniper_baseline.id }}"
+    full_details: true
+  register: sniper_registration_repositories
+
+- name: Record the actual served repository boundaries
+  ansible.builtin.set_fact:
+    sniper_repo_details: "{{ sniper_registration_repositories.resources }}"
+
+- name: Require the exact isolated lifecycle path and repository pair
+  ansible.builtin.assert:
+    that:
+      - sniper_env.prior.name == ('Library' if sniper_registration_stage == 'test' else sniper_test_environment)
+      - sniper_cv.label is match('^[A-Za-z0-9_-]+$')
+      - sniper_env.label is match('^[A-Za-z0-9_-]+$')
+      - sniper_cv.repositories | length == 2
+      - sniper_repo_details | length == 2
+      - sniper_repo_details | map(attribute='name') | sort == sniper_repositories | map(attribute='name') | sort
+      - sniper_repo_details | map(attribute='content_label') | sort == ['rhel-9-for-x86_64-appstream-rpms', 'rhel-9-for-x86_64-baseos-rpms']
+    fail_msg: Registration requires the owned Library to Test to Prod path and only the selected RHEL 9 BaseOS/AppStream repositories.
+
+- name: Verify each repository's exact protected product mapping
+  ansible.builtin.assert:
+    that: item.product.name == (sniper_repositories | selectattr('name', 'equalto', item.name) | first).product
+  loop: "{{ sniper_repo_details }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Read all versions to refuse later or ambiguous history
+  redhat.satellite.resource_info:
+    resource: content_view_versions
+    params:
+      content_view_id: "{{ sniper_cv.id }}"
+  register: sniper_registration_versions
+
+- name: Refuse any history beyond the one original GA baseline
+  ansible.builtin.assert:
+    that: sniper_registration_versions.resources | length == 1
+
+- name: Identify the sole original baseline
+  ansible.builtin.set_fact:
+    sniper_registration_initial: "{{ sniper_registration_versions.resources | sniper_initial_baseline }}"
+
+- name: Require the original GA version to be serving this destination
+  ansible.builtin.assert:
+    that:
+      - sniper_registration_initial.description == 'Initial demonstration baseline; cutoff=2024-04-30'
+      - sniper_baseline.id == sniper_registration_initial.id
+      - sniper_baseline.content_view_id | int == sniper_cv.id | int
+    fail_msg: Prepare and verify the original GA baseline in both destinations first. Registration never publishes or resets content.
+
+- name: Read actual published baseline advisories
+  redhat.satellite.resource_info:
+    resource: errata
+    params:
+      content_view_version_id: "{{ sniper_baseline.id }}"
+  register: sniper_registration_errata
+
+- name: Require the published advisory cutoff and selected-fix exclusions
+  ansible.builtin.assert:
+    that:
+      - sniper_registration_errata.resources | sniper_verify_cutoff('2024-04-30')
+      - sniper_registration_catalog.candidates | map(attribute='advisory') | intersect(sniper_registration_errata.resources | map(attribute='errata_id') | list) | length == 0
+
+- name: Read the latest affected builds from the actual served version
+  redhat.satellite.resource_info:
+    resource: packages
+    organization: "{{ sniper_organization }}"
+    params:
+      content_view_version_id: "{{ sniper_baseline.id }}"
+      packages_restrict_latest: true
+    search: >-
+      name = "{{ sniper_registration_originals | map(attribute='name') | unique | join('" or name = "') }}"
+  register: sniper_registration_packages
+
+- name: Require the original affected package builds before any guest connection
+  ansible.builtin.assert:
+    that: >-
+      sniper_registration_packages.resources | sniper_verify_baseline_packages(
+        sniper_registration_originals, sniper_registration_fixed)
+
+- name: Read the native content-view environment identifier and label
+  redhat.satellite.resource_info:
+    resource: content_view_environments
+    params:
+      organization_id: "{{ sniper_org.id }}"
+      content_view_id: "{{ sniper_cv.id }}"
+      lifecycle_environment_id: "{{ sniper_env.id }}"
+  register: sniper_registration_cve_query
+
+- name: Require the exact returned label for the selected CV and environment
+  ansible.builtin.set_fact:
+    sniper_registration_cve: "{{ sniper_registration_cve_query.resources | sniper_one('Content View environment') }}"
+
+- name: Verify native content-view environment provenance
+  ansible.builtin.assert:
+    that:
+      - sniper_registration_cve.content_view.id | int == sniper_cv.id | int
+      - sniper_registration_cve.lifecycle_environment.id | int == sniper_env.id | int
+      - sniper_registration_cve.label == sniper_env.label ~ '/' ~ sniper_cv.label
+
+- name: Retain only the verified per-client registration context
+  ansible.builtin.set_fact:
+    sniper_registration_contexts: >-
+      {{ sniper_registration_contexts | combine({sniper_host_name: {
+        'stage': sniper_registration_stage, 'organization_id': sniper_org.id,
+        'content_view_environment_id': sniper_registration_cve.id,
+        'content_view_environment_label': sniper_registration_cve.label,
+        'version_id': sniper_baseline.id, 'version': sniper_baseline.version,
+        'activation_key': sniper_namespace ~ '_Register_' ~ (sniper_registration_stage | capitalize),
+        'content_labels': sniper_repo_details | map(attribute='content_label') | sort | list}}) }}

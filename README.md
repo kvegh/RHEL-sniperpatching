@@ -1,11 +1,13 @@
 # RHEL-sniperpatching
 
-**Version: 0.13.5.**
+**Version: 0.14.0.**
 
-Development and publication use **main only**. This source includes scoped CoP
-content configuration, an extended demo EE recipe and content-first GA baseline
-preparation. Focused offline checks and the combined EE’s normal AAP runtime
-check passed. Storage readiness was verified before a normal foundation run.
+Development and publication use **main only**. NEW includes scoped CoP content
+configuration, a qualified demo EE, content-first GA preparation and explicit
+direct Test/Prod registration. Patch/check jobs establish strict client SSH trust
+before gathering facts and clean it up after success or failure. Registration
+and the changed client stages still require normal AAP acceptance. Storage
+readiness was verified before a normal foundation run.
 The [dated live checkpoint](docs/cop-qualification.md#dated-live-foundation-checkpoint)
 records passed repository guards and entry into synchronization; full foundation
 and NEW patching acceptance remain unfinished. See
@@ -455,8 +457,9 @@ the final corrected-source AAP end-to-end re-test remain pending. See the
 
 ### Reproduce local validation
 
-Use an existing Python with Ansible and PyYAML, the selected Satellite 3.14.0
-collection on its search path, and matching Ansible CLI programs on `PATH`.
+Use an existing Python with Ansible and PyYAML, the selected track’s Satellite
+collection on its search path (OLD 3.14.0, NEW 6.0.0), and matching Ansible CLI
+programs on `PATH`. Prefer the already-qualified EE for that track.
 Do not install or upgrade content as part of a normal demonstration job.
 
 ```sh
@@ -469,8 +472,10 @@ ansible-playbook --syntax-check playbooks/old/check_runtime.yml
 ansible-playbook --syntax-check playbooks/new/check_runtime.yml
 ```
 
-The runtime probe checks all six demonstration entry points and their Satellite
-module arguments without executing the stages. The local unit/boundary fixtures
+The runtime probes check all six demonstration entry points and their Satellite
+module arguments without executing the stages. NEW additionally checks its
+separate direct-registration stage and both certified registration modules.
+The local unit/boundary fixtures
 use synthetic data and temporary files; they do not contact or patch clients.
 Record the actual interpreter/core/collection versions alongside results.
 

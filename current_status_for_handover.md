@@ -1,3 +1,24 @@
+# Direct-registration source checkpoint — 2026-11-15
+
+Version **0.14.0** adds explicit NEW direct Test/Prod registration and corrects
+SSH trust ordering in the NEW patch/check stages. The separate GA-content job
+remains the sole initial publisher. Its normal CaC import and exact protected
+binding readback passed; it had not run at that verification. Registration is
+source preparation, not a claim that either original client is registered.
+
+The foundation/AppStream run was still active at the last native status read.
+Complete that job and owned content checks before GA publication, direct
+registration, registered-host acceptance and chronological CVE cycles. Keep
+per-cycle cutoff dates explicit, with the final October cutoff at the end;
+ten CVEs share nine advisories and cumulative updates can cover earlier fixes.
+
+The source change does not reopen the shared VM creator freeze, alter OLD or
+authorize additional power/storage operations. Preserve original client RPM
+baselines until their separately launched patching stages. Beads and encrypted
+private evidence carry current native job outcomes and protected identities.
+
+---
+
 # Storage-ready foundation checkpoint — 2026-11-15
 
 Version **0.13.5** records evidence available at **20:17 UTC**. The approved

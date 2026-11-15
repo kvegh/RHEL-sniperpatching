@@ -1,6 +1,6 @@
 # NEW content-first RHEL 9.4 baseline
 
-This source candidate prepares the frozen baseline before either client is
+This source prepares the frozen baseline before either client is
 registered. The owner selected direct registration to that served content,
 without temporary registration to Library. This sequence has offline fixture
 coverage; live publication, registration and the complete NEW demo remain
@@ -20,10 +20,11 @@ unverified. OLD retains its existing host-derived preparation.
    the same original version to both owned Test and Prod environments. This
    invocation makes no host or host-errata API requests, assigns no hosts,
    creates no activation keys, and performs no registration or RPM update.
-4. Configure the existing registration mechanism to bind each activation key
-   directly to its served dedicated CV/Test or CV/Prod path. Register the two
-   original clients without package updates. Registration and activation-key
-   configuration remain separately owned operations, not implicit playbook work.
+4. Launch `playbooks/new/register_demo_clients.yml` with the same protected
+   scope, approved public CA and original two-client inventory metadata. It
+   verifies already-serving GA content and registers directly to dedicated
+   Test/Prod activation keys. Registration does not publish content. Keep the
+   job limit empty so localhost and both original clients can run.
 5. Launch the same preparation playbook with `sniper_prepare_content_only: false`
    (the default). It requires an already-serving content path, reads the exact
    registered pair, rechecks the original baseline when it is the only version,
@@ -118,3 +119,46 @@ contamination refusal (including later-than-first-fixed RPMs), missing originals
 established-history preservation. The existing pure validation filter also
 checks explicit/ambiguous RPM epochs. These tests perform no live API calls and
 do not replace final AAP end-to-end acceptance.
+
+## Direct registration implementation
+
+The NEW registration stage uses certified `redhat.satellite.activation_key`
+with modern `content_view_environments`, and `registration_command` for native
+Global Registration. CoP 1.5.0’s activation-key dispatcher forwards legacy fields;
+using the certified 6.0.0 module directly avoids changing the shared collection
+or selecting a downgrade. Exact returned CV/environment labels, project
+ownership, the two selected repository labels and release 9.4 bind the keys.
+The sole original GA version must already serve both destinations.
+
+The protected inventory supplies each original client’s existing address,
+`sniper_ssh_host_key`, `sniper_expected_product_uuid` and
+`sniper_expected_machine_id`. The existing non-root Machine credential and sudo
+are reused. Strict host-key pinning precedes facts and any guest connection.
+The approved public Satellite CA is supplied through native guest trust,
+preserving a conflicting pre-existing anchor rather than replacing it. This
+follows [Red Hat’s secure Global Registration procedure](https://docs.redhat.com/en/documentation/red_hat_satellite/6.19/html-single/managing_hosts/index).
+
+The certified registration module returns a native pipeline rather than
+executing it on the guest. One protected `ansible.builtin.shell` task executes
+that exact command, as documented by the module; no custom registration script,
+download service or deprecated consumer RPM is added. API and initial curl
+certificate verification remain enabled. The short-lived registration command
+and token are never printed. Package updating, Insights, remote execution and
+container-certificate setup are explicitly disabled. Existing native template
+parameters must also leave optional host packages/tools disabled; explicit
+command switches alone do not prove that operator templates add nothing.
+
+`subscription-manager identity` joins the actual guest consumer to its exact
+Satellite row and served CV/environment. An existing matching consumer is
+verified without forced registration; a conflicting or stale registration
+stops. Native full `rpm -qa` snapshots before and after, including failed
+attempts, enforce preservation of the installed baseline. Final per-client
+assertions prevent an excluded or skipped host from producing a successful
+job. Execution-local public CA and host-key files are removed. These commands
+use existing RHEL tools and require no added runtime package.
+
+Focused synthetic local-Ansible fixtures verify registration control flow and
+refusals. They cannot establish actual client connectivity, native registration
+or DNF dependency resolution. Run the normal AAP GA, registration, registered
+preparation and Test-to-Prod procedure against the original pair for acceptance.
+Do not treat a source check or CaC import as completion of that procedure.

@@ -1,0 +1,163 @@
+---
+- name: Verify the served GA path before registering the original client pair
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  no_log: true
+  any_errors_fatal: true
+  vars_files: [vars/main.yml]
+  module_defaults:
+    group/redhat.satellite.satellite:
+      server_url: "{{ sniper_server_url }}"
+      username: "{{ sniper_username }}"
+      password: "{{ sniper_password }}"
+      validate_certs: true
+      ca_path: "{{ sniper_satellite_ca_path | default(omit, true) }}"
+  force_handlers: true
+  handlers:
+    - name: Remove job-local Satellite CA
+      ansible.builtin.include_tasks: tasks/api_ca_cleanup.yml
+  tasks:
+    - name: Require the exact existing inventory pair and protected registration inputs
+      ansible.builtin.assert:
+        that:
+          - not ansible_check_mode
+          - sniper_test_host in hostvars
+          - sniper_prod_host in hostvars
+          - groups.get('sniper_registration_targets', []) | difference([sniper_test_host, sniper_prod_host]) | length == 0
+          - sniper_satellite_ca_pem | default('') is match('^-----BEGIN CERTIFICATE-----')
+          - "'PRIVATE KEY' not in sniper_satellite_ca_pem"
+          - sniper_repositories | length == 2
+          - sniper_repositories | map(attribute='name') | unique | length == 2
+        fail_msg: Supply only the original Test/Prod inventory pair, the two selected repositories and the approved public Satellite CA. Check mode cannot register clients.
+    - name: Require management-verified original guest identities and non-root SSH credentials
+      ansible.builtin.assert:
+        that:
+          - hostvars[item].ansible_user | default('root') != 'root'
+          - hostvars[item].sniper_expected_product_uuid | default('') is match('^[a-fA-F0-9-]{36}$')
+          - hostvars[item].sniper_expected_machine_id | default('') is match('^[a-fA-F0-9]{32}$')
+      loop: "{{ [sniper_test_host, sniper_prod_host] }}"
+    - name: Prepare one protected controller API trust context
+      ansible.builtin.import_tasks: tasks/connect.yml
+    - name: Read the agreed GA package and security-advisory catalog
+      ansible.builtin.set_fact:
+        sniper_registration_catalog: "{{ lookup('ansible.builtin.file', playbook_dir ~ '/../../docs/rhel94-cve-candidates.json') | from_json }}"
+        sniper_registration_contexts: {}
+    - name: Require the agreed GA cutoff
+      ansible.builtin.assert:
+        that:
+          - sniper_registration_catalog.rhel94_ga == '2024-04-30'
+          - sniper_baseline_end_date == sniper_registration_catalog.rhel94_ga
+    - name: Record the original and first-fixed package boundaries
+      ansible.builtin.set_fact:
+        sniper_registration_originals: "{{ sniper_registration_catalog.candidates | map(attribute='baseline_package') | unique | list }}"
+        sniper_registration_fixed: []
+    - name: Record the exact fixed builds excluded from registration content
+      ansible.builtin.set_fact:
+        sniper_registration_fixed: >-
+          {{ sniper_registration_fixed + [item.baseline_package | combine({
+            'version': item.fixed_package_evr.rsplit('-', 1)[0],
+            'release': item.fixed_package_evr.rsplit('-', 1)[1]})] }}
+      loop: "{{ sniper_registration_catalog.candidates }}"
+      loop_control:
+        label: "{{ item.cve }}"
+    - name: Verify both already-serving destinations without publication
+      ansible.builtin.include_tasks: tasks/registration_context.yml
+      loop: [test, prod]
+      loop_control:
+        loop_var: sniper_registration_stage
+      vars:
+        sniper_environment: "{{ sniper_registration_stage }}"
+    - name: Require the same original GA version in both destinations
+      ansible.builtin.assert:
+        that:
+          - sniper_registration_contexts[sniper_test_host].version_id == sniper_registration_contexts[sniper_prod_host].version_id
+    - name: Select only the original existing inventory pair for registration
+      ansible.builtin.add_host:
+        name: "{{ item }}"
+        groups: sniper_registration_targets
+      loop: "{{ [sniper_test_host, sniper_prod_host] }}"
+
+- name: Register each verified original RHEL 9.4 guest without updating packages
+  hosts: sniper_registration_targets
+  gather_facts: false
+  become: true
+  become_method: sudo
+  become_flags: -n
+  serial: 1
+  any_errors_fatal: true
+  no_log: true
+  vars_files: [vars/main.yml]
+  module_defaults:
+    group/redhat.satellite.satellite:
+      server_url: "{{ sniper_server_url }}"
+      username: "{{ sniper_username }}"
+      password: "{{ sniper_password }}"
+      validate_certs: true
+      ca_path: "{{ sniper_registration_api_ca.path }}"
+  tasks:
+    - name: Register with strict client identity and always remove temporary SSH trust
+      block:
+        - name: Pin the verified SSH key before any guest connection
+          ansible.builtin.import_tasks: tasks/ssh_pin.yml
+        - name: Allocate this client's execution-local API trust file
+          ansible.builtin.tempfile:
+            state: file
+            path: "{{ lookup('ansible.builtin.config', 'DEFAULT_LOCAL_TMP') }}"
+            suffix: -sniper-registration-api-ca.pem
+          delegate_to: localhost
+          become: false
+          register: sniper_registration_api_ca
+          changed_when: false
+        - name: Supply the approved public CA for delegated client API checks
+          ansible.builtin.copy:
+            content: "{{ sniper_satellite_ca_pem }}"
+            dest: "{{ sniper_registration_api_ca.path }}"
+            mode: '0600'
+          delegate_to: localhost
+          become: false
+          changed_when: false
+        - name: Register only the verified original guest
+          ansible.builtin.import_tasks: tasks/registration_client.yml
+      always:
+        - name: Remove this client's execution-local API trust
+          ansible.builtin.file:
+            path: "{{ sniper_registration_api_ca.path }}"
+            state: absent
+          delegate_to: localhost
+          become: false
+          when: sniper_registration_api_ca.path is defined
+          changed_when: false
+        - name: Remove the execution-local client public pin
+          ansible.builtin.file:
+            path: "{{ sniper_new_trust_file.path }}"
+            state: absent
+          delegate_to: localhost
+          become: false
+          when: sniper_new_trust_file.path is defined
+          changed_when: false
+
+- name: Require both clients to complete registration and publish safe evidence
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  no_log: true
+  tasks:
+    - name: Refuse success when either original client was skipped or failed
+      ansible.builtin.assert:
+        that: hostvars[item].sniper_registration_verified | default(false) | bool
+        fail_msg: Both original clients must complete exact registration and unchanged-RPM verification. Check job limits and failed tasks.
+      loop: "{{ [sniper_test_host, sniper_prod_host] }}"
+    - name: Publish the verified registration result without commands or consumer identifiers
+      ansible.builtin.set_stats:
+        aggregate: false
+        data:
+          sniper_registration_result:
+            registered_clients: 2
+            content_view_version: "{{ sniper_registration_contexts[sniper_test_host].version }}"
+            cutoff: '2024-04-30'
+            direct_test_prod_registration: true
+            package_baseline_unchanged: true
+            test_registration_performed: "{{ hostvars[sniper_test_host].sniper_registration_performed }}"
+            prod_registration_performed: "{{ hostvars[sniper_prod_host].sniper_registration_performed }}"
+      no_log: false

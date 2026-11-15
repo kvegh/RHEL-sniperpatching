@@ -23,9 +23,12 @@ MODULES = [
         "repository_sync",
         "host",
         "wait_for_task",
+        "activation_key",
+        "registration_command",
     )
 ]
 STAGES = (
+    "register_demo_clients.yml",
     "prepare_demo.yml",
     "create_minor_update.yml",
     "patch_hosts.yml",

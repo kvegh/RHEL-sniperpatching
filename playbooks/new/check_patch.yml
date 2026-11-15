@@ -21,17 +21,35 @@
 
 - name: Read-only fix and smoke-test verification
   hosts: sniper_targets
-  gather_facts: true
+  gather_facts: false
   become: true
   serial: 1
   any_errors_fatal: true
   vars_files: [vars/main.yml]
   tasks:
-    - name: Validate host identity and read installed package proof
-      ansible.builtin.import_tasks: tasks/host_preflight.yml
+    - name: Check the selected host with its verified SSH identity
+      block:
+        - name: Load the management-verified SSH identity for the selected client
+          ansible.builtin.import_tasks: tasks/ssh_pin.yml
 
-    - name: Require an effective fix with no pending reboot and run smoke tests
-      ansible.builtin.import_tasks: tasks/check_final.yml
+        - name: Gather facts only after preparing strict SSH trust
+          ansible.builtin.setup:
+
+        - name: Validate host identity and read installed package proof
+          ansible.builtin.import_tasks: tasks/host_preflight.yml
+
+        - name: Require an effective fix with no pending reboot and run smoke tests
+          ansible.builtin.import_tasks: tasks/check_final.yml
+      always:
+        - name: Remove the execution-local client public pin
+          ansible.builtin.file:
+            path: "{{ sniper_new_trust_file.path }}"
+            state: absent
+          delegate_to: localhost
+          become: false
+          when: sniper_new_trust_file.path is defined
+          changed_when: false
+          no_log: true
 
 - name: Require actual verification completion and publish job evidence
   hosts: localhost
