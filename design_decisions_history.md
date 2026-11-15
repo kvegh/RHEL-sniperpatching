@@ -1,5 +1,35 @@
 # Design decisions history
 
+## 2026-11-15 — Select the repository copies serving each registration destination
+
+Implementation: `01f476240c0ef45fa2bbd7f21d6ac2273380d6a3`, version **0.14.3**.
+This **0.14.4** documentation checkpoint adds the actual implementation ID;
+executable content and runtime dependencies are unchanged.
+
+The normal direct-registration run stopped before guest access because its
+published-version query returned eight archived/Library/Test/Prod repository
+copies. The native API supports intersecting that version with the selected
+lifecycle environment. The certified resource-info call now supplies both IDs;
+live read-only checks returned exactly the two serving repositories for each
+destination. Existing ownership, exact-pair, product, RHSM-label and GA-baseline
+guards remain unchanged; no deduplication or broader access was introduced.
+
+Three affected regression methods passed in the selected unchanged EE in
+127.392 seconds: normal registration ordering/preservation, repeat/idempotency,
+and destination selection with refusal of an unexpectedly unscoped response.
+These checks supplement the earlier full 140-test checkpoint; they do not
+establish corrected live registration or full NEW acceptance. The next test is
+the normal AAP registration job, followed by registered-host applicability and
+the authorized chronological nine-advisory/ten-CVE procedure.
+
+Full proactive regular RHEL 9.4 BaseOS/AppStream synchronization and the frozen
+GA publication/promotions have now completed through AAP. Independent actual
+serving-version checks confirmed the GA advisory boundary, selected-fix
+exclusions and original latest affected builds in Test and Prod. Full ISO
+identity and complete NEW/CVE patching acceptance remain unverified. Earlier
+entries below retain their original historical state.
+
+
 ## 2026-11-15 — Register the original NEW pair directly to served GA content
 
 Implementation: `388fdc58fecc7c77fd139a3fd6f8f01290340841`, version **0.14.0**.

@@ -1,7 +1,7 @@
 # GA verified; registration repository selection corrected — 2026-11-15
 
-Version **0.14.3** adds the selected lifecycle environment to the native
-published-version repository query. The version-only query returned archived,
+Version **0.14.4** records the correction from **0.14.3**, which adds the
+selected lifecycle environment to the native published-version repository query. The version-only query returned archived,
 Library, Test and Prod copies and correctly failed the strict two-repository
 guard before any guest connection or activation-key creation. The corrected
 query returns the exact two serving copies for each destination. No ownership,

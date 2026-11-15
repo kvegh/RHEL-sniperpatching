@@ -1,5 +1,12 @@
 # Release notes
 
+## 0.14.4 — Record the repository-scope correction provenance
+
+Record implementation `01f476240c0ef45fa2bbd7f21d6ac2273380d6a3` and the
+three affected selected-EE regression outcomes. Executable content is unchanged
+from 0.14.3; normal AAP registration and full patching acceptance remain pending.
+
+
 ## 0.14.3 — Select repositories serving the registration destination
 
 Add the native lifecycle-environment filter to the existing published-version
