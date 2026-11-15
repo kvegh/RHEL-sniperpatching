@@ -724,3 +724,38 @@ sharing one RHSA. Guest recreation, baseline restoration and replacement CVEs
 are not silently selected. No patch cycle has started. Existing proactive
 9.4/9.5-only content policy, pending initial-registration choice, OLD boundaries
 and independent shared-deployment hold remain intact.
+
+
+## 2026-11-15 — Correct repository variants from actual API evidence
+
+Recorded 2026-11-15T15:07:54.609547+00:00. Implementation
+`06732373582985dbf0d08f2975d502a9fb02a006`, candidate **0.12.3**,
+corrects one repository-variant builder after bounded authenticated API reads.
+Both 9.4 and 9.5 were offered for the selected BaseOS/AppStream labels, all
+disabled. Their URLs fix x86_64, so native substitutions must contain only
+releasever. Supplying basearch also caused the certified selector to find no
+match. The correction preserves all other policy, ownership and CV-binding
+tasks. Actual-source syntax and affected offline builders/selectors passed.
+An initial fixture-copy temporary-directory failure was corrected in the
+fixture; a parent verification also corrected its own guessed task index.
+Neither failure was a live repository operation or a product runtime failure.
+
+Both original NEW clients separately passed fresh identity and unchanged full
+package-baseline checks. Twenty native RPM comparisons found all ten candidate
+CVEs below their first fixed EVR on both clients, including the required glibc
+conversion component and setuptools. This is package screening; application
+conditions and synchronized Satellite advisory availability remain unverified.
+Clients remain unregistered; no package or configuration change occurred.
+
+The exact unchanged released CoP collection completed private-Hub import and
+its stored artifact digest matched upstream. It remains staged after the
+existing access received HTTP 403 on approval-endpoint metadata. No promotion
+was attempted; the native administrator action is pending. Preserve current
+permissions rather than choose another credential or bypass the approval
+pipeline. The combined EE is still unbuilt. Full-sync storage fit is unknown
+because the API did not advertise content size. The independent initial
+Library registration choice remains unanswered.
+
+Candidate **0.12.4** records the actual correction commit and observed limits.
+No current-main merge, content sync, client patch or full NEW acceptance is
+claimed by this checkpoint.

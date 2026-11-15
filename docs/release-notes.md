@@ -1,5 +1,11 @@
 # Release notes
 
+## 0.12.4 — Record correction evidence
+
+Record the actual repository correction commit, client package screening,
+completed staged Hub import and remaining approval/content/registration gaps.
+No additional executable change or live acceptance is implied.
+
 ## 0.12.3 — Match actual repository substitutions
 
 Correct fixed-x86_64 repository inputs to use the actual API's releasever-only

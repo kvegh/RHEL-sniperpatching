@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Working candidate version: 0.12.3.**
+**Working candidate version: 0.12.4.**
 
 The current published main remains 0.11.4. This candidate prepares a narrowly
 scoped CoP content-configuration stage and an extended EE recipe; neither has
