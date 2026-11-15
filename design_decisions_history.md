@@ -666,3 +666,43 @@ six stage syntaxes, module interfaces and both verified authenticated HTTPS
 paths passed, including CA-file cleanup. No clients or content were changed.
 Version0.11.4 records this acceptance of implementation260f94c; the complete
 NEW patching demo and remaining stage bindings are still unfinished.
+
+
+## 2026-11-15 — Qualify only the selected CoP content paths
+
+Recorded 2026-11-15T14:41:43.264287+00:00. Implementation
+`8fb97532b32df1c7e8f3892f71c99aab2a636c92` (candidate 0.12.0) prepares
+the NEW content foundation, combined EE recipe and RHEL 9.4 CVE catalog.
+
+The owner challenged an indefinite hold based solely on CoP’s declared
+Satellite 5.8.0 dependency and accepted focused qualification with the selected
+certified 6.0.0 collection. The unchanged CoP 1.5.0 release matched its official
+asset digest and all 264 reviewed files. Four native syntaxes, four rendering
+groups and ten actual module-constructor acceptances passed on Core 2.20.10;
+a negative control correctly rejected legacy rule fields in the filter module.
+This establishes the selected offline interfaces, not blanket or live support.
+
+The owner explicitly selected proactive immediate synchronization and bounded
+content to 9.4 and at most 9.5. The foundation requires an explicit minor list,
+refuses rolling/later versions and on-demand downloads, verifies exact repository
+bindings and ownership, and preserves an existing content view. Its final source
+passed native syntax plus nine focused policy/minor/binding guard cases.
+
+The existing preparation playbook must own the first filtered-baseline
+publication. Publishing an unfiltered initial version would bypass that path.
+The foundation therefore leaves a new CV unpublished and performs no activation
+key creation, registration, publication, promotion or client patching. Initial
+registration order, actual minor availability and sufficient full-sync capacity
+remain unresolved deployment prerequisites. No live foundation change occurred.
+
+Primary Red Hat research found ten CVSS 7-or-higher RHEL 9.4 candidates fixed
+before 9.5 GA: four Important and six Moderate, grouped into nine RHSAs. Actual
+client package/configuration applicability remains unverified. The catalog
+explains cumulative kernel/OpenSSH fixes, component prerequisites and excluded
+already-fixed or unsuitable examples. A minor jump is not needed merely to
+obtain ten candidate IDs; it may not provide ten independent patch cycles.
+
+Candidate 0.12.1 records the real implementation ID. Source publication is
+separate from building/publishing the combined image, current CaC adoption,
+server idempotency and final AAP patching acceptance. Existing OLD scope and
+independent deployment feature freeze remain preserved.

@@ -1,5 +1,11 @@
 # Release notes
 
+## 0.12.1 — Candidate evidence and implementation history
+
+Document the actual foundation/catalog implementation commit and the bounded
+offline results. Preserve the distinction between a source candidate, an unbuilt
+EE recipe and live NEW demo acceptance.
+
 ## 0.12.0 — Working CoP foundation candidate
 
 Prepare scoped CoP 1.5.0/Satellite 6.0.0 foundation source and a combined EE
