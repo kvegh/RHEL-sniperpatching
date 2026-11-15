@@ -1,18 +1,22 @@
 # RHEL-sniperpatching
 
-**Version: 0.13.3.**
+**Version: 0.13.4.**
 
 Development and publication use **main only**. This source includes scoped CoP
 content configuration, an extended demo EE recipe and content-first GA baseline
-preparation. Focused offline checks passed; live content configuration and the
-complete NEW patching demonstration remain unfinished. See
+preparation. Focused offline checks and the combined EE’s normal AAP runtime
+check passed;
+live CoP content configuration and the complete NEW patching demonstration
+remain unfinished. See
 [scoped CoP qualification](docs/cop-qualification.md) and
 [release notes](docs/release-notes.md) for the verified scope and remaining work.
 The [RHEL 9.4 CVE candidate catalog](docs/rhel94-cve-candidates.md) separates
 pre-9.5 fixes from actual client applicability and independent patching steps.
 The owner selected that catalog for validation and chronological demonstrations
 after NEW acceptance. Both clients passed package-version screening for the ten
-CVEs; synchronized-advisory validation and client demonstrations remain pending.
+CVEs. All selected advisories, first-fixed builds and original affected builds
+are present in synchronized BaseOS. Registered-host applicability, dependency
+validation and client demonstrations remain pending.
 
 NEW now prepares and verifies its frozen RHEL 9.4 GA-cutoff content before
 registration, then accepts the directly registered pair in a separate invocation.
@@ -56,10 +60,12 @@ services and authenticated HTTPS passed with certificate validation. The verifie
 [installer EE](playbooks/new/execution-environment/README.md) has been published;
 the private CaC pins its receiving-Hub digest explicitly. The separate
 [demo EE](playbooks/new/demo-execution-environment/README.md) is built, qualified
-and published with Core 2.20.10 and certified Satellite collection 6.0.0. Its
-read-only runtime template passed through AAP with authenticated collection and
-native URI HTTPS verification. Remaining demo-stage bindings and end-to-end
-patching acceptance are separate unfinished work.
+and published with Core 2.20.10, certified Satellite collection 6.0.0 and
+unchanged CoP 1.5.0. Its dedicated immutable binding was applied through the
+existing CaC importer. The normal read-only runtime template passed through AAP
+with authenticated collection and native URI HTTPS verification. Remaining
+demo-stage bindings and end-to-end patching acceptance are separate unfinished
+work.
 
 There are no root-level forwarding playbooks. Update a template's playbook path
 and synchronize the matching source revision together. The private companion

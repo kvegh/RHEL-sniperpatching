@@ -824,3 +824,19 @@ recipe/foundation implementation is 8fb97532b32df1c7e8f3892f71c99aab2a636c92;
 baseline sequencing is a5403bd822b8f4a23443d418259c8ee3ff0be994.
 Normal AAP template binding, CoP server acceptance and complete patching
 acceptance remain separate unfinished work. Continue directly on main.
+
+## 2026-11-15 — Verify the adopted combined runtime and selected BaseOS content
+
+Version **0.13.4** records successful normal CaC application of the published
+combined EE and its dedicated AAP runtime check. Actual Core 2.20.10, Python
+3.12.15, Satellite 6.0.0, all six stage syntaxes and authenticated strict-TLS
+collection/native URI reads passed. CoP’s unchanged archive provenance remains
+separate from its still-pending live configuration-role acceptance.
+
+The selected BaseOS repository completed Immediate sync. All agreed RHSAs,
+first-fixed checks and original affected builds are present. Repository
+availability is not registered-host applicability or DNF dependency validation.
+The foundation recipe implementation remains
+8fb97532b32df1c7e8f3892f71c99aab2a636c92 and baseline sequencing remains
+a5403bd822b8f4a23443d418259c8ee3ff0be994. Further content follows the current
+capacity gate; direct registration and full NEW acceptance remain unfinished.

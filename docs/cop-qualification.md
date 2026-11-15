@@ -2,7 +2,8 @@
 
 This is a development candidate, not complete NEW demo acceptance. It retains
 certified Satellite collection **6.0.0**, CoP Satellite Configuration **1.5.0**,
-and official AAP Core **2.20.10**. The running NEW environment remains unchanged.
+and official AAP Core **2.20.10**. The combined EE is now adopted and its normal
+AAP runtime check passed; full CoP content acceptance remains unfinished.
 
 ## Why qualification is scoped
 
@@ -111,15 +112,26 @@ operation was denied. Existing authentication and permissions were unchanged.
 The combined EE 0.2.0 is built and offline-qualified. All packaged collection
 files match the two original archives, with no overlays or added dependencies.
 Publication is verified by fresh immutable manifest/configuration/blob readback.
-Normal AAP binding and complete live acceptance remain unfinished.
+Normal AAP binding is verified through the existing CaC importer and fresh
+immutable-image readback. The normal runtime template passed with actual
+Core 2.20.10, Python 3.12.15 and certified Satellite 6.0.0, six stage syntaxes,
+module interfaces and both authenticated strict-TLS API paths. These checks
+do not execute the CoP configuration roles or establish complete NEW acceptance.
+
+The selected BaseOS repository subsequently completed proactive Immediate sync.
+Its actual content includes all nine selected RHSAs, all ten first-fixed checks
+and the original affected builds. This is repository availability; client-side
+applicability and dependency installability still require registered-host checks.
+Further repositories remain subject to current capacity checks.
 
 ## Remaining acceptance
 
 The actual CoP-inclusive EE passed collection provenance, selected native role
 syntax/rendering, module-constructor and current-project runtime checks offline.
-The image is published with fresh immutable readback verification; qualify its
-selected normal AAP template before claiming server compatibility. Verify ownership refusal, exact repository bindings,
+The image is published with fresh immutable readback verification and its
+selected normal AAP runtime template passed. Next qualify actual CoP operations:
+verify ownership refusal, exact repository bindings,
 actual task completion, CA cleanup, repeated apply/idempotency and preservation
 of unrelated objects. Then verify registered client baselines and the complete
-patching workflow through AAP. No live behavior, sync, promotion, host assignment
-or complete review is established by the offline checks above.
+patching workflow through AAP. Offline checks alone establish no live role
+behavior, promotion, host assignment or complete review.

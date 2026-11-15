@@ -1,5 +1,14 @@
 # Release notes
 
+## 0.13.4 — Record live combined runtime and BaseOS results
+
+The existing CaC importer adopted the dedicated CoP-inclusive immutable EE. Its
+normal AAP runtime check passed with the selected Core/collection versions,
+six stage syntaxes and authenticated strict-TLS Satellite access. BaseOS
+Immediate sync completed and the selected advisory/original/fixed-build
+availability checks passed. CoP role application, remaining content, direct
+registration and complete NEW patching acceptance remain unfinished.
+
 ## 0.13.3 — Record verified combined EE publication
 
 The CoP-inclusive 0.2.0 image is published and its complete receiving-Hub

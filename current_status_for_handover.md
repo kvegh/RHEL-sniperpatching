@@ -1,3 +1,27 @@
+# NEW runtime and content checkpoint — 2026-11-15
+
+Version **0.13.4** records the adopted CoP-inclusive demo EE and its successful
+normal AAP runtime check: Core 2.20.10, Python 3.12.15, Satellite 6.0.0, six
+stage syntaxes and authenticated collection/native URI HTTPS. The unchanged
+CoP 1.5.0 archive and baked-image provenance passed separate offline checks.
+Live CoP configuration-role acceptance remains unfinished.
+
+The selected RHEL 9.4 BaseOS repository completed proactive Immediate sync. All
+nine selected RHSAs, all ten first-fixed checks and original affected builds
+are present. AppStream follows the current storage-capacity gate. Client content
+remains bounded from GA through 2024-10-24; no 9.5 demo content is needed.
+Content-first GA publication, direct Test/Prod registration, actual host
+applicability/dependency checks and the full NEW demo remain unfinished. Run
+the agreed CVE sequence only after NEW acceptance.
+
+Use main only. Keep private deployment identities, storage measurements and raw
+proofs in the whole-file Vault companion. Preserve OLD, the shared-deployment
+owner’s feature freeze and NEW-only snapshot scope. Beads is the current task
+store; older checkpoints below are historical and do not reinstate resolved
+questions or past blockers.
+
+---
+
 # NEW installation and demo-runtime checkpoint — 2026-11-14
 
 Version 0.11.4 records protected project CA data and collection/native
