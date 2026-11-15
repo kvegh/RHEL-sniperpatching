@@ -1,5 +1,11 @@
 # Release notes
 
+## 0.13.1 — Record baseline implementation evidence
+
+Record the actual 0.13.0 implementation commit and focused offline checks.
+Keep standard 9.4 mirroring separate from client-view cutoff dates and preserve
+the selected existing-capacity boundary before any live content work.
+
 ## 0.13.0 — Prepare NEW baseline before direct registration
 
 Split NEW preparation into content-only publication/verification and the later

@@ -778,10 +778,13 @@ reads. It adds no runtime helper, credential, transport or service. Published
 baseline contents are not rewritten; retained originals are reverified and
 established later histories remain protected.
 
-Offline fixtures and runtime checks are recorded with the reviewed diff before
-commit. Live synchronization, publication, direct registration, dependency/DNF
-applicability and complete AAP patching acceptance remain unverified. The real
-implementation commit will be recorded after the requested pre-commit review.
+Implementation commit: `a5403bd822b8f4a23443d418259c8ee3ff0be994`.
+Eleven real-playbook preparation fixtures, 21 affected metadata/epoch checks,
+nine certified module interfaces, six NEW syntax checks and five OLD preparation
+regressions passed. The existing full-publication path also passed its selected
+default-cutoff fixture; production lint reported zero warnings or failures.
+Live synchronization, publication, direct registration, dependency/DNF
+applicability and complete AAP patching acceptance remain unverified.
 
 The owner subsequently bounded demonstration content to GA through the final
 selected RHSA-2024:8446 on 2024-10-24, without a 9.5 requirement. Set only NEW
@@ -789,3 +792,10 @@ sniper_update_end_date to that date and reuse the existing bounded publication
 path. An explicit empty override remains latest mode; private callers must pin
 the date. No pre-sync date filter, mirror helper or Library-size reduction is
 claimed, and source repository/capacity selection remains separately owned.
+
+Candidate **0.13.1** records the actual implementation and verification above.
+The owner chose standard proactive RHEL 9.4 mirroring while client views remain
+bounded to the selected window, and retained the existing disk capacity. Start
+only safely fitting repository work, verify actual space, and gate later syncs
+on sufficient capacity. No 9.5 sync, disk growth, custom mirror or complete live
+acceptance is implied by this documentation checkpoint.
