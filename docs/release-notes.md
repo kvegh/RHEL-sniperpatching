@@ -1,5 +1,14 @@
 # Release notes
 
+## 0.14.1 — Keep command-boundary checks valid inside cleanup blocks
+
+Reuse recursive test task traversal for the NEW patch command and RPM snapshots,
+retaining the same advisory/repository/newline assertions after tasks moved into
+a cleanup block. The ten content-boundary tests and all eleven certified module
+interfaces/seven stage syntaxes pass in the selected EE. Record the actual
+0.14.0 implementation and focused registration/SSH verification; live AAP
+registration and complete NEW acceptance remain pending.
+
 ## 0.14.0 — Register the original NEW pair directly to served GA content
 
 Add a separate NEW registration stage using certified modern activation-key

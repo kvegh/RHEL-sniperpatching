@@ -1,6 +1,6 @@
 # Direct-registration source checkpoint — 2026-11-15
 
-Version **0.14.0** adds explicit NEW direct Test/Prod registration and corrects
+Version **0.14.1** includes explicit NEW direct Test/Prod registration and corrects
 SSH trust ordering in the NEW patch/check stages. The separate GA-content job
 remains the sole initial publisher. Its normal CaC import and exact protected
 binding readback passed; it had not run at that verification. Registration is

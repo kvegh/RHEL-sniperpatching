@@ -26,6 +26,14 @@ m = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(m)
 
 
+def nested_tasks(rows):
+    """Inspect behavior tasks independently of their surrounding cleanup blocks."""
+    for task in rows:
+        yield task
+        for key in ("block", "rescue", "always"):
+            yield from nested_tasks(task.get(key, []))
+
+
 class ContentBoundaries(unittest.TestCase):
     def test_unique_resource_required(self):
         for rows in ([], [{}, {}], None):
@@ -60,7 +68,7 @@ class ContentBoundaries(unittest.TestCase):
 
     def test_targeted_command_has_exact_advisory_arguments(self):
         plays = yaml.safe_load((ROOT / "patch_hosts.yml").read_text())
-        task = next(x for x in plays[1]["tasks"] if x["name"].startswith("Patch only"))
+        task = next(x for x in nested_tasks(plays[1]["tasks"]) if x["name"].startswith("Patch only"))
         variables = {
             "ansible_facts": {"distribution_major_version": "7"},
             "sniper_patch_scope": "targeted",
@@ -101,12 +109,6 @@ class ContentBoundaries(unittest.TestCase):
         creation = next(
             x["block"] for x in block if x.get("when") == "sniper_environment == 'test'"
         )
-        def nested_tasks(rows):
-            for task in rows:
-                yield task
-                for key in ("block", "rescue", "always"):
-                    yield from nested_tasks(task.get(key, []))
-
         request = next(
             task["ansible.builtin.uri"] for task in nested_tasks(creation)
             if "ansible.builtin.uri" in task
@@ -167,7 +169,7 @@ class ContentBoundaries(unittest.TestCase):
         plays = yaml.safe_load((ROOT / "patch_hosts.yml").read_text())
         snapshots = [
             task
-            for task in plays[1]["tasks"]
+            for task in nested_tasks(plays[1]["tasks"])
             if task["name"].startswith("Snapshot installed RPM")
         ]
         self.assertEqual(len(snapshots), 2)

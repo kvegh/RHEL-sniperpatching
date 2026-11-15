@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Version: 0.14.0.**
+**Version: 0.14.1.**
 
 Development and publication use **main only**. NEW includes scoped CoP content
 configuration, a qualified demo EE, content-first GA preparation and explicit
@@ -183,7 +183,7 @@ The two NEW DNS/RHEL preparation templates use built-in modules and the existing
 Core 2.20 management EE. They do not require a Satellite collection to bootstrap
 the server. The historical OLD runs remain separate from NEW acceptance.
 
-All 98 offline tests passed inside the official unmodified Core 2.20.10 EE.
+An earlier 98-test baseline passed inside the official unmodified Core 2.20.10 EE.
 These checks do not establish fresh Satellite access or live patching acceptance.
 
 ## How to demonstrate the functionality

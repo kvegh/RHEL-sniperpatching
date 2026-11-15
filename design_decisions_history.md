@@ -1,5 +1,47 @@
 # Design decisions history
 
+## 2026-11-15 — Register the original NEW pair directly to served GA content
+
+Implementation: `388fdc58fecc7c77fd139a3fd6f8f01290340841`, version **0.14.0**.
+
+The owner requested testing the procedure on the two original clients, fixing
+playbooks where necessary and then demonstrating the selected CVEs in order.
+The new registration stage verifies the already-serving original GA content,
+uses certified modern activation-key bindings and native Global Registration,
+and refuses a foreign consumer or changed RPM baseline. It reuses the selected
+public CA and Machine/API credentials, with package updates and unrelated
+integrations disabled. Temporary API trust has independent controller/client
+lifetimes; strict guest SSH pins precede facts and are removed on task exits.
+Existing equal CA anchors are preserved; conflicting anchors stop. No missing
+content is published and no temporary Library registration is introduced.
+
+NEW patch/check also establish their existing strict SSH trust before facts,
+with guarded cleanup. Their original target task dictionaries and both
+localhost plays remain unchanged apart from nesting. OLD has no source delta.
+The runtime probe covers the new stage and certified registration arguments.
+The public catalog now supplies nine exact chronological RHSA/cutoff inputs for
+ten CVEs; shared/cumulative fixes remain distinct from independent transactions.
+
+The final registration fixtures passed eight tests in the selected unmodified
+demo EE with networking disabled. Three focused SSH/redaction/runtime tests,
+including eight pin lifecycle cases, and the two changed host-playbook syntaxes
+also passed in that EE. Independent integration review found and corrected
+inventory scope, API-CA lifetime and pin-fixture coverage issues before any
+client operation. Supplemental strict lint on Core 2.16.19 with verified
+Satellite 6.0.0 returned zero rule findings, but an ignored Jinja-rule exception
+limits that coverage. This is not full policy acceptance: actual registration,
+registered-host/DNF applicability and the full corrected AAP procedure remain
+unverified.
+
+The initial broader candidate ran 140 tests: 138 passed and two source-inspection
+fixtures still assumed flat patch tasks. Version **0.14.1** reuses recursive
+traversal without weakening their assertions. All ten content-boundary tests
+then passed; actual Core 2.20.10 / Python 3.12.15 / Satellite 6.0.0 inspection
+confirmed eleven module interfaces and seven stage syntaxes. The read-only
+local verification harness needed a temporary Galaxy-cache directory; the
+selected image and deployed runtime were unchanged. A complete final-source
+regression rerun and normal AAP acceptance remain separate verification.
+
 ## 2026-11-12 — Protect process diagnostics and preserve read-only check mode
 
 Implementation: `7fd172ac84871ad7c08ca81a1d660e1be8badae6`, version **0.5.8**.
