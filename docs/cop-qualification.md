@@ -108,14 +108,16 @@ published inventory contained this version and staging no longer did. A complete
 receiving-Hub download matched the original 190727-byte SHA-256 above. Earlier
 HTTP 403 on OPTIONS metadata did not establish that the actual publication
 operation was denied. Existing authentication and permissions were unchanged.
-The combined EE remains unbuilt and cannot yet be described as published or
-live-accepted.
+The combined EE 0.2.0 is built and offline-qualified. All packaged collection
+files match the two original archives, with no overlays or added dependencies.
+Publication, AAP binding and live acceptance remain unfinished.
 
 ## Remaining acceptance
 
-The CoP-inclusive EE recipe is prepared but unbuilt and unpublished. Qualify the
-actual combined image and its selected normal AAP template before claiming
-server compatibility. Verify ownership refusal, exact repository bindings,
+The actual CoP-inclusive EE passed collection provenance, selected native role
+syntax/rendering, module-constructor and current-project runtime checks offline.
+Publish and verify the image, then qualify its selected normal AAP template
+before claiming server compatibility. Verify ownership refusal, exact repository bindings,
 actual task completion, CA cleanup, repeated apply/idempotency and preservation
 of unrelated objects. Then verify registered client baselines and the complete
 patching workflow through AAP. No live behavior, sync, promotion, host assignment

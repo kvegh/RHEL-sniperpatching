@@ -799,3 +799,18 @@ bounded to the selected window, and retained the existing disk capacity. Start
 only safely fitting repository work, verify actual space, and gate later syncs
 on sufficient capacity. No 9.5 sync, disk growth, custom mirror or complete live
 acceptance is implied by this documentation checkpoint.
+
+## 2026-11-15 — Preserve the main-only workflow
+
+The owner reaffirmed that development/publication must use main, without feature
+branches. Publishing candidate work on a temporary branch was a workflow mistake.
+Reconcile the verified commits with current main, publish without force-updating
+main, and remove only the temporary branch after independent main readback.
+Implementation remains a5403bd822b8f4a23443d418259c8ee3ff0be994; its
+verification checkpoint is f1e68ea32c902ea4294aeac3748afd6d8f9c6d5e.
+
+Version **0.13.2** also records the baked EE 0.2.0 offline result: certified
+Satellite 6.0.0 and unmodified CoP 1.5.0 packaged files match the official
+archives, and selected role rendering/syntax, module arguments and current
+project runtime paths passed. Registry publication, normal AAP binding and
+complete NEW acceptance remain separate unfinished work.

@@ -1,12 +1,13 @@
 # RHEL-sniperpatching
 
-**Working candidate version: 0.13.1.**
+**Version: 0.13.2.**
 
-The current published main remains 0.11.4. This candidate prepares a narrowly
-scoped CoP content-configuration stage and an extended EE recipe; neither has
-been deployed. See [scoped CoP qualification](docs/cop-qualification.md) for
-exact checks, known limitations and content-readiness requirements. See
-[release notes](docs/release-notes.md) for the working candidate's change scope.
+Development and publication use **main only**. This source includes scoped CoP
+content configuration, an extended demo EE recipe and content-first GA baseline
+preparation. Focused offline checks passed; live content configuration and the
+complete NEW patching demonstration remain unfinished. See
+[scoped CoP qualification](docs/cop-qualification.md) and
+[release notes](docs/release-notes.md) for the verified scope and remaining work.
 The [RHEL 9.4 CVE candidate catalog](docs/rhel94-cve-candidates.md) separates
 pre-9.5 fixes from actual client applicability and independent patching steps.
 The owner selected that catalog for validation and chronological demonstrations
@@ -17,7 +18,7 @@ NEW now prepares and verifies its frozen RHEL 9.4 GA-cutoff content before
 registration, then accepts the directly registered pair in a separate invocation.
 See [NEW baseline sequence](docs/new-baseline.md) for inputs, recovery and the
 explicit limit that selected-package verification does not reproduce a full ISO.
-This is locally tested candidate source, not live NEW acceptance.
+This implementation passed local checks; live NEW acceptance remains unfinished.
 The selected NEW content window ends at RHSA-2024:8446 on 2024-10-24; its
 existing full-update cutoff defaults to that date, with no 9.5 demo requirement.
 

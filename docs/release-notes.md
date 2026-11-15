@@ -1,5 +1,11 @@
 # Release notes
 
+## 0.13.2 — Use main-only publication and record baked EE checks
+
+Preserve the owner-selected main-only workflow. Record successful offline
+qualification of the built CoP-inclusive 0.2.0 image, keeping registry
+publication, AAP binding and live demo acceptance separate.
+
 ## 0.13.1 — Record baseline implementation evidence
 
 Record the actual 0.13.0 implementation commit and focused offline checks.
