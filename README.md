@@ -1,13 +1,14 @@
 # RHEL-sniperpatching
 
-**Version: 0.13.4.**
+**Version: 0.13.5.**
 
 Development and publication use **main only**. This source includes scoped CoP
 content configuration, an extended demo EE recipe and content-first GA baseline
 preparation. Focused offline checks and the combined EE’s normal AAP runtime
-check passed;
-live CoP content configuration and the complete NEW patching demonstration
-remain unfinished. See
+check passed. Storage readiness was verified before a normal foundation run.
+The [dated live checkpoint](docs/cop-qualification.md#dated-live-foundation-checkpoint)
+records passed repository guards and entry into synchronization; full foundation
+and NEW patching acceptance remain unfinished. See
 [scoped CoP qualification](docs/cop-qualification.md) and
 [release notes](docs/release-notes.md) for the verified scope and remaining work.
 The [RHEL 9.4 CVE candidate catalog](docs/rhel94-cve-candidates.md) separates

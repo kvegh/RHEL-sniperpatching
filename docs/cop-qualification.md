@@ -1,6 +1,6 @@
 # Scoped CoP configuration qualification
 
-This is a development candidate, not complete NEW demo acceptance. It retains
+This is a scoped qualification record, not complete NEW demo acceptance. It retains
 certified Satellite collection **6.0.0**, CoP Satellite Configuration **1.5.0**,
 and official AAP Core **2.20.10**. The combined EE is now adopted and its normal
 AAP runtime check passed; full CoP content acceptance remains unfinished.
@@ -86,8 +86,9 @@ management, provisioning and Convert2RHEL are outside this foundation scope.
 
 Authenticated strict-TLS API reads on 15 November 2026 confirmed both explicit
 minor variants, 9.4 and 9.5, for the two fixed-x86_64 repository labels. All four
-were offered and disabled. The API did not advertise full-content size, so
-storage fit remains unverified before proactive synchronization.
+were offered and disabled at that initial read. The API did not advertise
+full-content size; storage fit was unverified at this early API-only preflight.
+Later storage readiness and synchronization results are recorded below.
 
 The actual content URLs already contain literal x86_64. Their native repository
 substitutions contain only `releasever`. The original draft also supplied
@@ -122,16 +123,40 @@ The selected BaseOS repository subsequently completed proactive Immediate sync.
 Its actual content includes all nine selected RHSAs, all ten first-fixed checks
 and the original affected builds. This is repository availability; client-side
 applicability and dependency installability still require registered-host checks.
-Further repositories remain subject to current capacity checks.
+The later storage-readiness result and normal foundation progress are recorded
+in the dated checkpoint below; they do not establish completed remaining syncs.
+
+## Dated live foundation checkpoint
+
+At **2026-11-15 20:17 UTC**, the approved storage-readiness work had completed.
+Guest filesystem growth, preservation of identities and unrelated VM states,
+service health and authenticated strict-TLS Satellite/Pulp API checks passed.
+This cleared the readiness gate for the selected normal foundation launch.
+It does not replace capacity checks for subsequent work.
+
+A normal AAP run of `playbooks/new/configure_satellite_content.yml` from source
+checkpoint `24f5bb3` had passed selected CoP repository enablement, exact member
+bindings and Immediate-policy guards, then entered sequential certified
+repository synchronization. One selected repository item had returned.
+AppStream completion, the owned lifecycle path/content-view result, final CA
+cleanup and repeated-apply acceptance were not yet verified. This records the
+observed stage at that time; later execution results and full CoP acceptance
+require separate verification.
+
+The implementation records remain `8fb9753` for foundation/EE work and
+`a5403bd` for GA-before-registration sequencing. The first GA baseline still
+belongs to preparation; this foundation run does not establish publication,
+activation keys, registration or client patching.
 
 ## Remaining acceptance
 
 The actual CoP-inclusive EE passed collection provenance, selected native role
 syntax/rendering, module-constructor and current-project runtime checks offline.
 The image is published with fresh immutable readback verification and its
-selected normal AAP runtime template passed. Next qualify actual CoP operations:
-verify ownership refusal, exact repository bindings,
-actual task completion, CA cleanup, repeated apply/idempotency and preservation
-of unrelated objects. Then verify registered client baselines and the complete
-patching workflow through AAP. Offline checks alone establish no live role
-behavior, promotion, host assignment or complete review.
+selected normal AAP runtime template passed. At the dated live checkpoint,
+selected repository operations and guards had passed; foundation completion,
+owned-resource readback, CA cleanup, refusal/recovery behavior, repeated
+apply/idempotency and preservation checks still required verification. Then
+verify GA publication, directly registered client baselines and the complete
+patching workflow through AAP before the agreed CVE cycles. The bounded results
+above do not establish promotion, host assignment or complete review.

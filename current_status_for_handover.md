@@ -1,3 +1,32 @@
+# Storage-ready foundation checkpoint — 2026-11-15
+
+Version **0.13.5** records evidence available at **20:17 UTC**. The approved
+storage-readiness procedure completed guest filesystem expansion while
+preserving the existing identities and unrelated VM states. Service health
+and authenticated strict-TLS Satellite/Pulp API checks passed. The readiness
+gate for the selected foundation launch was cleared; later content work still
+requires current capacity evidence.
+
+The normal AAP foundation run used source checkpoint `24f5bb3`. It passed the
+selected CoP repository-enablement, exact-binding and Immediate-policy guards,
+then entered sequential certified repository synchronization. One repository
+item had returned at the recorded checkpoint. AppStream completion, owned
+lifecycle/content-view creation and readback, final cleanup and repeated-apply
+acceptance were not yet verified. This dated observation leaves later
+execution results for separate verification.
+
+The foundation implementation is recorded in `8fb9753`; content-first GA
+sequencing is `a5403bd`. First GA publication, direct Test/Prod registration,
+actual host applicability/dependency checks, complete NEW patching acceptance
+and the agreed CVE cycles remain pending. The foundation leaves a new CV
+unpublished; registration still follows verified GA content.
+
+Keep environment identities, measurements and raw receipts in the private
+whole-file Vault companion. Use main only. Beads remains the task store; the
+checkpoints below are historical and do not reopen past blockers or decisions.
+
+---
+
 # NEW runtime and content checkpoint — 2026-11-15
 
 Version **0.13.4** records the adopted CoP-inclusive demo EE and its successful

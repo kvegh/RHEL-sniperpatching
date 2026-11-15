@@ -840,3 +840,28 @@ The foundation recipe implementation remains
 8fb97532b32df1c7e8f3892f71c99aab2a636c92 and baseline sequencing remains
 a5403bd822b8f4a23443d418259c8ee3ff0be994. Further content follows the current
 capacity gate; direct registration and full NEW acceptance remain unfinished.
+
+
+## 2026-11-15 — Record storage readiness and dated normal foundation progress
+
+Version **0.13.5** records the evidence available at 20:17 UTC, following public
+checkpoint `24f5bb31520aacb92684b4425bf156ea18d2d1d7`. The owner-approved
+storage-readiness procedure completed guest filesystem growth while preserving
+existing identities and unrelated VM states. Service health and authenticated
+strict-TLS Satellite/Pulp API verification passed before the normal foundation
+launch. Operational identities, measurements and raw receipts remain private.
+
+The normal AAP foundation run had passed the selected CoP repository-enablement,
+exact-binding and Immediate-policy guards and entered sequential certified
+repository synchronization. One selected item had returned at the checkpoint;
+AppStream completion, owned lifecycle/content-view readback, final cleanup and
+repeated-apply acceptance were not yet verified. Date this observation instead
+of presenting a transient running state as a permanent result.
+
+Underlying implementation records remain
+`8fb97532b32df1c7e8f3892f71c99aab2a636c92` for foundation/EE work and
+`a5403bd822b8f4a23443d418259c8ee3ff0be994` for GA-first sequencing. This change
+updates documentation and VERSION only. GA publication, direct registration,
+host applicability/dependencies, complete NEW patching acceptance and the
+agreed CVE cycles remain pending. No complete CoP or full-review acceptance is
+claimed. Development and publication remain on existing main.

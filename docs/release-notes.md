@@ -1,5 +1,20 @@
 # Release notes
 
+## 0.13.5 — Record storage readiness and dated foundation progress
+
+At the 2026-11-15 20:17 UTC checkpoint, the approved storage-readiness work had
+completed with preserved identities, healthy services and strict-TLS API checks.
+A normal AAP foundation run had passed selected CoP repository enablement,
+exact-binding and Immediate-policy guards and entered sequential native
+repository synchronization. Completion of AppStream and the owned lifecycle
+path/content view was not yet verified at that checkpoint.
+
+This documentation update follows source checkpoint `24f5bb3`; foundation/EE
+implementation remains recorded in `8fb9753` and baseline sequencing in
+`a5403bd`. GA publication, direct registration, repeated-apply/full CoP
+acceptance and the complete NEW/CVE demonstration remain pending. No executable
+content changes are included.
+
 ## 0.13.4 — Record live combined runtime and BaseOS results
 
 The existing CaC importer adopted the dedicated CoP-inclusive immutable EE. Its
