@@ -1,0 +1,361 @@
+---
+# Foundation only: prepare_demo.yml owns the first advisory-cutoff publication.
+# Inputs: sniper_repository_sets (the two exact RHEL 9 label/product pairs),
+# sniper_repositories (their exact repository name/product pairs), and an explicit
+# sniper_content_minor_versions (an explicit subset of [9.4, 9.5]). The owner
+# selected proactive immediate synchronization; capacity must be checked separately.
+- name: Configure the isolated NEW Satellite content foundation
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - vars/main.yml
+  vars:
+    satellite:
+      server_url: "{{ sniper_server_url }}"
+      admin:
+        username: "{{ sniper_username }}"
+        password: "{{ sniper_password }}"
+      validate_certs: true
+  module_defaults:
+    group/redhat.satellite.satellite:
+      server_url: "{{ sniper_server_url }}"
+      username: "{{ sniper_username }}"
+      password: "{{ sniper_password }}"
+      validate_certs: true
+      ca_path: "{{ sniper_satellite_ca_path | default(omit, true) }}"
+  force_handlers: true
+  handlers:
+    - name: Remove job-local Satellite CA
+      ansible.builtin.include_tasks: tasks/api_ca_cleanup.yml
+  tasks:
+    - name: Require protected HTTPS access and an explicit content policy
+      ansible.builtin.assert:
+        that:
+          - sniper_server_url is match('^https://[^/@?#]+/?$')
+          - sniper_username | length > 0
+          - sniper_password | length > 0
+          - sniper_organization is match('^[A-Za-z0-9][A-Za-z0-9 _.()-]{0,127}$')
+          - sniper_repository_download_policy | default('immediate') == 'immediate'
+          - sniper_content_minor_versions | default([]) is sequence
+          - sniper_content_minor_versions | default([]) is not string
+          - sniper_content_minor_versions | default([]) is not mapping
+          - sniper_content_minor_versions | default([]) | length in [1, 2]
+          - sniper_content_minor_versions | unique | list | length == sniper_content_minor_versions | length
+          - sniper_content_minor_versions | difference(['9.4', '9.5']) | length == 0
+          - not ansible_check_mode
+        fail_msg: >-
+          Supply protected HTTPS access, the exact organization and an explicit
+          minor-version list containing only 9.4 and/or 9.5. This foundation uses
+          proactive immediate synchronization, never on-demand downloads. Check
+          target capacity first; use runtime inspection for read-only checks.
+      no_log: true
+
+    - name: Require the isolated namespace and exact selected minor-version repositories
+      ansible.builtin.assert:
+        that:
+          - sniper_namespace is match('^RHEL-sniperpatching(?:[-_][A-Za-z0-9]+)*$')
+          - sniper_content_view == sniper_namespace
+          - sniper_test_environment == sniper_namespace ~ '_Test'
+          - sniper_prod_environment == sniper_namespace ~ '_Prod'
+          - sniper_repository_sets | default([]) is sequence
+          - sniper_repository_sets | default([]) | length == 2
+          - >-
+            sniper_repository_sets | map(attribute='label') | sort | list ==
+            ['rhel-9-for-x86_64-appstream-rpms', 'rhel-9-for-x86_64-baseos-rpms']
+          - sniper_repositories is sequence
+          - sniper_repositories | length == 2 * (sniper_content_minor_versions | length)
+          - sniper_repositories | map(attribute='name') | unique | list | length == sniper_repositories | length
+          - >-
+            sniper_repositories | map(attribute='product') | unique | sort | list ==
+            sniper_repository_sets | map(attribute='product') | unique | sort | list
+        fail_msg: Supply only the exact x86_64 BaseOS/AppStream repository mappings for the selected RHEL 9.4/9.5 minors.
+
+    - name: Reject additional repository-set controls and empty product names
+      ansible.builtin.assert:
+        that:
+          - item is mapping
+          - item.keys() | list | difference(['label', 'product']) | length == 0
+          - item.product is string
+          - item.product is match('^[A-Za-z0-9][A-Za-z0-9 _.()+/-]{0,255}$')
+      loop: "{{ sniper_repository_sets }}"
+      no_log: true
+
+    - name: Reject additional repository controls and empty names
+      ansible.builtin.assert:
+        that:
+          - item is mapping
+          - item.keys() | list | difference(['name', 'product']) | length == 0
+          - item.name is string
+          - item.name | length > 0
+          - item.product is string
+          - item.product is match('^[A-Za-z0-9][A-Za-z0-9 _.()+/-]{0,255}$')
+      loop: "{{ sniper_repositories }}"
+      no_log: true
+
+    - name: Prepare the existing job-local Satellite trust
+      ansible.builtin.include_tasks: tasks/api_ca.yml
+
+    - name: Read the existing organization without modifying it
+      redhat.satellite.resource_info:
+        resource: organizations
+        search: 'name = "{{ sniper_organization }}"'
+      register: sniper_foundation_org_query
+      no_log: true
+
+    - name: Require exactly one existing organization
+      ansible.builtin.set_fact:
+        sniper_foundation_org: "{{ sniper_foundation_org_query.resources | sniper_one('organization') }}"
+      no_log: true
+
+    - name: Inspect both intended lifecycle names before changing content
+      redhat.satellite.resource_info:
+        resource: lifecycle_environments
+        organization: "{{ sniper_organization }}"
+        search: 'name = "{{ item }}"'
+      loop: "{{ [sniper_test_environment, sniper_prod_environment] }}"
+      register: sniper_foundation_environment_queries
+      no_log: true
+
+    - name: Refuse foreign or ambiguous lifecycle environments
+      ansible.builtin.assert:
+        that:
+          - item.resources | length <= 1
+          - item.resources | sniper_owned(sniper_owner, 'lifecycle environment') | length == item.resources | length
+      loop: "{{ sniper_foundation_environment_queries.results }}"
+      no_log: true
+
+    - name: Inspect the intended content view before changing content
+      redhat.satellite.resource_info:
+        resource: content_views
+        organization: "{{ sniper_organization }}"
+        search: 'name = "{{ sniper_content_view }}"'
+      register: sniper_foundation_view_query
+      no_log: true
+
+    - name: Refuse a foreign or ambiguous content view
+      ansible.builtin.assert:
+        that:
+          - sniper_foundation_view_query.resources | length <= 1
+          - >-
+            sniper_foundation_view_query.resources | sniper_owned(sniper_owner, 'Content View') | length ==
+            sniper_foundation_view_query.resources | length
+      no_log: true
+
+    - name: Initialize the tightly scoped CoP repository-set definitions
+      ansible.builtin.set_fact:
+        sniper_cop_repository_sets: []
+
+    - name: Initialize the explicitly selected repository variants
+      ansible.builtin.set_fact:
+        sniper_cop_repository_variants: []
+
+    - name: Build only the explicitly selected x86_64 minor-version variants
+      ansible.builtin.set_fact:
+        sniper_cop_repository_variants: >-
+          {{ sniper_cop_repository_variants + [{'basearch': 'x86_64', 'releasever': item}] }}
+      loop: "{{ sniper_content_minor_versions }}"
+
+    - name: Build only the selected RHEL repository-set definitions
+      ansible.builtin.set_fact:
+        sniper_cop_repository_sets: >-
+          {{ sniper_cop_repository_sets + [{
+            'label': item.label,
+            'product': item.product,
+            'organization': sniper_organization,
+            'repositories': sniper_cop_repository_variants,
+            'state': 'enabled'
+          }] }}
+      loop: "{{ sniper_repository_sets }}"
+      no_log: true
+
+    - name: Enable only the selected minor-version BaseOS and AppStream variants through CoP
+      ansible.builtin.include_role:
+        name: infra.satellite_configuration.dispatch
+        tasks_from: satellite_repository_sets.yaml
+        apply:
+          no_log: true
+      vars:
+        satellite_repository_sets: "{{ sniper_cop_repository_sets }}"
+      no_log: true
+
+    - name: Require the exact enabled repositories to exist in their selected product
+      redhat.satellite.repository_info:
+        organization: "{{ sniper_organization }}"
+        product: "{{ item.product }}"
+        name: "{{ item.name }}"
+      loop: "{{ sniper_repositories }}"
+      register: sniper_foundation_repository_queries
+      no_log: true
+
+    - name: Resolve the exact provider products without modifying them
+      redhat.satellite.resource_info:
+        resource: products
+        organization: "{{ sniper_organization }}"
+        search: 'name = "{{ item }}"'
+      loop: "{{ sniper_repository_sets | map(attribute='product') | unique | list }}"
+      register: sniper_foundation_product_queries
+      no_log: true
+
+    # The exact native repository_set module uses repositories[*].name from
+    # each set's show response. This fresh-demo boundary permits only the number
+    # of explicitly selected minor variants and refuses pre-enabled extras.
+    - name: Read each exact enabled repository set with its member identities
+      redhat.satellite.resource_info:
+        resource: repository_sets
+        search: 'label = "{{ item.label }}"'
+        full_details: true
+        params:
+          organization_id: "{{ sniper_foundation_org.id }}"
+          product_id: >-
+            {{ ((sniper_foundation_product_queries.results |
+                 selectattr('item', 'equalto', item.product) | first).resources |
+                 sniper_one('product')).id }}
+      loop: "{{ sniper_repository_sets }}"
+      register: sniper_foundation_set_queries
+      no_log: true
+
+    - name: Refuse ambiguous sets or extra enabled repository variants
+      ansible.builtin.assert:
+        that:
+          - item.resources | length == 1
+          - >-
+            (item.resources | sniper_one('repository set')).repositories | length ==
+            sniper_content_minor_versions | length
+          - >-
+            (item.resources | sniper_one('repository set')).repositories |
+            selectattr('name', 'defined') | list | length == sniper_content_minor_versions | length
+        fail_msg: >-
+          This fresh-demo configuration requires exactly the selected x86_64 minor
+          variants per requested label. Additional enabled variants require inspection;
+          no repository policy or synchronization has been applied.
+      loop: "{{ sniper_foundation_set_queries.results }}"
+      no_log: true
+
+    - name: Record only the product and repository names returned by the exact sets
+      ansible.builtin.set_fact:
+        sniper_foundation_enabled_repositories: >-
+          {%- set bindings = [] -%}
+          {%- for query in sniper_foundation_set_queries.results -%}
+          {%- for repository in (query.resources | sniper_one('repository set')).repositories -%}
+          {%- set _ = bindings.append({'product': query.item.product, 'name': repository.name}) -%}
+          {%- endfor -%}
+          {%- endfor -%}
+          {{ bindings }}
+      no_log: true
+
+    - name: Bind supplied repository names to the exact enabled content sets
+      ansible.builtin.assert:
+        that:
+          - >-
+            sniper_foundation_enabled_repositories | sort(attribute='product,name') ==
+            sniper_repositories | sort(attribute='product,name')
+        fail_msg: >-
+          Supplied repository names do not match the exact enabled BaseOS/AppStream
+          variants. No repository policy or synchronization has been applied.
+      no_log: true
+
+    - name: Require the selected repository identities before applying policy
+      ansible.builtin.assert:
+        that:
+          - item.repository.id is defined
+          - item.repository.id | int > 0
+      loop: "{{ sniper_foundation_repository_queries.results }}"
+      no_log: true
+
+    - name: Preserve the exact repository bindings of an existing content view
+      ansible.builtin.assert:
+        that:
+          - >-
+            (sniper_foundation_view_query.resources | first).repositories | map(attribute='id') | sort | list ==
+            sniper_foundation_repository_queries.results | map(attribute='repository.id') | sort | list
+        fail_msg: The existing owned content view has different repositories; inspect it without replacing its bindings.
+      when: sniper_foundation_view_query.resources | length == 1
+      no_log: true
+
+    # CoP skips provider-managed repositories; change only their explicitly chosen
+    # download policy through the certified module before starting synchronization.
+    - name: Require proactive downloads only on the selected existing repositories
+      redhat.satellite.repository:
+        organization: "{{ sniper_organization }}"
+        product: "{{ item.product }}"
+        name: "{{ item.name }}"
+        content_type: yum
+        download_policy: immediate
+        state: present
+      loop: "{{ sniper_repositories }}"
+      no_log: true
+
+    # CoP's handler searches global running sync tasks. The certified module waits
+    # for each selected repository's own task without observing unrelated jobs.
+    - name: Proactively synchronize only the selected minor-version repositories
+      redhat.satellite.repository_sync:
+        organization: "{{ sniper_organization }}"
+        product: "{{ item.product }}"
+        repository: "{{ item.name }}"
+      loop: "{{ sniper_repositories }}"
+      no_log: true
+
+    - name: Create only the project lifecycle path through CoP
+      ansible.builtin.include_role:
+        name: infra.satellite_configuration.dispatch
+        tasks_from: satellite_lifecycle_environments.yaml
+        apply:
+          no_log: true
+      vars:
+        satellite_lifecycle_environments:
+          - name: "{{ sniper_test_environment }}"
+            organization: "{{ sniper_organization }}"
+            prior: Library
+            description: "{{ sniper_owner }}"
+            state: present
+          - name: "{{ sniper_prod_environment }}"
+            organization: "{{ sniper_organization }}"
+            prior: "{{ sniper_test_environment }}"
+            description: "{{ sniper_owner }}"
+            state: present
+      no_log: true
+
+    - name: Create the unpublished owned content view through CoP once
+      ansible.builtin.include_role:
+        name: infra.satellite_configuration.dispatch
+        tasks_from: satellite_content_views.yaml
+        apply:
+          no_log: true
+      vars:
+        satellite_content_views:
+          - name: "{{ sniper_content_view }}"
+            organization: "{{ sniper_organization }}"
+            description: "{{ sniper_owner }}"
+            repositories: "{{ sniper_repositories }}"
+            solve_dependencies: false
+            state: present
+      when: sniper_foundation_view_query.resources | length == 0
+      no_log: true
+
+    - name: Read back the owned content view
+      redhat.satellite.resource_info:
+        resource: content_views
+        organization: "{{ sniper_organization }}"
+        search: 'name = "{{ sniper_content_view }}"'
+      register: sniper_foundation_final_view
+      no_log: true
+
+    - name: Require exactly one owned content view
+      ansible.builtin.set_fact:
+        sniper_foundation_view: "{{ sniper_foundation_final_view.resources | sniper_owned(sniper_owner, 'Content View') | sniper_one }}"
+      no_log: true
+
+    - name: Record the content foundation without claiming a published demo baseline
+      ansible.builtin.set_stats:
+        aggregate: false
+        data:
+          sniper_content_foundation_result:
+            organization_id: "{{ sniper_foundation_org.id }}"
+            content_view_id: "{{ sniper_foundation_view.id }}"
+            repositories_synchronized: true
+            content_minor_versions: "{{ sniper_content_minor_versions }}"
+            repository_download_policy: immediate
+            baseline_publication_performed: false
+            activation_keys_configured: false
+            hosts_registered_or_patched: false

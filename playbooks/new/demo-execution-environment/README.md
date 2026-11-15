@@ -1,7 +1,9 @@
 # NEW Satellite demo execution environment
 
-This demo EE adds certified `redhat.satellite` **6.0.0** to the unchanged official
-Red Hat Core **2.20.10** minimal image. Use the same immutable NEW image for its
+This demo EE recipe combines certified `redhat.satellite` **6.0.0** and unmodified
+CoP `infra.satellite_configuration` **1.5.0** on the unchanged official Red Hat
+Core **2.20.10** minimal image. The earlier published image contains Satellite
+6.0.0 only; the CoP-containing recipe is not yet built, published or deployed. Use the same immutable NEW image for its
 NEW targets and the later compatibility test against OLD Satellite/RHEL hosts.
 The original OLD AAP keeps its existing legacy runtime; the separate NEW
 Satellite setup EE remains unchanged.
@@ -13,13 +15,46 @@ Satellite setup EE remains unchanged.
 | Certified archive | `redhat-satellite-6.0.0.tar.gz` |
 | Archive bytes | `514153` |
 | Archive SHA-256 | `67847d52685e27f3220b1e641f8294f221e341bfddca439172c4e9b88407fb2d` |
+| CoP released archive | `infra-satellite_configuration-1.5.0.tar.gz` |
+| CoP archive bytes | `190727` |
+| CoP archive SHA-256 | `aafc8d7c5021b1f07764b1f27b0944c0592c209507e0b3dc0e1c494a5d662901` |
 
 Obtain the exact certified archive through the existing authenticated Hub and
 verify its size and SHA-256. Do not rebuild a substitute from GitHub source.
 Use a temporary build context outside the checkout: copy `Containerfile` and
-install the verified local archive under `collections/` using native
-`ansible-galaxy collection install --no-deps -p`. Build with the pinned cached
-base, `--pull=never` and `--network=none`.
+install the two verified local archives under `collections/` using native
+`ansible-galaxy collection install --no-deps -p`, explicitly supplying both
+archive paths. Build with the pinned cached base, `--pull=never` and
+`--network=none`. Preserve the approved private Automation Hub distribution
+path; do not download Git source or install dependencies during a job.
+
+## Scoped CoP dependency qualification
+
+CoP 1.5.0 declares Satellite 5.8.0. That declaration remains unchanged in its
+upstream package. This recipe deliberately retains the selected certified 6.0.0
+artifact instead of resolving CoP's dependency to 5.8.0. The released CoP archive
+has an authoritative release-asset digest; its manifest/file inventory and all
+264 packaged file hashes matched the exact reviewed source revision
+`4e504141d91c492f70ff59f9d38ae7d770ff75ec`. Do not repackage the collection or
+silently describe this as compliance with its declared dependency combination.
+
+Offline checks on Core 2.20.10 passed four native syntax checks, four synthetic
+rendering groups, and ten actual module-constructor argument checks. An
+additional negative check confirmed rejection of legacy filter-rule fields by
+the filter module. The tests stopped before API entry with container networking
+disabled. They establish bounded loading, templating and argument compatibility;
+real API behavior, idempotency and end-to-end acceptance remain unverified.
+
+Limit configuration to the selected repository, lifecycle, content-view and
+activation-key paths. The native content-view role separates filters and rules;
+do not pass rule fields through CoP's separate legacy filter dispatcher. Do not
+invoke full dispatch, automatic content-view version cleanup, exports,
+reconciliation, provisioning or identity management to configure this demo.
+Keep the existing targeted/full patching stages separate from foundation setup.
+The NEW content plan uses proactive `immediate` synchronization, explicitly
+bounded to the selected RHEL 9.4/9.5 variants. It must not switch to on-demand
+downloads or a rolling/newer minor to work around capacity or applicability.
+
 
 ## Runtime dependencies
 

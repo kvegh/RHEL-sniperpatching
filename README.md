@@ -1,6 +1,14 @@
 # RHEL-sniperpatching
 
-**Demo project version: 0.11.4.**
+**Working candidate version: 0.12.0.**
+
+The current published main remains 0.11.4. This candidate prepares a narrowly
+scoped CoP content-configuration stage and an extended EE recipe; neither has
+been deployed. See [scoped CoP qualification](docs/cop-qualification.md) for
+exact checks, known limitations and the pending setup choices. See
+[release notes](docs/release-notes.md) for the working candidate's change scope.
+The [RHEL 9.4 CVE candidate catalog](docs/rhel94-cve-candidates.md) separates
+pre-9.5 fixes from actual client applicability and independent patching steps.
 
 See [current handover status](current_status_for_handover.md) for recorded
 validation, review status and continuation boundaries.
