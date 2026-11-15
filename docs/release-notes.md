@@ -1,5 +1,11 @@
 # Release notes
 
+## 0.13.3 — Record verified combined EE publication
+
+The CoP-inclusive 0.2.0 image is published and its complete receiving-Hub
+manifest, configuration and blobs passed an uncached readback. AAP binding and
+complete live acceptance remain unfinished.
+
 ## 0.13.2 — Use main-only publication and record baked EE checks
 
 Preserve the owner-selected main-only workflow. Record successful offline

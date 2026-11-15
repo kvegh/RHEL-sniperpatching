@@ -3,8 +3,10 @@
 This demo EE recipe combines certified `redhat.satellite` **6.0.0** and unmodified
 CoP `infra.satellite_configuration` **1.5.0** on the unchanged official Red Hat
 Core **2.20.10** minimal image. The earlier published image contains Satellite
-6.0.0 only; CoP-containing EE 0.2.0 is now built and offline-qualified, but is not yet
-published or bound to AAP. Use the same immutable NEW image for its
+6.0.0 only; CoP-containing EE 0.2.0 is built, offline-qualified and published through the
+existing private Hub. A fresh download verified its immutable manifest,
+configuration and every blob; normal AAP binding and live acceptance remain
+unfinished. Use the same immutable NEW image for its
 NEW targets and the later compatibility test against OLD Satellite/RHEL hosts.
 The original OLD AAP keeps its existing legacy runtime; the separate NEW
 Satellite setup EE remains unchanged.

@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Version: 0.13.2.**
+**Version: 0.13.3.**
 
 Development and publication use **main only**. This source includes scoped CoP
 content configuration, an extended demo EE recipe and content-first GA baseline

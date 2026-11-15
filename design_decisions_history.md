@@ -814,3 +814,13 @@ Satellite 6.0.0 and unmodified CoP 1.5.0 packaged files match the official
 archives, and selected role rendering/syntax, module arguments and current
 project runtime paths passed. Registry publication, normal AAP binding and
 complete NEW acceptance remain separate unfinished work.
+
+## 2026-11-15 — Verify publication of the combined demo EE
+
+Version **0.13.3** records completed publication of EE 0.2.0. The receiving
+immutable manifest, configuration and all layers matched a fresh uncached
+download, and existing authentication files were preserved. The underlying
+recipe/foundation implementation is 8fb97532b32df1c7e8f3892f71c99aab2a636c92;
+baseline sequencing is a5403bd822b8f4a23443d418259c8ee3ff0be994.
+Normal AAP template binding, CoP server acceptance and complete patching
+acceptance remain separate unfinished work. Continue directly on main.

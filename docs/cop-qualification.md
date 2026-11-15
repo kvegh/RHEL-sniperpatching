@@ -110,14 +110,15 @@ HTTP 403 on OPTIONS metadata did not establish that the actual publication
 operation was denied. Existing authentication and permissions were unchanged.
 The combined EE 0.2.0 is built and offline-qualified. All packaged collection
 files match the two original archives, with no overlays or added dependencies.
-Publication, AAP binding and live acceptance remain unfinished.
+Publication is verified by fresh immutable manifest/configuration/blob readback.
+Normal AAP binding and complete live acceptance remain unfinished.
 
 ## Remaining acceptance
 
 The actual CoP-inclusive EE passed collection provenance, selected native role
 syntax/rendering, module-constructor and current-project runtime checks offline.
-Publish and verify the image, then qualify its selected normal AAP template
-before claiming server compatibility. Verify ownership refusal, exact repository bindings,
+The image is published with fresh immutable readback verification; qualify its
+selected normal AAP template before claiming server compatibility. Verify ownership refusal, exact repository bindings,
 actual task completion, CA cleanup, repeated apply/idempotency and preservation
 of unrelated objects. Then verify registered client baselines and the complete
 patching workflow through AAP. No live behavior, sync, promotion, host assignment
