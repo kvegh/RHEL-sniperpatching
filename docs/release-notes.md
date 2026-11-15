@@ -1,5 +1,14 @@
 # Release notes
 
+## 0.12.3 — Match actual repository substitutions
+
+Correct fixed-x86_64 repository inputs to use the actual API's releasever-only
+substitutions. Authenticated reads found all four explicit 9.4/9.5 variants;
+source syntax and affected native builders/selectors passed offline. Preserve
+all existing policy, ownership and binding guards. Both original clients also
+passed twenty CVE/package-version comparisons without package changes. Actual
+synchronized-advisory availability and NEW acceptance remain unfinished.
+
 ## 0.12.2 — Agreed CVE sequence
 
 Record the owner-selected ten-CVE catalog and authorization to validate actual

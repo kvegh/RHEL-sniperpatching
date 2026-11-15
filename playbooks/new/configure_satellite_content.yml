@@ -150,10 +150,12 @@
       ansible.builtin.set_fact:
         sniper_cop_repository_variants: []
 
+    # The two exact labels already fix x86_64 in their CDN paths. Native6 matches
+    # the full substitutions dictionary, so the actual API's releasever-only shape is required.
     - name: Build only the explicitly selected x86_64 minor-version variants
       ansible.builtin.set_fact:
         sniper_cop_repository_variants: >-
-          {{ sniper_cop_repository_variants + [{'basearch': 'x86_64', 'releasever': item}] }}
+          {{ sniper_cop_repository_variants + [{'releasever': item}] }}
       loop: "{{ sniper_content_minor_versions }}"
 
     - name: Build only the selected RHEL repository-set definitions

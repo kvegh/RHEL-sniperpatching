@@ -79,6 +79,33 @@ calls; the existing NEW demo playbooks do so too. Avoid that incompatible legacy
 path. Automatic version cleanup, full dispatch, export/reconciliation, identity
 management, provisioning and Convert2RHEL are outside this foundation scope.
 
+## Live read-only repository preflight
+
+Authenticated strict-TLS API reads on 15 November 2026 confirmed both explicit
+minor variants, 9.4 and 9.5, for the two fixed-x86_64 repository labels. All four
+were offered and disabled. The API did not advertise full-content size, so
+storage fit remains unverified before proactive synchronization.
+
+The actual content URLs already contain literal x86_64. Their native repository
+substitutions contain only `releasever`. The original draft also supplied
+`basearch`, which the certified selector would reject because it compares the
+complete substitutions dictionary. The correction removes that extra key while
+preserving the fixed architecture labels and every minor/ownership/binding guard.
+
+Final-source syntax passed on Core 2.20.10. The actual source builders for 9.4
+and 9.4 plus 9.5, followed by four native-selector comparisons against captured
+API-shaped rows, passed offline. The old extra-key shape matched no variants;
+the corrected shape selected exactly the requested minors. An initial fixture
+copy failed because its remote temporary directory was read-only; using the
+container-local temporary directory corrected only that fixture. No live
+repository enablement or sync occurred.
+
+The unchanged released CoP archive also completed its normal private-Hub
+import and matched the original SHA-256. It remains in staging. The existing
+access received HTTP 403 on approval-endpoint metadata; no promotion was
+attempted, and the administrator action is pending. The combined EE remains
+unbuilt and cannot yet be described as published or live-accepted.
+
 ## Remaining acceptance
 
 The CoP-inclusive EE recipe is prepared but unbuilt and unpublished. Qualify the

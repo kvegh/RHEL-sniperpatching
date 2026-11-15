@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Working candidate version: 0.12.2.**
+**Working candidate version: 0.12.3.**
 
 The current published main remains 0.11.4. This candidate prepares a narrowly
 scoped CoP content-configuration stage and an extended EE recipe; neither has
@@ -10,7 +10,8 @@ exact checks, known limitations and the pending setup choices. See
 The [RHEL 9.4 CVE candidate catalog](docs/rhel94-cve-candidates.md) separates
 pre-9.5 fixes from actual client applicability and independent patching steps.
 The owner selected that catalog for validation and chronological demonstrations
-after NEW acceptance; those client demonstrations have not started.
+after NEW acceptance. Both clients passed package-version screening for the ten
+CVEs; synchronized-advisory validation and client demonstrations remain pending.
 
 See [current handover status](current_status_for_handover.md) for recorded
 validation, review status and continuation boundaries.
