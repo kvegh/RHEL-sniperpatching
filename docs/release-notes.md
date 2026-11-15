@@ -1,5 +1,15 @@
 # Release notes
 
+## 0.14.2 — Record final source and AAP runtime qualification
+
+All 140 NEW offline tests passed in the unchanged selected EE after correcting
+the nested-task fixture selectors. All eleven module interfaces and seven stage
+syntaxes passed with Core 2.20.10 and Satellite 6.0.0. Normal CaC readback matched
+the complete declared procedure, and its normal AAP runtime check passed on
+executable checkpoint `06a5656` with strict-TLS API access. This documentation
+checkpoint changes no executable content. GA publication, direct registration
+and full NEW/CVE patching acceptance remain unfinished.
+
 ## 0.14.1 — Keep command-boundary checks valid inside cleanup blocks
 
 Reuse recursive test task traversal for the NEW patch command and RPM snapshots,

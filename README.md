@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Version: 0.14.1.**
+**Version: 0.14.2.**
 
 Development and publication use **main only**. NEW includes scoped CoP content
 configuration, a qualified demo EE, content-first GA preparation and explicit
@@ -50,8 +50,8 @@ native RPM/runtime helpers, synthetic inventory and collection declarations.
 Surveys remain shared generic input definitions under `surveys/`. AAP Job
 Templates must save the full path for their selected track. OLD always runs
 through the remote environment's own AAP. NEW runs through our production AAP.
-The current private CaC describes NEW setup only; the historical OLD capture is
-preserved separately and must never be imported into the NEW controller.
+The current private CaC describes NEW setup, content and procedure bindings;
+the historical OLD capture is preserved separately and must never be imported into the NEW controller.
 
 NEW provides separate DNS, RHEL preparation, package installation and certified
 installer stages under `playbooks/new/`. Their
@@ -66,9 +66,9 @@ the private CaC pins its receiving-Hub digest explicitly. The separate
 and published with Core 2.20.10, certified Satellite collection 6.0.0 and
 unchanged CoP 1.5.0. Its dedicated immutable binding was applied through the
 existing CaC importer. The normal read-only runtime template passed through AAP
-with authenticated collection and native URI HTTPS verification. Remaining
-demo-stage bindings and end-to-end patching acceptance are separate unfinished
-work.
+with authenticated collection and native URI HTTPS verification. The complete
+procedure bindings now pass exact protected readback. Client registration and
+end-to-end patching acceptance remain unfinished.
 
 There are no root-level forwarding playbooks. Update a template's playbook path
 and synchronize the matching source revision together. The private companion
@@ -177,13 +177,14 @@ The qualified NEW demo EE passes nine collection module interfaces, six stage
 syntaxes and fourteen NEW content/runtime fixtures on Core 2.20.10. Its vendor
 Python/RPM inventory, runtime settings and base layers are preserved; no extra
 packages are needed. Image publication was verified through uncached manifest,
-configuration and every-blob hash checks. Live template bindings and patching
-acceptance remain separate from these image and source checks.
+configuration and every-blob hash checks. Complete NEW template bindings and
+the normal AAP runtime diagnostic passed separately. Managed-host registration
+and patching acceptance remain unverified.
 The two NEW DNS/RHEL preparation templates use built-in modules and the existing
 Core 2.20 management EE. They do not require a Satellite collection to bootstrap
 the server. The historical OLD runs remain separate from NEW acceptance.
 
-An earlier 98-test baseline passed inside the official unmodified Core 2.20.10 EE.
+All 140 NEW offline tests passed inside the selected unchanged Core 2.20.10 EE.
 These checks do not establish fresh Satellite access or live patching acceptance.
 
 ## How to demonstrate the functionality
@@ -429,7 +430,7 @@ source for actual CVE mappings, affected installed packages and available conten
 
 ## Configuration and checks
 
-Public playbooks and surveys stay here. Protected AAP configuration is whole-file Vault ciphertext in the private RHEL-sniperpatching-secrets companion. Deploy RHEL Sniperpatching CaC uses the shared importer and an explicit destination. Its configuration import and receiving-runtime diagnostic have passed; the selected Machine credential still needs suitable SSH access to the clients.
+Public playbooks and surveys stay here. Protected AAP configuration is whole-file Vault ciphertext in the private RHEL-sniperpatching-secrets companion. Deploy RHEL Sniperpatching CaC uses the shared importer and an explicit destination. Its configuration import and receiving-runtime diagnostic have passed; actual managed-host SSH, registration and patching remain separate acceptance checks.
 
 The observed-failure protections remain: compatible original-package filters, normal Library → Test promotion, bounded reuse of an interrupted minor, signing-key inventory handling, authoritative RPM epochs and bounded transient read retries. Host/CV ownership, consumer UUID, repository restrictions, cutoff checks and final host completion assertions remain enforced.
 

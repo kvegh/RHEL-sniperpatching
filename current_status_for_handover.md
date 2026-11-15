@@ -1,10 +1,16 @@
 # Direct-registration source checkpoint — 2026-11-15
 
-Version **0.14.1** includes explicit NEW direct Test/Prod registration and corrects
+Version **0.14.2** includes explicit NEW direct Test/Prod registration and corrects
 SSH trust ordering in the NEW patch/check stages. The separate GA-content job
 remains the sole initial publisher. Its normal CaC import and exact protected
 binding readback passed; it had not run at that verification. Registration is
 source preparation, not a claim that either original client is registered.
+
+All 140 final-source offline tests passed in the selected unchanged EE. Normal
+CaC import/readback matched fourteen templates and four declared hosts; the
+normal AAP runtime check passed on the exact published executable source with
+Core 2.20.10, Satellite 6.0.0, seven syntaxes and strict-TLS API reads. These
+checks leave actual registration and patching acceptance unverified.
 
 The foundation/AppStream run was still active at the last native status read.
 Complete that job and owned content checks before GA publication, direct

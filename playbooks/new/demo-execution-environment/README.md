@@ -5,7 +5,8 @@ CoP `infra.satellite_configuration` **1.5.0** on the unchanged official Red Hat
 Core **2.20.10** minimal image. The earlier published image contains Satellite
 6.0.0 only; CoP-containing EE 0.2.0 is built, offline-qualified and published through the
 existing private Hub. A fresh download verified its immutable manifest,
-configuration and every blob; normal AAP binding and live acceptance remain
+configuration and every blob. Normal AAP binding and the read-only runtime
+check passed; live content configuration and full patching acceptance remain
 unfinished. Use the same immutable NEW image for its
 NEW targets and the later compatibility test against OLD Satellite/RHEL hosts.
 The original OLD AAP keeps its existing legacy runtime; the separate NEW
@@ -76,8 +77,8 @@ feature is qualified is made. Native package proof runs on managed RHEL hosts
 using their own RPM bindings, independently of this controller EE.
 
 Check the built image's actual Core, collection, vendored API and dependency
-imports. Exercise the NEW content/runtime fixtures, nine module interfaces and
-six demo stage syntax checks against this exact collection. Publish a new
+imports. Exercise the NEW content/runtime fixtures, eleven module interfaces and
+seven demo stage syntax checks against this exact collection. Publish a new
 versioned tag through existing protected native Hub authentication and verify
 its immutable manifest/configuration/blobs. Bind that receiving-Hub digest
 explicitly on NEW job templates through private CaC. Keep target addresses,

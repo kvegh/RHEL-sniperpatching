@@ -72,6 +72,18 @@ and tests. Full reST packaging, wholesale type annotations or a pytest migration
 would add work without a demonstrated consumer benefit; revisit if they become
 shared collection interfaces.
 
+## Native NEW registration command
+
+`playbooks/new/register_demo_clients.yml` and its focused task files use the
+certified activation-key and registration-command modules. The latter returns
+Satellite’s native Global Registration pipeline; one protected built-in shell
+task executes it on the exact original guest. It is not a project-authored
+registration script. Native RPM and subscription-manager reads verify unchanged
+packages and exact consumer identity; native guest trust supports verified
+initial curl access. The [registration rationale and limits](new-baseline.md#direct-registration-implementation)
+cover certified alternatives, credential protection, cleanup and tests. No
+new custom filter, module, runtime package or transport is introduced.
+
 ## Native RPM proof
 
 `files/rpm_proof.py` runs on the client using its existing OS Python and native

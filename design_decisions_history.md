@@ -39,8 +39,19 @@ traversal without weakening their assertions. All ten content-boundary tests
 then passed; actual Core 2.20.10 / Python 3.12.15 / Satellite 6.0.0 inspection
 confirmed eleven module interfaces and seven stage syntaxes. The read-only
 local verification harness needed a temporary Galaxy-cache directory; the
-selected image and deployed runtime were unchanged. A complete final-source
-regression rerun and normal AAP acceptance remain separate verification.
+selected image and deployed runtime were unchanged. The final source rerun
+passed all **140 tests in 623.437 seconds**, with the tested runtime
+source matching the frozen checkpoint. Source-inspection fixture
+correction implementation is `06a56567e1bd9bd4ebfd50c6b671859cc35732c4`.
+
+Normal CaC import/readback matched fourteen templates and four declared hosts,
+including protected variables, credentials, surveys and launch controls. The
+normal AAP runtime check passed on that same published executable checkpoint,
+proving actual Core 2.20.10, Python 3.12.15, Satellite 6.0.0, all seven syntaxes
+and strict-TLS collection/native URI reads. This **0.14.2** documentation
+checkpoint changes no executable content. Real GA publication, direct client
+registration, DNF applicability and complete NEW/CVE patching acceptance remain
+unfinished.
 
 ## 2026-11-12 — Protect process diagnostics and preserve read-only check mode
 
