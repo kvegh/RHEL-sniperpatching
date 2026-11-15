@@ -706,3 +706,21 @@ Candidate 0.12.1 records the real implementation ID. Source publication is
 separate from building/publishing the combined image, current CaC adoption,
 server idempotency and final AAP patching acceptance. Existing OLD scope and
 independent deployment feature freeze remain preserved.
+
+
+## 2026-11-15 — Validate and demonstrate the agreed CVE catalog
+
+Recorded 2026-11-15T14:53:48.454373+00:00. Documentation candidate **0.12.2** records the
+owner's explicit selection of the existing ten-CVE tables and subsequent request:
+validate the list, then cycle through its entries once the NEW implementation
+works. The original catalog was implemented in
+`8fb97532b32df1c7e8f3892f71c99aab2a636c92`.
+
+The authorization establishes the demonstration goal and ordering prerequisite,
+not evidence that every package or advisory applies to the clients. Validate
+the actual installed baseline and synchronized fixed builds first. Keep
+chronological package updates and separate per-CVE results, including the pair
+sharing one RHSA. Guest recreation, baseline restoration and replacement CVEs
+are not silently selected. No patch cycle has started. Existing proactive
+9.4/9.5-only content policy, pending initial-registration choice, OLD boundaries
+and independent shared-deployment hold remain intact.

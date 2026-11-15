@@ -1,5 +1,12 @@
 # Release notes
 
+## 0.12.2 — Agreed CVE sequence
+
+Record the owner-selected ten-CVE catalog and authorization to validate actual
+applicability, then demonstrate each CVE after NEW acceptance. Preserve the
+chronological order and shared/cumulative-update limits. No client validation
+result, synchronization or patch cycle is claimed by this documentation change.
+
 ## 0.12.1 — Candidate evidence and implementation history
 
 Document the actual foundation/catalog implementation commit and the bounded
