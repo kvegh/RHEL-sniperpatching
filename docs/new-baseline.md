@@ -162,3 +162,12 @@ refusals. They cannot establish actual client connectivity, native registration
 or DNF dependency resolution. Run the normal AAP GA, registration, registered
 preparation and Test-to-Prod procedure against the original pair for acceptance.
 Do not treat a source check or CaC import as completion of that procedure.
+
+### Repository copies during registration
+
+A published version has archived, Library and promoted repository copies.
+Registration reads repositories with both `content_view_version_id` and the
+selected `environment_id` through the certified resource-info module, then
+requires the exact two protected repositories, products and RHSM labels. A
+version-only query can return eight copies for this two-repository setup; it
+must not be deduplicated to hide an ambiguous serving destination.

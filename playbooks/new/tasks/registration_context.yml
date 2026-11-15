@@ -28,11 +28,14 @@
   ansible.builtin.set_fact:
     sniper_baseline: '{{ sniper_registration_serving_query.resources | sniper_one("serving Content View version") }}'
 
+# A published version has archived, Library and promoted repository copies.
+# Select the actual destination; counting all version copies rejects a valid pair.
 - name: Read the actual served repositories and RHSM labels
   redhat.satellite.resource_info:
     resource: repositories
     params:
       content_view_version_id: "{{ sniper_baseline.id }}"
+      environment_id: "{{ sniper_env.id }}"
     full_details: true
   register: sniper_registration_repositories
 

@@ -1,18 +1,16 @@
 # RHEL-sniperpatching
 
-**Version: 0.14.2.**
+**Version: 0.14.3.**
 
 Development and publication use **main only**. NEW includes scoped CoP content
 configuration, a qualified demo EE, content-first GA preparation and explicit
-direct Test/Prod registration. Patch/check jobs establish strict client SSH trust
-before gathering facts and clean it up after success or failure. Registration
-and the changed client stages still require normal AAP acceptance. Storage
-readiness was verified before a normal foundation run.
-The [dated live checkpoint](docs/cop-qualification.md#dated-live-foundation-checkpoint)
-records passed repository guards and entry into synchronization; full foundation
-and NEW patching acceptance remain unfinished. See
-[scoped CoP qualification](docs/cop-qualification.md) and
-[release notes](docs/release-notes.md) for the verified scope and remaining work.
+direct Test/Prod registration. Full proactive RHEL 9.4 BaseOS/AppStream sync
+and the frozen GA content baseline passed actual AAP execution and independent
+readback. Registration and complete NEW patching acceptance remain unfinished.
+Registration now selects repository copies by both published version and
+lifecycle environment; the strict two-repository guard remains in place.
+See [scoped CoP qualification](docs/cop-qualification.md) and
+[release notes](docs/release-notes.md) for verified scope and remaining work.
 The [RHEL 9.4 CVE candidate catalog](docs/rhel94-cve-candidates.md) separates
 pre-9.5 fixes from actual client applicability and independent patching steps.
 The owner selected that catalog for validation and chronological demonstrations
@@ -25,7 +23,8 @@ NEW now prepares and verifies its frozen RHEL 9.4 GA-cutoff content before
 registration, then accepts the directly registered pair in a separate invocation.
 See [NEW baseline sequence](docs/new-baseline.md) for inputs, recovery and the
 explicit limit that selected-package verification does not reproduce a full ISO.
-This implementation passed local checks; live NEW acceptance remains unfinished.
+The GA version is verified in both Test and Prod; direct registration and
+complete live NEW acceptance remain unfinished.
 The selected NEW content window ends at RHSA-2024:8446 on 2024-10-24; its
 existing full-update cutoff defaults to that date, with no 9.5 demo requirement.
 

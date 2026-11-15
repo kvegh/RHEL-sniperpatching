@@ -96,9 +96,20 @@ if NAME == "resource_info":
         if s.get("missing_serving") and "environment_id" in params:
             rows = []
     elif resource == "repositories":
-        rows = [{"id": rid, "name": "BaseOS" if rid == 50 else "AppStream",
-                 "product": {"name": "RHEL 9"}, "content_label": __LABELS__[1 if rid == 50 else 0]}
+        # Native index first filters the version, then the lifecycle environment.
+        # The same two source repositories have archived and promoted copies.
+        rows = [{"id": rid + offset, "name": "BaseOS" if rid == 50 else "AppStream",
+                 "product": {"name": "RHEL 9"}, "content_label": __LABELS__[1 if rid == 50 else 0],
+                 "library_instance_id": rid, "environment_id": environment_id,
+                 "content_view_version_id": 40}
+                for environment_id, offset in ((None, 0), (1, 100), (30, 200), (31, 300))
                 for rid in (50, 51)]
+        if "content_view_version_id" in params:
+            rows = [row for row in rows if row["content_view_version_id"] == int(params["content_view_version_id"])]
+        if "environment_id" in params and not s.get("unscoped_repositories"):
+            rows = [row for row in rows if row["environment_id"] == int(params["environment_id"])]
+        call["returned_repository_ids"] = [row["id"] for row in rows]
+        call["returned_environment_ids"] = [row["environment_id"] for row in rows]
     elif resource == "errata":
         rows = [{"errata_id": "RHSA-2024:9999", "issued": "2024-05-01"}] if s.get("later_erratum") else []
     elif resource == "packages":
@@ -301,6 +312,28 @@ class NewRegistration(unittest.TestCase):
         self.assertEqual(state["remaining_pins"], [])
         self.assertEqual(state["remaining_cas"], [])
         self.assertIn("package_baseline_unchanged", result.stdout)
+
+    def test_served_repository_query_selects_each_environment_without_deduplicating(self):
+        result, state = self.run_registration()
+        self.assert_success(result)
+        queries = [call for call in state["calls"] if call["resource"] == "repositories"]
+        self.assertEqual([call["params"] for call in queries], [
+            {"content_view_version_id": 40, "environment_id": 30},
+            {"content_view_version_id": 40, "environment_id": 31},
+        ])
+        self.assertEqual([call["returned_repository_ids"] for call in queries], [[250, 251], [350, 351]])
+        self.assertEqual([call["returned_environment_ids"] for call in queries], [[30, 30], [31, 31]])
+
+        # An unexpectedly unscoped response still fails closed, even when all
+        # eight copies share the expected names, products and content labels.
+        result, state = self.run_registration(unscoped_repositories=True)
+        self.assertNotEqual(result.returncode, 0)
+        query = next(call for call in state["calls"] if call["resource"] == "repositories")
+        self.assertEqual(len(query["returned_repository_ids"]), 8)
+        self.assertFalse(any(call["module"] in {"guest", "activation_key", "registration_command"}
+                             for call in state["calls"]))
+        self.assertEqual(state["consumers"], {})
+        self.assertEqual(state["remaining_cas"], [])
 
     def test_repeat_skips_registration_and_all_guest_mutations(self):
         result, state = self.run_registration(repeat=True)

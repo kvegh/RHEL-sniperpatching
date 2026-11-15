@@ -1,5 +1,16 @@
 # Release notes
 
+## 0.14.3 — Select repositories serving the registration destination
+
+Add the native lifecycle-environment filter to the existing published-version
+repository read. A version can have archive, Library and promoted copies; the
+unscoped response failed the exact-pair guard before reaching either client.
+Retain all strict ownership, repository, product, label and baseline checks.
+The affected normal-registration, repeat and scoped-query/refusal regressions
+passed in the existing selected EE. Actual corrected registration and full NEW
+patching acceptance still require normal AAP execution.
+
+
 ## 0.14.2 — Record final source and AAP runtime qualification
 
 All 140 NEW offline tests passed in the unchanged selected EE after correcting

@@ -1,3 +1,29 @@
+# GA verified; registration repository selection corrected — 2026-11-15
+
+Version **0.14.3** adds the selected lifecycle environment to the native
+published-version repository query. The version-only query returned archived,
+Library, Test and Prod copies and correctly failed the strict two-repository
+guard before any guest connection or activation-key creation. The corrected
+query returns the exact two serving copies for each destination. No ownership,
+product, label or package-baseline guard was relaxed.
+
+The normal foundation run completed both full Immediate RHEL 9.4 mirrors.
+The GA publication and promotions completed through AAP; independent actual
+version checks verified the GA cutoff, exclusion of the nine selected RHSAs and
+latest offered original affected builds in both Test and Prod. This proves the
+selected baseline, not full installation-DVD equivalence.
+
+Three affected offline regression methods passed in the existing selected EE:
+normal registration, repeat/idempotency, and destination scoping with refusal of
+an unexpectedly unscoped response. Retry the normal registration template on
+this correction, verify both original identities and unchanged RPM baselines,
+then complete registered-host acceptance and the chronological CVE cycles.
+Actual registration and patching remain unverified at this source checkpoint.
+Keep the existing held image/shared-VM work, OLD and main-only publication
+boundaries. Raw operational results remain in the private Vault companion.
+
+---
+
 # Direct-registration source checkpoint — 2026-11-15
 
 Version **0.14.2** includes explicit NEW direct Test/Prod registration and corrects
