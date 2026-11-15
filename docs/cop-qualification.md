@@ -70,8 +70,10 @@ has run as part of this source preparation.
 The existing `prepare_demo.yml` owns the first filtered baseline publication.
 Publishing an unfiltered version into Test/Prod first can bypass its initial
 baseline path. Therefore the foundation must leave a newly created content view
-unpublished. Initial client registration and baseline ordering remain a recorded
-setup choice; no activation-key/registration phase has been selected by this draft.
+unpublished. The owner subsequently selected [content-first GA preparation](new-baseline.md):
+prepare_demo verifies and serves the original baseline before direct client
+registration to Test/Prod, then verifies/assigns the registered pair. The foundation
+still creates no activation keys and performs no registration.
 
 CoP's separate top-level filter dispatcher can forward legacy rule fields to the
 filter module. The native 6.0 content-view role already separates filter and rule
@@ -100,11 +102,14 @@ copy failed because its remote temporary directory was read-only; using the
 container-local temporary directory corrected only that fixture. No live
 repository enablement or sync occurred.
 
-The unchanged released CoP archive also completed its normal private-Hub
-import and matched the original SHA-256. It remains in staging. The existing
-access received HTTP 403 on approval-endpoint metadata; no promotion was
-attempted, and the administrator action is pending. The combined EE remains
-unbuilt and cannot yet be described as published or live-accepted.
+The unchanged released CoP archive completed its normal private-Hub import.
+After the owner approved publication, the supported native move task completed;
+published inventory contained this version and staging no longer did. A complete
+receiving-Hub download matched the original 190727-byte SHA-256 above. Earlier
+HTTP 403 on OPTIONS metadata did not establish that the actual publication
+operation was denied. Existing authentication and permissions were unchanged.
+The combined EE remains unbuilt and cannot yet be described as published or
+live-accepted.
 
 ## Remaining acceptance
 

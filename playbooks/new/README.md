@@ -25,3 +25,10 @@ create a package-name rule. OLD retains its independent **3.14.0** pin and sourc
 The [installer EE](execution-environment/README.md) independently pins certified
 `redhat.satellite_operations` **4.0.0**. Offline interface and fixture checks are
 separate from NEW EE publication and live demo acceptance.
+
+NEW preparation uses the selected [content-first GA baseline](../../docs/new-baseline.md):
+run `prepare_demo.yml` with `sniper_prepare_content_only: true`, require the
+verified version in both dedicated environments, register clients directly to
+that path, then run the default registered-host verification/assignment phase.
+The explicit cutoff is `2024-04-30`; no host-errata bootstrap or temporary
+Library registration is used. Live acceptance remains pending.

@@ -20,6 +20,15 @@ and Ansible; they make no network calls and perform no writes. Offline tests
 exercise invalid, missing, foreign and ambiguous data and synthetic real-Ansible
 boundary fixtures. Expected malformed inputs raise actionable errors.
 
+NEW preparation reuses the existing RPM parser in a small pure
+`sniper_verify_baseline_packages` check. Native certified `resource_info` reads
+the latest packages within the scoped published CV using a name-only query; its API does not enforce this project's exact
+original-versus-fixed NEVRA acceptance contract. Keeping the cross-row identity
+and epoch check beside the existing parser avoids duplicated multi-field Jinja
+joins. It adds no dependencies or runtime helper. Synthetic preparation and
+metadata fixtures cover missing originals, fixed-build contamination and epoch
+refusals; see [NEW baseline scope](new-baseline.md).
+
 ### Public filter interfaces
 
 | Filter | Input and additional arguments | Result / important rejection |
@@ -43,6 +52,7 @@ boundary fixtures. Expected malformed inputs raise actionable errors.
 | `sniper_package_searches` | Full advisory details | Bounded exact package-identity searches. |
 | `sniper_package_requirements` | Full advisory details, authoritative repository package rows | Binary fix requirements with explicit epochs; rejects missing, conflicting or ambiguous metadata. |
 | `sniper_package_delta` | Before/after RPM inventory text or lines | Changed names, including valid signing-key records; does not infer upgrade direction. |
+| `sniper_verify_baseline_packages` (NEW only) | Actual published package rows, original and selected fixed NEVRAs | Requires every original build, excludes selected fixes and refuses missing/conflicting epochs. No API or host operations. |
 
 Examples use synthetic data:
 
@@ -144,7 +154,7 @@ PowerShell or JavaScript is authored in this repository.
 | Source and actual caller | Contract, context and effects | Alternatives and disposition |
 |---|---|---|
 | `filter_plugins/content.py`; called by preparation, minor/full publication, promotion and shared context/connect tasks | Controller-only structured Satellite rows/IDs/dates to exact ownership, baseline/cutoff and recovery decisions. Pure stdlib/Ansible transformations; malformed/ambiguous data raises `AnsibleFilterError`. No network/filesystem mutation or secret output. | Satellite `resource_info` supplies rows; its 3.14.0 modules do not implement project-specific provenance/recovery contracts. Built-in Jinja covers elementary selection, not this complete decision. **Retain** cohesive tested filters instead of long duplicated YAML expressions. |
-| `filter_plugins/sniper.py`; called by `tasks/resolve.yml`, `tasks/host_context.yml` and `playbooks/old/patch_hosts.yml` | Controller-only survey text/query results/package catalogs/RPM snapshots to validated ID mappings, exact EVRs and changed package names. Pure Python; invalid, unresolved or ambiguous input raises an error. No writes/network. | Certified Satellite reads advisory/package metadata; built-in filters cannot supply authoritative epoch joins or complete per-input validation alone. **Retain** bounded pure transformations and public interfaces. |
+| `filter_plugins/sniper.py`; called by `tasks/resolve.yml`, `tasks/host_context.yml`, `playbooks/old/patch_hosts.yml` and NEW preparation | Controller-only survey text/query results/package catalogs/RPM snapshots to validated ID mappings, exact EVRs and changed package names. Pure Python; invalid, unresolved or ambiguous input raises an error. No writes/network. | Certified Satellite reads advisory/package metadata; built-in filters cannot supply authoritative epoch joins or complete per-input validation alone. **Retain** bounded pure transformations and public interfaces. |
 | `files/rpm_proof.py`; loaded as Python `-c` by `tasks/proof.yml`, imported from both host patching and read-only verification | Runs on the exact client with existing OS Python/native RPM bindings. Structured requirements/request mapping to installed-EVR, architecture and running-kernel JSON proof. Reads RPM/kernel state, writes nothing. Returns 2 for malformed/runtime error; callers assert `verified` after successful execution. | `ansible.builtin.package_facts` provides inventory; Satellite metadata is not native guest proof. Neither supplies the complete librpm comparison/kernel/request contract. **Retain** this small proof. Copying it to disk or converting it to a custom module would add packaging/state without removing the comparison logic. Python 2.7 syntax is intentional. |
 | `files/runtime_probe.py`; called by `playbooks/old/check_runtime.yml` | Controller/EE read-only list/docs/syntax subprocesses and YAML interface inspection; directory input to JSON report of versions, missing modules/arguments and syntax failures. Existing Ansible/Python/PyYAML only. Commands may use Ansible's temporary files, but never run the demonstration or install dependencies. Caller asserts the report and Satellite read. | `setup` facts do not expose installed collection interfaces. A long YAML loop could invoke the same three CLIs and parse the same structures with less readable validation. **Retain** one cohesive diagnostic. |
 | `ansible.builtin.command` argv tasks in `tasks/host_preflight.yml`, `tasks/proof.yml`, `tasks/check_final.yml`, `playbooks/old/patch_hosts.yml` and `playbooks/old/check_runtime.yml` | Native identity, RPM inventory/proof, reboot detection and selected-repository update/completion commands. Host checks are reads; yum/dnf updates RPMs only in the explicit patching job. Expected rc sets are bounded; invalid identities/proofs fail. Full stale-process argv is protected by `no_log`. No shell evaluation or generated shell program. | Use native `reboot` and `service_facts` where suitable. Core's yum/dnf modules provide broad security/repository options, but not this exact advisory-set minimal transaction plus completion contract. **Retain** the exact targeted command; keep full-update behavior consistent with its existing verified transaction/proof path. No new installer or service. |

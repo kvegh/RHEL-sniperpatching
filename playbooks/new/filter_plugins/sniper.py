@@ -260,6 +260,36 @@ def sniper_package_requirements(errata_details, package_catalog=None):
     return result
 
 
+def sniper_verify_baseline_packages(published, originals, fixed):
+    """Check exact published NEVRAs; dates alone cannot prove a GA baseline."""
+    def identities(rows):
+        if not isinstance(rows, list):
+            raise ValueError("Expected structured baseline package metadata")
+        result = set()
+        epochs = {}
+        for row in rows:
+            if not isinstance(row, dict) or "epoch" not in row:
+                raise ValueError("Baseline package metadata requires an explicit epoch")
+            package = _package(row)
+            nvra = _nvra(package)
+            epochs.setdefault(nvra, set()).add(package["epoch"])
+            if len(epochs[nvra]) != 1:
+                raise ValueError("Conflicting baseline package epochs")
+            result.add(tuple(package[key] for key in
+                             ("name", "epoch", "version", "release", "arch")))
+        return result
+
+    available, required, excluded = (identities(rows) for rows in
+                                     (published, originals, fixed))
+    if not required or not excluded or required & excluded:
+        raise ValueError("Require distinct original and fixed baseline package identities")
+    if required - available:
+        raise ValueError("The published baseline lacks an original affected build; do not promote")
+    if excluded & available:
+        raise ValueError("The published baseline contains a selected fixed build; do not promote")
+    return True
+
+
 def _inventory(value):
     if isinstance(value, str):
         value = value.splitlines()
@@ -311,4 +341,5 @@ class FilterModule:
             "sniper_package_requirements": sniper_package_requirements,
             "sniper_package_searches": sniper_package_searches,
             "sniper_package_delta": sniper_package_delta,
+            "sniper_verify_baseline_packages": sniper_verify_baseline_packages,
         }

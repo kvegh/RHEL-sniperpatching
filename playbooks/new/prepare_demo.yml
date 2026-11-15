@@ -20,15 +20,36 @@
   tasks:
     - name: Validate access and ownership
       ansible.builtin.import_tasks: tasks/connect.yml
+    - name: Read the agreed RHEL 9.4 content catalog
+      ansible.builtin.set_fact:
+        sniper_prep_catalog: "{{ lookup('ansible.builtin.file', playbook_dir ~ '/../../docs/rhel94-cve-candidates.json') | from_json }}"
     - name: Validate baseline and repository inputs
       ansible.builtin.assert:
         that:
           - sniper_repositories | length > 0
-          - sniper_baseline_end_date == '' or sniper_baseline_end_date is match('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+          - sniper_prepare_content_only is boolean
+          - sniper_prep_catalog.rhel94_ga == '2024-04-30'
+          - sniper_baseline_end_date == sniper_prep_catalog.rhel94_ga
+          - sniper_prep_catalog.candidates | length == 10
           - not ansible_check_mode
         fail_msg: >-
-          Supply explicit repositories and an optional earlier cutoff; the default precedes all outstanding security RHSAs.
-          Use inspection instead of check mode for a new baseline.
+          Use the agreed 2024-04-30 RHEL 9.4 GA cutoff and explicit repositories.
+          Publish content first with sniper_prepare_content_only=true, then register directly to the served path.
+          Check mode cannot publish or verify a new baseline.
+    - name: Record the agreed security advisories and original affected builds
+      ansible.builtin.set_fact:
+        sniper_prep_advisory_ids: "{{ sniper_prep_catalog.candidates | map(attribute='advisory') | unique | sort | list }}"
+        sniper_prep_baseline_packages: "{{ sniper_prep_catalog.candidates | map(attribute='baseline_package') | unique | list }}"
+        sniper_prep_fixed_packages: []
+    - name: Record the exact fixed builds that must remain excluded
+      ansible.builtin.set_fact:
+        sniper_prep_fixed_packages: >-
+          {{ sniper_prep_fixed_packages + [item.baseline_package | combine({
+               'version': item.fixed_package_evr.rsplit('-', 1)[0],
+               'release': item.fixed_package_evr.rsplit('-', 1)[1]})] }}
+      loop: "{{ sniper_prep_catalog.candidates }}"
+      loop_control:
+        label: "{{ item.cve }}"
     - name: Inspect both intended hosts before creating resources
       redhat.satellite.resource_info:
         resource: hosts
@@ -37,6 +58,7 @@
         full_details: true
       loop: "{{ [sniper_test_host, sniper_prod_host] }}"
       register: sniper_prep_host_queries
+      when: not sniper_prepare_content_only
     - name: Require distinct existing RHEL hosts in the selected organization
       ansible.builtin.assert:
         that:
@@ -46,6 +68,7 @@
       loop: "{{ sniper_prep_host_queries.results }}"
       loop_control:
         label: "{{ item.item }}"
+      when: not sniper_prepare_content_only
     - name: Inspect both intended lifecycle environment names
       redhat.satellite.resource_info:
         resource: lifecycle_environments
@@ -70,6 +93,7 @@
           prior: Library
         - name: "{{ sniper_prod_environment }}"
           prior: "{{ sniper_test_environment }}"
+      when: sniper_prepare_content_only
     - name: Create the dedicated content view once
       redhat.satellite.content_view:
         organization: "{{ sniper_organization }}"
@@ -78,7 +102,7 @@
         repositories: "{{ sniper_repositories }}"
         solve_dependencies: false
         state: present
-      when: sniper_existing_views | length == 0
+      when: sniper_prepare_content_only and sniper_existing_views | length == 0
     - name: Read the dedicated view and version history
       redhat.satellite.resource_info:
         resource: content_views
@@ -114,24 +138,18 @@
     - name: Determine whether an initial baseline needs publication or recovery
       ansible.builtin.set_fact:
         sniper_prep_initialization_required: >-
-          {{ sniper_prep_versions.resources | length == 0 or
+          {{ sniper_prepare_content_only or sniper_prep_versions.resources | length == 0 or
              sniper_ready_versions.results | map(attribute='resources') | select('equalto', []) | list | length > 0 }}
-    - name: Plan a cutoff before all outstanding security advisories
-      when: sniper_prep_initialization_required
+    - name: Require content publication before the registered-host phase
+      ansible.builtin.assert:
+        that: sniper_prepare_content_only or not sniper_prep_initialization_required
+        fail_msg: Publish and verify the content-only baseline before registration; this phase cannot bootstrap through Library.
+    - name: Determine whether the original baseline needs verification
+      ansible.builtin.set_fact:
+        sniper_prep_verify_initial: "{{ sniper_prep_initialization_required or sniper_prep_versions.resources | length == 1 }}"
+    - name: Plan the GA cutoff from the agreed repository advisory catalog
+      when: sniper_prep_verify_initial
       block:
-        - name: Read outstanding errata for only the selected host pair
-          redhat.satellite.resource_info:
-            resource: host_errata
-            params:
-              host_id: "{{ (item.resources | sniper_one).id }}"
-          loop: "{{ sniper_prep_host_queries.results }}"
-          loop_control:
-            label: "{{ item.item }}"
-          register: sniper_prep_host_errata
-        - name: Collect the full security advisory set for the demonstration
-          ansible.builtin.set_fact:
-            sniper_prep_advisory_ids: >-
-              {{ sniper_prep_host_errata.results | map(attribute='resources') | flatten | sniper_baseline_ids }}
         - name: Resolve the selected advisories only in this view's repositories
           redhat.satellite.resource_info:
             resource: errata
@@ -140,7 +158,7 @@
             search: "{{ item.1 }}"
           loop: >-
             {{ (sniper_cv.repositories | product(sniper_prep_advisory_ids | sniper_baseline_searches) | list)
-               if sniper_prep_initialization_required else [] }}
+               if sniper_prep_verify_initial else [] }}
           loop_control:
             label: "{{ item.0.name }}"
           register: sniper_prep_advisory_queries
@@ -190,7 +208,7 @@
         description: Initial demonstration baseline; cutoff={{ sniper_prep_baseline.cutoff }}
       when: sniper_prep_versions.resources | length == 0
     - name: Verify the initial baseline before any promotion or host reassignment
-      when: sniper_prep_initialization_required
+      when: sniper_prep_verify_initial
       block:
         - name: Read the newly published or recoverable initial version
           redhat.satellite.resource_info:
@@ -215,6 +233,27 @@
             fail_msg: >-
               The initial baseline contains a selected RHSA or has an inconsistent cutoff.
               It remains in Library; no promotion or host reassignment is allowed.
+        - name: Require all published advisory dates within the GA cutoff
+          ansible.builtin.assert:
+            that: sniper_prep_baseline_content.resources | sniper_verify_cutoff(sniper_prep_baseline.cutoff)
+        # Date filters and original_packages do not establish exact ISO content.
+        # Inspect actual published RPM identities before allowing any consumer access.
+        - name: Inspect the latest affected builds in the actual published baseline
+          redhat.satellite.resource_info:
+            resource: packages
+            organization: "{{ sniper_organization }}"
+            params:
+              content_view_version_id: "{{ sniper_verified_initial_baseline.id }}"
+              packages_restrict_latest: true
+            # Latest is chosen after this name-only search: never restrict by a GA filename/version.
+            search: >-
+              name = "{{ sniper_prep_baseline_packages | map(attribute='name') | unique | join('" or name = "') }}"
+          register: sniper_prep_baseline_packages_query
+        - name: Require the original affected builds and exclude every selected fixed build
+          ansible.builtin.assert:
+            that: >-
+              sniper_prep_baseline_packages_query.resources | sniper_verify_baseline_packages(
+                sniper_prep_baseline_packages, sniper_prep_fixed_packages)
     - name: Promote the verified initial baseline only into empty destinations
       redhat.satellite.content_view_version:
         organization: "{{ sniper_organization }}"
@@ -224,7 +263,7 @@
       loop: "{{ sniper_ready_versions.results }}"
       loop_control:
         label: "{{ item.item.item }}"
-      when: sniper_prep_initialization_required and item.resources | length == 0
+      when: sniper_prepare_content_only and sniper_prep_initialization_required and item.resources | length == 0
     - name: Read back destination versions after any recovered promotion
       redhat.satellite.resource_info:
         resource: content_view_versions
@@ -253,6 +292,7 @@
           environment: "{{ sniper_test_environment }}"
         - host: "{{ sniper_prod_host }}"
           environment: "{{ sniper_prod_environment }}"
+      when: not sniper_prepare_content_only
     - name: Read back both final host assignments
       redhat.satellite.resource_info:
         resource: hosts
@@ -265,6 +305,7 @@
         - host: "{{ sniper_prod_host }}"
           environment: "{{ sniper_prod_environment }}"
       register: sniper_final_host_queries
+      when: not sniper_prepare_content_only
     - name: Verify the isolated assignments
       ansible.builtin.assert:
         that:
@@ -273,12 +314,17 @@
       loop: "{{ sniper_final_host_queries.results }}"
       loop_control:
         label: "{{ item.item.host }}"
+      when: not sniper_prepare_content_only
     - name: Report the verified initial baseline and excluded security advisory set
       ansible.builtin.debug:
         msg:
           content_view: "{{ sniper_content_view }}"
+          content_only: "{{ sniper_prepare_content_only }}"
+          host_registration_performed: false
+          host_patching_performed: false
+          exact_iso_equivalence: unverified
           version: "{{ sniper_verified_initial_baseline.version }}"
           cutoff: "{{ sniper_prep_baseline.cutoff }}"
           earliest_advisory_issue_date: "{{ sniper_prep_baseline.earliest_issue_date }}"
           excluded_security_advisories: "{{ sniper_prep_baseline.advisories }}"
-      when: sniper_prep_initialization_required
+      when: sniper_prep_verify_initial

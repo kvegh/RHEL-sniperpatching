@@ -5,6 +5,11 @@ Select the OLD or NEW directory explicitly in each AAP template:
 results below do not certify the pending NEW Satellite installation. See
 [the two-track layout](README.md#old-and-new-tracks).
 
+NEW uses a [content-first RHEL 9.4 baseline](docs/new-baseline.md): publish and
+verify the GA-cutoff CV without host access, register directly to Test/Prod,
+then run the registered-host phase. Full ISO equivalence and live NEW acceptance
+remain unverified.
+
 The demonstrated scope is an existing Satellite/AAP workshop and two RHEL 7.9
 clients. Each stage is a separate human launch; this is not an automatic workflow.
 Use the existing compatible EE, protected Satellite credentials, and Machine

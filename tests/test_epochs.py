@@ -3,7 +3,7 @@
 
 import unittest
 from pathlib import Path
-from track_paths import TRACK_ROOT
+from track_paths import TRACK, TRACK_ROOT
 import yaml
 from ansible.parsing.dataloader import DataLoader
 from ansible.plugins.loader import filter_loader
@@ -154,6 +154,30 @@ class AdvisoryEpochs(unittest.TestCase):
         ):
             with self.subTest(package=package), self.assertRaises(ValueError):
                 filters.sniper_package_requirements(self.detail(package))
+
+
+@unittest.skipUnless(TRACK == "new", "NEW-only GA package identity validation")
+class GABaselineEpochs(unittest.TestCase):
+    def test_exact_nvra_with_explicit_null_epoch_is_supported(self):
+        original = installed(version="1.0")
+        updated = installed(version="2.0")
+        row = {"nvra": "demo-1.0-1.el7.x86_64", "epoch": None}
+        self.assertTrue(filters.sniper_verify_baseline_packages([row], [original], [updated]))
+
+    def test_missing_or_conflicting_published_epochs_fail_closed(self):
+        original = installed(version="1.0")
+        updated = installed(version="2.0")
+        missing = {key: value for key, value in original.items() if key != "epoch"}
+        for rows in ([missing], [original, dict(original, epoch=1)]):
+            with self.subTest(rows=rows), self.assertRaises(ValueError):
+                filters.sniper_verify_baseline_packages(rows, [original], [updated])
+
+    def test_other_architecture_cannot_replace_the_original(self):
+        original = installed(version="1.0")
+        updated = installed(version="2.0")
+        with self.assertRaisesRegex(ValueError, "original affected build"):
+            filters.sniper_verify_baseline_packages(
+                [dict(original, arch="i686")], [original], [updated])
 
 
 if __name__ == "__main__":

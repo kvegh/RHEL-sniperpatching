@@ -1,17 +1,25 @@
 # RHEL-sniperpatching
 
-**Working candidate version: 0.12.4.**
+**Working candidate version: 0.13.0.**
 
 The current published main remains 0.11.4. This candidate prepares a narrowly
 scoped CoP content-configuration stage and an extended EE recipe; neither has
 been deployed. See [scoped CoP qualification](docs/cop-qualification.md) for
-exact checks, known limitations and the pending setup choices. See
+exact checks, known limitations and content-readiness requirements. See
 [release notes](docs/release-notes.md) for the working candidate's change scope.
 The [RHEL 9.4 CVE candidate catalog](docs/rhel94-cve-candidates.md) separates
 pre-9.5 fixes from actual client applicability and independent patching steps.
 The owner selected that catalog for validation and chronological demonstrations
 after NEW acceptance. Both clients passed package-version screening for the ten
 CVEs; synchronized-advisory validation and client demonstrations remain pending.
+
+NEW now prepares and verifies its frozen RHEL 9.4 GA-cutoff content before
+registration, then accepts the directly registered pair in a separate invocation.
+See [NEW baseline sequence](docs/new-baseline.md) for inputs, recovery and the
+explicit limit that selected-package verification does not reproduce a full ISO.
+This is locally tested candidate source, not live NEW acceptance.
+The selected NEW content window ends at RHSA-2024:8446 on 2024-10-24; its
+existing full-update cutoff defaults to that date, with no 9.5 demo requirement.
 
 See [current handover status](current_status_for_handover.md) for recorded
 validation, review status and continuation boundaries.
@@ -330,7 +338,7 @@ Generic AAP surveys are in [surveys](surveys/). Content jobs need Satellite acce
 
 `sniper_patch_id` accepts **one RHSA** or **up to 50 CVEs**, separated by commas, spaces or newlines. CVEs resolve dynamically through Satellite on each run; unresolved IDs fail. One CVE can select multiple RHSAs. For exactly the first advisory use RHSA-2023:6823.
 
-With `sniper_baseline_end_date` empty, preparation selects the day before the earliest outstanding security advisory on the pair: **2023-11-07** for the catalog above. An explicit baseline date must precede all selected advisories.
+For OLD, with `sniper_baseline_end_date` empty, preparation selects the day before the earliest outstanding security advisory on the pair: **2023-11-07** for the catalog above. An explicit baseline date must precede all selected advisories.
 
 Enter `sniper_update_end_date` explicitly. After RHSA-2023:6823 (November 8), use **2023-11-10**, before RHSA-2023:6885 (November 13). The cutoff includes all advisory types through that date. It is not calculated automatically. Same-day advisories cannot be separated by a calendar-date cutoff.
 

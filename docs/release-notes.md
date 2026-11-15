@@ -1,5 +1,19 @@
 # Release notes
 
+## 0.13.0 — Prepare NEW baseline before direct registration
+
+Split NEW preparation into content-only publication/verification and the later
+registered-host check/assignment. The approved ten-CVE catalog and explicit
+RHEL 9.4 GA cutoff replace host-errata bootstrap discovery. Verify actual
+published advisory dates, selected RHSA/fixed-build exclusion and original
+affected-build availability as the native latest offered name/arch identities
+before promotion, rejecting later fixed builds too. Preserve published baselines,
+retained-version recovery, ownership and established later versions. Exact
+full-ISO equivalence remains unverified. Default NEW full publication to the
+last selected RHSA date, `2024-10-24`; this selected 9.4 window needs no 9.5
+content and does not bound Library downloads. OLD is unchanged; no live operation or
+complete NEW acceptance is implied by the offline candidate checks.
+
 ## 0.12.4 — Record correction evidence
 
 Record the actual repository correction commit, client package screening,

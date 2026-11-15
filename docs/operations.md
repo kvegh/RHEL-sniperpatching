@@ -20,8 +20,9 @@ configuration, not a security sandbox against an authorized AAP administrator.
 | `sniper_environment` | Explicit `test` or `prod`; no implicit production rollout. |
 | `sniper_patch_id` | One RHSA or up to 50 CVEs as comma/space/newline-separated text. Each CVE must resolve live; an RHSA cannot be mixed with CVEs. |
 | `sniper_patch_scope` | `targeted` by default; `full` explicitly updates all available content in the selected CV repositories. |
-| `sniper_baseline_end_date` | Empty selects the day before the earliest outstanding RHSA on the fresh pair; an explicit date must precede the selected advisory set. Established baselines are preserved. |
-| `sniper_update_end_date` | Explicit `YYYY-MM-DD` issue-date cap for the normal demonstration. Empty playbook input is the separate latest-content mode. |
+| `sniper_baseline_end_date` | OLD: empty selects the day before the earliest outstanding RHSA. NEW: explicitly `2024-04-30`, using the agreed catalog before registration. Published baselines are preserved. |
+| `sniper_prepare_content_only` | NEW only: Boolean `true` publishes/verifies the GA-cutoff baseline without host access; default `false` requires an already-served path and verifies/assigns the registered pair. |
+| `sniper_update_end_date` | Explicit issue-date cap. NEW defaults to `2024-10-24` (last selected RHSA); OLD keeps its empty default. An explicit empty override still selects unbounded/latest content, so NEW private callers must pin the agreed date. |
 | `sniper_baseline_filter`, `sniper_original_filter` | Namespace-derived filter names owned only by this project. |
 | `sniper_version` | Required exact Test version for explicit production promotion. |
 | `sniper_task_timeout`, `sniper_reboot_timeout` | Default 1800 and 900 seconds. |
@@ -32,6 +33,8 @@ Track defaults live in each `playbooks/<track>/vars/main.yml`. Runtime facts are
 protected AAP extra variables can override play defaults. Do not place secrets
 in public examples, survey defaults, inventory files or logged URLs. The full
 survey JSON files are under `surveys/`; real credential bindings stay private.
+
+See [NEW baseline sequencing and recovery](new-baseline.md) before registering either NEW client.
 
 ## Outputs and execution checks
 

@@ -14,8 +14,9 @@ sniper_test_host: ""
 sniper_prod_host: ""
 sniper_patch_id: ""
 sniper_repositories: []
-sniper_baseline_end_date: ""
-sniper_update_end_date: ""
+sniper_baseline_end_date: "2024-04-30"
+sniper_prepare_content_only: false
+sniper_update_end_date: "2024-10-24"
 sniper_baseline_filter: "{{ sniper_namespace }}_baseline_cutoff"
 sniper_original_filter: "{{ sniper_namespace }}_original_packages"
 sniper_patch_scope: targeted

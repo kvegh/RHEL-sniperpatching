@@ -759,3 +759,33 @@ Library registration choice remains unanswered.
 Candidate **0.12.4** records the actual correction commit and observed limits.
 No current-main merge, content sync, client patch or full NEW acceptance is
 claimed by this checkpoint.
+
+
+## 2026-11-15 — Publish NEW GA-cutoff content before registration
+
+Working candidate **0.13.0** implements the selected sequence. The owner selected a frozen
+RHEL 9.4 baseline CV before direct Test/Prod registration, removing the proposed
+temporary Library registration step. NEW prepare_demo remains the sole initial
+publisher, with an explicit content-only mode and the approved catalog plus
+2024-04-30 cutoff. Its later normal mode requires served content before selected
+registered-host verification/assignment. OLD behavior is unchanged.
+
+Date filtering and original_packages alone do not prove GA/ISO content. Actual
+published metadata must exclude selected RHSAs/fixed NEVRAs and retain the
+observed original affected builds before promotion. A small existing-filter
+extension compares exact package identities and epochs using certified scoped
+reads. It adds no runtime helper, credential, transport or service. Published
+baseline contents are not rewritten; retained originals are reverified and
+established later histories remain protected.
+
+Offline fixtures and runtime checks are recorded with the reviewed diff before
+commit. Live synchronization, publication, direct registration, dependency/DNF
+applicability and complete AAP patching acceptance remain unverified. The real
+implementation commit will be recorded after the requested pre-commit review.
+
+The owner subsequently bounded demonstration content to GA through the final
+selected RHSA-2024:8446 on 2024-10-24, without a 9.5 requirement. Set only NEW
+sniper_update_end_date to that date and reuse the existing bounded publication
+path. An explicit empty override remains latest mode; private callers must pin
+the date. No pre-sync date filter, mirror helper or Library-size reduction is
+claimed, and source repository/capacity selection remains separately owned.

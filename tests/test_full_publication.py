@@ -58,6 +58,9 @@ s["calls"].append({"module": name, "resource": p.get("resource"),
 owner = "Managed by RHEL-sniperpatching."
 first = {"errata_id": "RHSA-2025:1234", "issued": "2025-03-01"}
 later = {"errata_id": "RHSA-2025:5678", "issued": "2025-05-01"}
+if s.get("use_default"):
+    first = {"errata_id": "RHSA-2024:8446", "issued": "2024-10-24"}
+    later = {"errata_id": "RHSA-2024:9999", "issued": "2024-10-25"}
 def done(**result):
     path.write_text(json.dumps(s))
     m.exit_json(**result)
@@ -129,7 +132,7 @@ class CutoffValidation(unittest.TestCase):
 
 class FullPublicationPlaybook(unittest.TestCase):
     def run_publication(self, cutoff="2025-04-01", contaminated=False, lost=False,
-                        candidate_read_failures=0):
+                        candidate_read_failures=0, use_default=False):
         with tempfile.TemporaryDirectory(prefix="sniper-full-test-") as directory:
             base = Path(directory)
             coll = base / "collections/ansible_collections/redhat/satellite"
@@ -144,7 +147,7 @@ class FullPublicationPlaybook(unittest.TestCase):
                         "__SPLIT_FILTER_RULES__", repr(TRACK == "new")))
             state = {"calls": [], "promoted": False, "candidate": None,
                      "cutoff": "2025-02-28", "contaminated": contaminated, "lost": lost,
-                     "candidate_read_failures": candidate_read_failures}
+                     "candidate_read_failures": candidate_read_failures, "use_default": use_default}
             state_path = base / "state.json"
             state_path.write_text(json.dumps(state))
             variables = {
@@ -156,6 +159,8 @@ class FullPublicationPlaybook(unittest.TestCase):
                 "sniper_environment": "test", "sniper_update_end_date": cutoff,
                 "ansible_python_interpreter": sys.executable,
             }
+            if use_default:
+                variables.pop("sniper_update_end_date")
             var_path = base / "vars.json"
             var_path.write_text(json.dumps(variables))
             env = dict(os.environ, ANSIBLE_COLLECTIONS_PATH=str(base / "collections"),
@@ -168,6 +173,16 @@ class FullPublicationPlaybook(unittest.TestCase):
                  "-e", "@" + str(var_path)],
                 cwd=ROOT, env=env, capture_output=True, text=True, timeout=180)
             return result, json.loads(state_path.read_text())
+
+    @unittest.skipUnless(TRACK == "new", "NEW-only selected demonstration window")
+    def test_new_default_keeps_cutoff_through_last_selected_rhsa(self):
+        result, state = self.run_publication(use_default=True)
+        self.assertEqual(result.returncode, 0, (result.stdout + result.stderr)[-7000:])
+        self.assertTrue(state["promoted"])
+        self.assertEqual(state["cutoff"], "2024-10-24")
+        self.assertFalse(any(c["filter_state"] == "absent" for c in state["calls"]))
+        rules = [c for c in state["calls"] if c["module"] == "content_view_filter_rule"]
+        self.assertEqual([c["end_date"] for c in rules], ["2024-10-24"])
 
     def test_bounded_candidate_verified_before_exact_test_promotion(self):
         result, state = self.run_publication()
