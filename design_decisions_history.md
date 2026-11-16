@@ -1169,3 +1169,36 @@ existing reference sites. GitHub Pages Actions publishes an explicit allowlist
 of four frontend files from main. Source links pin the current NEW playbooks,
 separate from the mockup's own version. The code feature version is 0.15.0.
 Implementation and verification references follow after the implementation commit.
+
+
+### First publication and observed verification — 2026-11-16 UTC
+
+Implementation commit: `45f2d6835446213c5c1075d17d3fed2267242937` (0.15.0).
+The normal GitHub Pages workflow completed successfully at 05:01:29 UTC,
+run `43807520254`; its check job took 5 seconds and publication took 15 seconds.
+The site is public with HTTPS enforced. The repeatable deployed functional
+command retrieved four exact matching assets and passed all six real-handler
+interaction checks. Fourteen local story-model tests, JavaScript syntax checks,
+HTML asset/ID checks and whitespace validation also passed. Two independent
+source reviews found one fallback-link defect, corrected before the first push.
+No real browser rendering, screenshot or mobile-layout check was performed;
+no browser executable was available and none was installed. This is development
+verification of the frontend, not formal acceptance of the automation project.
+
+The successful deployment reported Node20 deprecations in the inherited Pages
+action versions. Update only those official action versions after checking
+current upstream metadata. The newer releases preserve the publication model;
+no new service, tool installation or infrastructure execution is introduced.
+
+
+### Publishing compatibility correction — 2026-11-16 UTC
+
+Version 0.15.1 replaces the reference workflow's deprecated action runtimes with
+official configure-pages6.0.0, upload-pages-artifact5.0.0 and deploy-pages5.0.1.
+A separate read-only check inspected each exact upstream action.yml and the
+artifact action's pinned upload-artifact7.0.0: executable runtimes use Node24,
+existing inputs/page_url and required Pages permissions remain compatible.
+Explicit hidden-file inclusion retains only the staged .nojekyll marker alongside
+the four allowlisted frontend files. The first-version interaction behavior is
+unchanged. The correction commit and resulting deployment are recorded below
+after they exist; browser-rendering verification remains outstanding.

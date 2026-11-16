@@ -1,5 +1,14 @@
 # Release notes
 
+## 0.15.1 — Use current supported Pages action runtimes
+
+Replace inherited Node20-based Pages actions with the verified official
+configure-pages6.0.0, upload-pages-artifact5.0.0 and deploy-pages5.0.1 releases,
+whose executable actions use Node24. Preserve permissions and the frontend-only
+artifact allowlist, including its staged .nojekyll marker. The first 0.15.0
+publication and deployed functional checks already passed. This correction
+updates publishing compatibility and displayed version; story behavior is unchanged.
+
 ## 0.15.0 — Add the interactive patching mockup
 
 Publish a buildless two-cycle explanatory walkthrough for the selected Python

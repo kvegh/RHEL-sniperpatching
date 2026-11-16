@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Version: 0.15.0.**
+**Version: 0.15.1.**
 
 [Open the interactive RHEL patching mockup](https://kvegh.github.io/RHEL-sniperpatching/)
 to follow two fixed CVE/RHSA cycles through Satellite content, Test verification,
