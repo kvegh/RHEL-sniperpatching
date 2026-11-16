@@ -1,3 +1,27 @@
+# Future pre-sync cold checkpoint — working 0.16.0
+
+The user approved a cold post-satellite-install checkpoint after successful
+NEW installation and before first content synchronization. Source adds guarded
+hypervisor capture, original guest post-start verification and a fail-closed
+initial-content gate. This work has no live snapshot acceptance and no new
+template import yet. The current synchronized Satellite must remain untouched.
+
+Selected Core2.20.10 qualification passed 33 focused helper/orchestration tests
+and 11 related CA/installer regressions. Four playbook syntax checks passed;
+the final identity-bound artifact gate is covered by the focused suite.
+An independent integration review found that final guest proof was not consumed;
+the correction now refuses missing or mismatched original VM/CA proof before sync.
+These are local synthetic checks, with no VM/API or power operation.
+
+The native AAP workflow versus separate manual-job choice remains pending.
+Existing guest and hypervisor Machine credentials remain separate. No new
+secret input is required; use the existing protected configuration mechanism.
+The independent encrypted cycle-two archive publication decision remains pending.
+Held image, generic VM/rollback and OLD/formal-review work remain held or blocked.
+
+Latest verified public release is 0.15.2; 0.16.0 is an unpublished working version.
+The historical nine-cycle acceptance below remains valid for its recorded source.
+
 # Nine NEW chronological procedures passed — 2026-11-16
 
 Both original RHEL 9.4 clients reached full **10.0** through **2024-10-24**.

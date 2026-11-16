@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Version: 0.15.3.**
+**Version: 0.16.0.**
 
 [Open the interactive RHEL patching mockup](https://kvegh.github.io/RHEL-sniperpatching/)
 to follow two fixed CVE/RHSA cycles through Satellite content, Test verification,
@@ -74,6 +74,14 @@ NEW provides separate DNS, RHEL preparation, package installation and certified
 installer stages under `playbooks/new/`. Their
 [documented sequence](docs/new-satellite.md) includes strict SSH identity, exact
 VM ownership, RHEL update/reboot/kernel proof, matching FQDN/DNS and swap.
+Future fresh installations have a
+[pre-sync cold checkpoint](docs/new-satellite.md#pre-sync-cold-checkpoint):
+verify installation, shut down the selected VM, capture
+post-satellite-install, restart and verify the original installation. Initial
+content setup refuses to write without its verified native checkpoint.
+This addition has local synthetic qualification only; the already populated
+Satellite has no retroactive pre-sync checkpoint.
+
 All four setup stages have passed through AAP. Initial application configuration
 uses the certified installer role and a protected native answer file; native
 services and authenticated HTTPS passed with certificate validation. The verified

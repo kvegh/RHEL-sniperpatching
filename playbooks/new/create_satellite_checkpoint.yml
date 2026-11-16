@@ -1,0 +1,221 @@
+---
+- name: Capture the verified NEW Satellite before its first content synchronization
+  hosts: sniper_satellite_hypervisor
+  gather_facts: false
+  become: true
+  vars_files:
+    - vars/main.yml
+  vars:
+    sniper_checkpoint_server_url: "{{ sniper_server_url | regex_replace('/$', '') }}"
+  handlers:
+    - name: Remove job-local Satellite CA
+      ansible.builtin.include_tasks:
+        file: tasks/api_ca_cleanup.yml
+        apply:
+          delegate_to: localhost
+          become: false
+          vars:
+            ansible_connection: local
+  pre_tasks:
+    - name: Require exact protected access and public installation trust
+      ansible.builtin.assert:
+        that:
+          - sniper_checkpoint_server_url == 'https://' ~ sniper_satellite_fqdn
+          - sniper_username | length > 0
+          - sniper_password | length > 0
+          - sniper_satellite_ca_pem | default('') | length > 0
+          - sniper_new_vm_uuid is string
+        fail_msg: Supply the existing protected NEW Satellite access, VM identity and verified public CA.
+      no_log: true
+
+    - name: Load the management-verified hypervisor SSH pin
+      ansible.builtin.import_tasks: tasks/ssh_pin.yml
+
+  tasks:
+    - name: Inspect, guard, capture and verify the exact cold checkpoint
+      block:
+        - name: Read the existing native checkpoint before considering any power action
+          ansible.builtin.include_tasks: tasks/satellite_checkpoint_inspect.yml
+
+        - name: Prepare the current installation public CA only in this execution
+          ansible.builtin.include_tasks:
+            file: tasks/api_ca.yml
+            apply:
+              delegate_to: localhost
+              become: false
+              vars:
+                ansible_connection: local
+
+        # The native endpoints expose bounded counts including historical sync tasks.
+        # See docs/implementation.md#pre-sync-satellite-checkpoint.
+        - name: Inspect repository content and repository-sync history before a new capture
+          ansible.builtin.uri:
+            url: "{{ sniper_checkpoint_server_url }}{{ item }}"
+            url_username: "{{ sniper_username }}"
+            url_password: "{{ sniper_password }}"
+            force_basic_auth: true
+            validate_certs: true
+            ca_path: "{{ sniper_satellite_ca_path }}"
+            follow_redirects: none
+            status_code: 200
+            return_content: true
+          loop:
+            - /katello/api/repositories?per_page=1
+            - "/foreman_tasks/api/tasks?search={{ 'label = Actions::Katello::Repository::Sync' | urlencode }}&per_page=1"
+          register: sniper_checkpoint_content_state
+          delegate_to: localhost
+          become: false
+          vars:
+            ansible_connection: local
+          check_mode: false
+          no_log: true
+          when: not sniper_checkpoint_inspection.exists
+
+        - name: Refuse to label synchronized content as a pre-sync installation
+          ansible.builtin.assert:
+            that:
+              - sniper_checkpoint_content_state.results | length == 2
+              - sniper_checkpoint_content_state.results[0].json.subtotal is integer
+              - sniper_checkpoint_content_state.results[1].json.subtotal is integer
+              - sniper_checkpoint_content_state.results[0].json.subtotal == 0
+              - sniper_checkpoint_content_state.results[1].json.subtotal == 0
+              - sniper_checkpoint_content_state.results[0].json.results | length == 0
+              - sniper_checkpoint_content_state.results[1].json.results | length == 0
+            fail_msg: >-
+              This Satellite already has repositories or repository-sync history.
+              No pre-sync snapshot or VM power operation is permitted.
+          when: not sniper_checkpoint_inspection.exists
+
+        - name: Require actual verified installation evidence before a new cold capture
+          ansible.builtin.assert:
+            that:
+              - sniper_new_installation_result.satellite_configured | default(false) is sameas true
+              - sniper_new_installation_result.native_services_healthy | default(false) is sameas true
+              - sniper_new_installation_result.authenticated_https_verified | default(false) is sameas true
+              - sniper_new_installation_vm_uuid | lower == sniper_new_vm_uuid | lower
+              - sniper_new_installation_machine_id is match('^[0-9a-f]{32}$')
+              - sniper_new_installation_ca_sha256 == (sniper_satellite_ca_pem.split() | join('') | hash('sha256'))
+            fail_msg: Run the verified installer first and preserve its public trust and identity results.
+          when:
+            - not ansible_check_mode
+            - not sniper_checkpoint_inspection.exists
+
+        # This is one guarded native request, never an automatic mutation retry.
+        - name: Create or reuse the exact cold checkpoint and restart its VM
+          ansible.builtin.command:
+            argv:
+              - /usr/bin/python3
+              - -c
+              - "{{ lookup('ansible.builtin.file', playbook_dir ~ '/files/satellite_snapshot.py') }}"
+            stdin: >-
+              {{ {'op': 'create', 'vm_name': sniper_new_vm_name,
+                  'uuid': sniper_new_vm_uuid, 'mac': sniper_new_vm_mac,
+                  'network': sniper_new_vm_network,
+                  'ca_sha256': (sniper_satellite_ca_pem.split() | join('') | hash('sha256')),
+                  'installed_verified': true, 'pre_sync_verified': true,
+                  'check': false} | to_json }}
+          register: sniper_checkpoint_create_command
+          failed_when: false
+          changed_when: false
+          no_log: true
+          when: not ansible_check_mode
+
+        - name: Decode only the guarded native result without exposing private output
+          when: not ansible_check_mode
+          block:
+            - name: Retain the bounded native checkpoint result
+              ansible.builtin.set_fact:
+                sniper_checkpoint_native_result: "{{ sniper_checkpoint_create_command.stdout | from_json }}"
+              changed_when: >-
+                sniper_checkpoint_create_command.rc == 0 and
+                (sniper_checkpoint_create_command.stdout | from_json).changed | default(false)
+              no_log: true
+          rescue:
+            - name: Refuse to infer an outcome from missing or malformed native output
+              ansible.builtin.fail:
+                msg: >-
+                  The native checkpoint outcome is UNKNOWN. Inspect the exact VM and
+                  snapshot before any retry or power action; no automatic recovery follows.
+
+        - name: Surface an uncertain native checkpoint outcome without retrying it
+          ansible.builtin.fail:
+            msg: >-
+              The native checkpoint outcome is UNKNOWN. Inspect the exact VM and
+              snapshot before any retry or power action; no automatic recovery follows.
+          when:
+            - not ansible_check_mode
+            - sniper_checkpoint_create_command.rc != 0
+            - sniper_checkpoint_native_result.outcome | default('unknown') == 'unknown'
+
+        - name: Require confirmed checkpoint creation or reuse
+          ansible.builtin.assert:
+            that:
+              - sniper_checkpoint_create_command.rc == 0
+              - sniper_checkpoint_native_result.cold_verified is sameas true
+              - sniper_checkpoint_native_result.vm_running is sameas true
+            fail_msg: >-
+              Cold checkpoint creation or VM recovery was not confirmed.
+              Inspect the native operation before retrying; do not force power or overwrite snapshots.
+          when: not ansible_check_mode
+
+        - name: Wait for the original authenticated Satellite after the cold start
+          ansible.builtin.uri:
+            url: "{{ sniper_checkpoint_server_url }}/api/ping"
+            url_username: "{{ sniper_username }}"
+            url_password: "{{ sniper_password }}"
+            force_basic_auth: true
+            validate_certs: true
+            ca_path: "{{ sniper_satellite_ca_path }}"
+            follow_redirects: none
+            status_code: 200
+            return_content: true
+          register: sniper_checkpoint_restarted_api
+          until: >-
+            sniper_checkpoint_restarted_api.status | default(0) == 200 and
+            sniper_checkpoint_restarted_api.json.results.katello.status | default('') == 'ok'
+          retries: 30
+          delay: 10
+          delegate_to: localhost
+          become: false
+          vars:
+            ansible_connection: local
+          no_log: true
+          when: not ansible_check_mode
+
+        - name: Record only confirmed cold checkpoint readiness
+          ansible.builtin.set_stats:
+            aggregate: false
+            data:
+              sniper_new_checkpoint_result: "{{ sniper_checkpoint_native_result }}"
+          when: not ansible_check_mode
+
+        - name: Report a read-only preflight without claiming a captured checkpoint
+          ansible.builtin.set_stats:
+            aggregate: false
+            data:
+              sniper_new_checkpoint_preflight:
+                read_only: true
+                capture_executed: false
+                freshness_verified: "{{ not sniper_checkpoint_inspection.exists }}"
+                existing_checkpoint_verified: "{{ sniper_checkpoint_inspection.cold_verified }}"
+          when: ansible_check_mode
+      always:
+        - name: Remove the execution-local checkpoint CA
+          ansible.builtin.include_tasks:
+            file: tasks/api_ca_cleanup.yml
+            apply:
+              delegate_to: localhost
+              become: false
+              vars:
+                ansible_connection: local
+
+        - name: Remove the execution-local hypervisor SSH pin
+          ansible.builtin.file:
+            path: "{{ sniper_new_trust_file.path }}"
+            state: absent
+          delegate_to: localhost
+          become: false
+          changed_when: false
+          check_mode: false
+          no_log: true
+          when: sniper_new_trust_file is defined

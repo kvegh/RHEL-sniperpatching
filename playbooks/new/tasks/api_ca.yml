@@ -2,6 +2,7 @@
 - name: Prepare optional public Satellite CA in the native job temporary directory
   when: sniper_satellite_ca_pem | default('') | length > 0
   no_log: true
+  check_mode: false
   block:
     - name: Allocate the job-local CA file
       ansible.builtin.tempfile:

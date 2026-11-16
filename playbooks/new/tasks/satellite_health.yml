@@ -1,0 +1,50 @@
+---
+- name: Require all native Satellite services to be healthy
+  ansible.builtin.command:
+    argv: [satellite-maintain, service, status]
+  changed_when: false
+  check_mode: false
+  no_log: true
+
+- name: Inspect the native server CA selected by the installed answer file
+  ansible.builtin.stat:
+    path: "{{ sniper_satellite_health_ca_file }}"
+    follow: true
+  register: sniper_installer_ca
+  no_log: true
+
+- name: Require a nonempty public CA certificate before HTTPS verification
+  ansible.builtin.assert:
+    that:
+      - sniper_installer_ca.stat.isreg | default(false)
+      - sniper_installer_ca.stat.size | int > 0
+  no_log: true
+
+- name: Read only the public native CA for subsequent checkpoint verification
+  ansible.builtin.slurp:
+    src: "{{ sniper_satellite_health_ca_file }}"
+  register: sniper_satellite_health_ca
+  no_log: true
+
+- name: Retain the verified public trust for this installation sequence
+  ansible.builtin.set_fact:
+    sniper_satellite_health_ca_pem: "{{ sniper_satellite_health_ca.content | b64decode }}"
+  no_log: true
+
+- name: Verify authenticated Satellite HTTPS with its native CA
+  ansible.builtin.uri:
+    url: "{{ sniper_installer_server_url }}/api/organizations?per_page=1"
+    url_username: "{{ sniper_installer_username }}"
+    url_password: "{{ sniper_installer_password }}"
+    force_basic_auth: true
+    validate_certs: true
+    ca_path: "{{ sniper_satellite_health_ca_file }}"
+    follow_redirects: none
+    status_code: 200
+    return_content: false
+  check_mode: false
+  register: sniper_installer_api
+  until: sniper_installer_api.status | default(0) == 200
+  retries: 30
+  delay: 10
+  no_log: true

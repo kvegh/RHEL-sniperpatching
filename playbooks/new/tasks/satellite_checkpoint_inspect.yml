@@ -1,0 +1,24 @@
+---
+# Native snapshot metadata binds the checkpoint; see docs/implementation.md#pre-sync-satellite-checkpoint.
+- name: Inspect only the exact NEW Satellite native checkpoint
+  ansible.builtin.command:
+    argv:
+      - /usr/bin/python3
+      - -c
+      - "{{ lookup('ansible.builtin.file', playbook_dir ~ '/files/satellite_snapshot.py') }}"
+    stdin: >-
+      {{ {'op': sniper_checkpoint_read_operation | default('inspect'),
+          'vm_name': sniper_new_vm_name, 'uuid': sniper_new_vm_uuid,
+          'mac': sniper_new_vm_mac, 'network': sniper_new_vm_network,
+          'ca_sha256': (sniper_satellite_ca_pem.split() | join('') | hash('sha256')),
+          'installed_verified': false, 'pre_sync_verified': false,
+          'check': true} | to_json }}
+  register: sniper_checkpoint_inspect_command
+  changed_when: false
+  check_mode: false
+  no_log: true
+
+- name: Retain only the native checkpoint inspection result
+  ansible.builtin.set_fact:
+    sniper_checkpoint_inspection: "{{ sniper_checkpoint_inspect_command.stdout | from_json }}"
+  no_log: true

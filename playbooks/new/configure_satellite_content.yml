@@ -4,6 +4,48 @@
 # sniper_repositories (their exact repository name/product pairs), and an explicit
 # sniper_content_minor_versions (an explicit subset of [9.4, 9.5]). The owner
 # selected proactive immediate synchronization; capacity must be checked separately.
+- name: Require the owned cold installation checkpoint before any initial content write
+  hosts: sniper_satellite_hypervisor
+  gather_facts: false
+  become: true
+  vars:
+    sniper_checkpoint_read_operation: verify
+  pre_tasks:
+    - name: Require the original installation public trust for checkpoint verification
+      ansible.builtin.assert:
+        that: sniper_satellite_ca_pem | default('') | length > 0
+      no_log: true
+
+    - name: Load the management-verified hypervisor SSH pin
+      ansible.builtin.import_tasks: tasks/ssh_pin.yml
+  tasks:
+    - name: Verify native metadata without creating a snapshot or changing power
+      block:
+        - name: Read and verify the exact cold checkpoint
+          ansible.builtin.include_tasks: tasks/satellite_checkpoint_inspect.yml
+
+        - name: Require a verified checkpoint and the original running VM
+          ansible.builtin.assert:
+            that:
+              - sniper_checkpoint_inspection.cold_verified is sameas true
+              - sniper_checkpoint_inspection.vm_running is sameas true
+            fail_msg: Complete the post-satellite-install cold checkpoint and recovery before initial content setup.
+
+        - name: Allow this execution to enter the initial content foundation
+          ansible.builtin.set_fact:
+            sniper_satellite_checkpoint_verified: true
+      always:
+        - name: Remove the execution-local hypervisor public pin
+          ansible.builtin.file:
+            path: "{{ sniper_new_trust_file.path }}"
+            state: absent
+          delegate_to: localhost
+          become: false
+          changed_when: false
+          check_mode: false
+          no_log: true
+          when: sniper_new_trust_file is defined
+
 - name: Configure the isolated NEW Satellite content foundation
   hosts: localhost
   connection: local
@@ -29,6 +71,18 @@
     - name: Remove job-local Satellite CA
       ansible.builtin.include_tasks: tasks/api_ca_cleanup.yml
   tasks:
+    # A failed or excluded earlier play must not leave localhost free to write.
+    - name: Require this execution's successful native checkpoint verification
+      ansible.builtin.assert:
+        that:
+          - hostvars['sniper_satellite_hypervisor'].sniper_satellite_checkpoint_verified | default(false) is sameas true
+          - sniper_new_checkpoint_installation_verified | default(false) is sameas true
+          - sniper_new_checkpoint_verified_vm_uuid | default('') | lower == sniper_new_vm_uuid | lower
+          - sniper_new_checkpoint_verified_ca_sha256 | default('') == (sniper_satellite_ca_pem.split() | join('') | hash('sha256'))
+        fail_msg: >-
+          The initial content foundation requires the owned post-satellite-install
+          checkpoint and the successful original-guest post-start verification artifacts.
+
     - name: Require protected HTTPS access and an explicit content policy
       ansible.builtin.assert:
         that:
@@ -95,6 +149,26 @@
 
     - name: Prepare the existing job-local Satellite trust
       ansible.builtin.include_tasks: tasks/api_ca.yml
+
+    - name: Require authenticated Satellite readiness after the checkpoint restart
+      ansible.builtin.uri:
+        url: "{{ sniper_server_url | regex_replace('/$', '') }}/api/ping"
+        url_username: "{{ sniper_username }}"
+        url_password: "{{ sniper_password }}"
+        force_basic_auth: true
+        validate_certs: true
+        ca_path: "{{ sniper_satellite_ca_path }}"
+        follow_redirects: none
+        status_code: 200
+        return_content: true
+      register: sniper_foundation_api
+      no_log: true
+
+    - name: Require the native Katello readiness result before content setup
+      ansible.builtin.assert:
+        that: sniper_foundation_api.json.results.katello.status | default('') == 'ok'
+        fail_msg: Satellite is not ready after its checkpoint restart.
+      no_log: true
 
     - name: Read the existing organization without modifying it
       redhat.satellite.resource_info:

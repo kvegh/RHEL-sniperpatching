@@ -163,44 +163,12 @@
               when: item.rc == 1
               changed_when: true
 
-        - name: Require all native Satellite services to be healthy
-          ansible.builtin.command:
-            argv: [satellite-maintain, service, status]
-          changed_when: false
-          no_log: true
+        - name: Verify native services and authenticated HTTPS before checkpointing
+          ansible.builtin.include_tasks: tasks/satellite_health.yml
+          vars:
+            sniper_satellite_health_ca_file: "{{ sniper_installer_original_answers.foreman.server_ssl_ca }}"
 
-        - name: Inspect the native server CA selected by the installed answer file
-          ansible.builtin.stat:
-            path: "{{ sniper_installer_original_answers.foreman.server_ssl_ca }}"
-            follow: true
-          register: sniper_installer_ca
-          no_log: true
-
-        - name: Require a nonempty public CA certificate before HTTPS verification
-          ansible.builtin.assert:
-            that:
-              - sniper_installer_ca.stat.isreg | default(false)
-              - sniper_installer_ca.stat.size | int > 0
-          no_log: true
-
-        - name: Verify authenticated Satellite HTTPS with its native CA
-          ansible.builtin.uri:
-            url: "{{ sniper_installer_server_url }}/api/organizations?per_page=1"
-            url_username: "{{ sniper_installer_username }}"
-            url_password: "{{ sniper_installer_password }}"
-            force_basic_auth: true
-            validate_certs: true
-            ca_path: "{{ sniper_installer_original_answers.foreman.server_ssl_ca }}"
-            follow_redirects: none
-            status_code: 200
-            return_content: false
-          register: sniper_installer_api
-          until: sniper_installer_api.status | default(0) == 200
-          retries: 30
-          delay: 10
-          no_log: true
-
-        - name: Record verified installation without credentials or connection values
+        - name: Record verified installation and public trust without credentials
           ansible.builtin.set_stats:
             aggregate: false
             data:
@@ -211,6 +179,10 @@
                 native_services_healthy: true
                 authenticated_https_verified: true
                 satellite_configured: true
+              sniper_new_installation_vm_uuid: "{{ ansible_facts.product_uuid | lower }}"
+              sniper_new_installation_machine_id: "{{ ansible_facts.machine_id }}"
+              sniper_new_installation_ca_sha256: "{{ sniper_satellite_health_ca_pem.split() | join('') | hash('sha256') }}"
+              sniper_satellite_ca_pem: "{{ sniper_satellite_health_ca_pem }}"
       always:
         - name: Remove the execution-local guest public pin
           ansible.builtin.file:

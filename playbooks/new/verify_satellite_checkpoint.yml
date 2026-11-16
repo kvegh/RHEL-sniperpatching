@@ -1,0 +1,102 @@
+---
+- name: Verify the original NEW Satellite after its cold installation checkpoint
+  hosts: sniper_satellite_new
+  gather_facts: false
+  become: true
+  vars:
+    sniper_installer_answers_file: /etc/foreman-installer/scenarios.d/satellite-answers.yaml
+    sniper_installer_username: "{{ lookup('ansible.builtin.env', 'SATELLITE_USERNAME') }}"
+    sniper_installer_password: "{{ lookup('ansible.builtin.env', 'SATELLITE_PASSWORD') }}"
+    sniper_installer_server_url: "{{ lookup('ansible.builtin.env', 'SATELLITE_SERVER_URL') | regex_replace('/$', '') }}"
+  pre_tasks:
+    - name: Require the exact completed cold checkpoint and original installation identity
+      ansible.builtin.assert:
+        that:
+          - sniper_new_checkpoint_result.name == 'post-satellite-install'
+          - sniper_new_checkpoint_result.cold_verified is sameas true
+          - sniper_new_checkpoint_result.vm_running is sameas true
+          - sniper_new_installation_vm_uuid | lower == sniper_new_vm_uuid | lower
+          - sniper_new_installation_machine_id is match('^[0-9a-f]{32}$')
+          - sniper_installer_server_url == 'https://' ~ sniper_satellite_fqdn
+          - sniper_installer_username | length > 0
+          - sniper_installer_password | length > 0
+      no_log: true
+
+    - name: Load the original management-verified guest SSH pin
+      ansible.builtin.import_tasks: tasks/ssh_pin.yml
+
+  tasks:
+    - name: Verify identity, native services and the same authenticated TLS after restart
+      block:
+        - name: Read the restarted guest identity without changing it
+          ansible.builtin.setup:
+            gather_subset:
+              - min
+
+        - name: Require the original guest UUID and machine identity
+          ansible.builtin.assert:
+            that:
+              - ansible_facts.product_uuid | lower == sniper_new_vm_uuid | lower
+              - ansible_facts.machine_id == sniper_new_installation_machine_id
+          no_log: true
+
+        - name: Inspect the existing native answer file without following a replacement link
+          ansible.builtin.stat:
+            path: "{{ sniper_installer_answers_file }}"
+            follow: false
+          register: sniper_checkpoint_answers_stat
+          no_log: true
+
+        - name: Require a regular root-owned native answer file
+          ansible.builtin.assert:
+            that:
+              - sniper_checkpoint_answers_stat.stat.isreg | default(false)
+              - not (sniper_checkpoint_answers_stat.stat.islnk | default(false))
+              - sniper_checkpoint_answers_stat.stat.uid == 0
+              - sniper_checkpoint_answers_stat.stat.size | int < 1048576
+          no_log: true
+
+        - name: Read the native CA selection privately
+          ansible.builtin.slurp:
+            src: "{{ sniper_installer_answers_file }}"
+          register: sniper_checkpoint_answers
+          no_log: true
+
+        - name: Select only the existing native public CA path
+          ansible.builtin.set_fact:
+            sniper_satellite_health_ca_file: "{{ (sniper_checkpoint_answers.content | b64decode | from_yaml).foreman.server_ssl_ca }}"
+          no_log: true
+
+        - name: Require the documented native public CA path
+          ansible.builtin.assert:
+            that: sniper_satellite_health_ca_file is match('^/etc/pki/katello/certs/[A-Za-z0-9_.-]+[.]crt$')
+          no_log: true
+
+        - name: Verify the native services and authenticated HTTPS again
+          ansible.builtin.include_tasks: tasks/satellite_health.yml
+
+        - name: Require the same public trust as before shutdown
+          ansible.builtin.assert:
+            that: >-
+              (sniper_satellite_health_ca_pem.split() | join('') | hash('sha256')) ==
+              sniper_new_installation_ca_sha256
+          no_log: true
+
+        - name: Record the verified post-checkpoint readiness without credentials
+          ansible.builtin.set_stats:
+            aggregate: false
+            data:
+              sniper_new_checkpoint_installation_verified: true
+              sniper_new_checkpoint_verified_vm_uuid: "{{ ansible_facts.product_uuid | lower }}"
+              sniper_new_checkpoint_verified_ca_sha256: "{{ sniper_new_installation_ca_sha256 }}"
+      always:
+        - name: Remove the execution-local guest public pin
+          ansible.builtin.file:
+            path: "{{ sniper_new_trust_file.path }}"
+            state: absent
+          delegate_to: localhost
+          become: false
+          changed_when: false
+          check_mode: false
+          no_log: true
+          when: sniper_new_trust_file is defined

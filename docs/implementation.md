@@ -215,3 +215,50 @@ These local checks do not prove a live setup run. The shared CaC importer still
 requires the destination inventory entry and matching protected API record;
 worker MCP access is a different authentication path. OLD belongs to its remote
 AAP, while NEW belongs to our selected production AAP.
+
+
+## Pre-sync Satellite checkpoint
+
+The certified installer and Satellite collection remain responsible for their
+native installation and content operations. The selected community.libvirt
+2.4.0 virt module exposes no snapshot-create operation; its create operation
+starts a guest. The existing AAP project's cold-snapshot helper is constrained
+to its own AAP VMs and checkpoints, so it cannot be called unchanged for Satellite.
+The NEW-only standard-library files/satellite_snapshot.py helper therefore
+uses existing virsh and qemu-img on the selected hypervisor. It adds no package,
+service, credential type or shared-project change.
+
+The callers are create_satellite_checkpoint.yml and the read-only inspection
+task used by configure_satellite_content.yml. Fixed JSON input/output separates
+private identity from safe result fields. Native snapshot XML records the fixed
+owner/name, cold disk-only state, exact VM/disk/NIC, public-CA fingerprint and
+verified installer/pre-sync provenance. There is no alternate state file.
+The helper binds the live and persistent domain, refuses unsupported/shared
+storage and foreign checkpoints, and takes a per-VM native lock for mutation.
+
+The create caller authenticates GET-only repository and repository-sync-history
+queries before a new capture; both filtered subtotal counts must be integer zero
+with empty result lists. It also requires the successful installer identity and
+trust artifacts. The helper trusts those explicit caller checks, so helper unit
+tests alone cannot establish API freshness. A bounded ACPI shutdown precedes
+an atomic internal disk snapshot; verified readback precedes restart.
+Uncertain capture acknowledgement/readback is preserved as UNKNOWN, with no
+automatic retry or power recovery. Post-start guest identity, native service
+health and authenticated TLS use shared native Ansible tasks.
+
+Initial content setup verifies the native checkpoint before its localhost play,
+requires the actual successful post-start guest-verification artifact bound to
+the same VM UUID and public-CA fingerprint, then checks Katello readiness before
+any content write. A missing/mismatched final result or a failed/excluded
+hypervisor play cannot grant localhost a successful gate. This controls the
+provided setup route; it does not revoke independent Satellite administrator
+access or coordinate unrelated external synchronizations.
+
+tests/test_new_satellite_snapshot.py mocks native command/storage boundaries.
+tests/test_new_satellite_checkpoint_playbooks.py runs real Ansible assertions,
+includes, check mode, local SSH pin/CA files and cleanup against synthetic VM,
+guest and API modules. Its content fixture retains the actual cross-play gate
+and replaces later content setup with a sentinel write; other content behavior
+remains covered by existing tests. The fixtures use the actual nested Katello
+ping shape and filtered history counts, without real SSH, APIs or VM changes.
+Fresh live capture and final post-start acceptance remain separate evidence.

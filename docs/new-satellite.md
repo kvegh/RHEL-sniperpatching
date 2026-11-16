@@ -6,8 +6,10 @@ OLD is the remote demo and its own AAP; NEW is our local Satellite and current
 production AAP. As of 14 November 2026, all four server setup stages have passed:
 DNS, full RHEL preparation, Satellite 6.19.6 packages and certified initial
 configuration. Native service health and authenticated HTTPS passed with
-certificate validation. Demo content configuration and host patching acceptance
-remain unfinished.
+certificate validation. The content foundation and all nine chronological
+patching cycles subsequently passed on the original two RHEL 9.4 clients; see
+the [acceptance record](new-cycle-acceptance.md). The future-installation
+checkpoint described below is separate and has no live capture acceptance.
 
 Follow Red Hat Satellite 6.19's connected-installation guide:
 
@@ -26,8 +28,11 @@ Follow Red Hat Satellite 6.19's connected-installation guide:
 5. Install the Satellite packages, then configure the server through the
    documented satellite-installer procedure. Keep credentials and environment
    values in the existing private Vault companion; do not print installer secrets.
-6. Verify services and authenticated HTTPS/API access, then configure the
-   deliberately scoped demo content and the new environment's own AAP templates.
+6. Verify services and authenticated HTTPS/API access. Before any initial content
+   setup, shut down the exact NEW VM, capture post-satellite-install, restart it
+   and verify its original identity, services and authenticated HTTPS again.
+7. Verify the owned cold checkpoint, then configure the deliberately scoped demo
+   content and the new environment's own AAP templates.
 
 References:
 
@@ -35,9 +40,10 @@ References:
 - [Environment preparation and DNS verification](https://docs.redhat.com/en/documentation/red_hat_satellite/6.19/html/installing_satellite_server_in_a_connected_network_environment/preparing-your-environment-for-satellite-server-installation)
 - [Repositories, package upgrade, installation and configuration](https://docs.redhat.com/en/documentation/red_hat_satellite/6.19/html/installing_satellite_server_in_a_connected_network_environment/installing-satellite-server)
 
-The server installation has passed this sequence; the complete NEW patching demo
-has not. Keep CaC current with the actual deployed state as each later stage is
-implemented and verified.
+The original server installation and NEW patching demo passed before the
+checkpoint requirement was added. That historical installation must not be
+presented as a pristine checkpoint. Keep CaC current with actual deployed state
+and distinguish future source behavior from live acceptance.
 
 ## Implemented NEW preparation stages
 
@@ -56,7 +62,62 @@ documented `satellite` package. It requires a 6.19 package version and reports
 package installation separately from initial configuration. The certified
 installer role configured the application afterward and verified its services
 and authenticated API. A copied NEW demo playbook does not establish content
-configuration, client registration or patching acceptance.
+configuration, client registration or patching acceptance on its own.
+
+## Pre-sync cold checkpoint
+
+For a future fresh NEW installation, the required order is:
+
+1. configure_satellite.yml completes certified installation, native service
+   health and authenticated HTTPS. It exports only public trust, VM UUID,
+   machine ID and successful verification flags through native AAP job artifacts.
+2. create_satellite_checkpoint.yml uses the existing hypervisor Machine
+   credential and Satellite API credential. Before a new capture, it requires
+   zero repositories and zero repository-sync history, with strict TLS and the
+   verified installation artifacts. It then validates the exact VM, standalone
+   qcow2 disk and NIC, checks backing capacity, requests a bounded ACPI shutdown
+   and waits for the VM to be off. It creates the internal cold snapshot named
+   post-satellite-install, verifies native metadata, starts the same VM and
+   waits for authenticated Katello readiness.
+3. verify_satellite_checkpoint.yml uses the existing guest Machine and Satellite
+   API credentials to recheck original UUID, machine ID, native services and
+   the same public CA.
+4. configure_satellite_content.yml verifies the owned checkpoint and running VM
+   on the hypervisor before its localhost content play. It also requires the
+   successful final guest-verification artifacts, bound to the same UUID and CA.
+   Missing or mismatched proof, or excluding or failing the hypervisor play,
+   blocks content writes. Authenticated Katello readiness is required before
+   repository setup or synchronization.
+
+The guest and hypervisor retain their separate existing Machine credentials.
+The automatic AAP sequencing choice and new template import are still pending;
+these playbooks alone do not establish live orchestration. Content synchronization
+remains a separate operator-controlled setup action. A separate foundation launch
+must receive the actual successful final-verification artifacts and public CA
+through the selected native job handoff; never hard-code a successful flag in CaC.
+
+An existing checkpoint is reused only when its exact name, owner, VM/disk/NIC,
+cold state and installation/CA provenance match. A foreign same-name snapshot
+is refused. Unsupported storage, backing chains, NVRAM, extra writable disks or
+insufficient backing reserve stop capture; no force-off, overwrite, snapshot
+deletion, restore or unrelated VM change is provided. A capture timeout or
+unconfirmed native readback is an UNKNOWN outcome: inspect the actual selected
+VM and snapshot before a retry or any power action. No automatic retry or
+restart follows an uncertain capture. A failure before capture may restart
+only the exact verified off VM; that recovery is explicitly reported.
+
+Check mode performs read-only native inspection and authenticated freshness
+queries, creates/removes execution-local trust files and skips capture/power
+actions. Its preflight result never claims a captured checkpoint. A populated
+Satellite with no checkpoint is refused even in check mode. The current NEW
+Satellite already contains synchronized repositories; it must not be shut down,
+reset, reinstalled or snapshotted to manufacture this pre-sync state.
+
+Native metadata is the checkpoint record; there is no added service, database
+or credential source. Keep environment identity and populated CA in the existing
+private whole-file Vault companion. Local synthetic tests exercise the helper
+and real Ansible guard/cleanup paths; a future fresh capture and post-start
+acceptance remain unverified.
 
 ## Deploying the AAP project configuration
 

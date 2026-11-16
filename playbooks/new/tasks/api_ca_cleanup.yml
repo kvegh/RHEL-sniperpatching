@@ -5,3 +5,4 @@
     state: absent
   when: sniper_satellite_job_ca.path is defined
   no_log: true
+  check_mode: false
