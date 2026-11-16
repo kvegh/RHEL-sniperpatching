@@ -1,5 +1,15 @@
 # Release notes
 
+## 0.17.0 — Explain both cycles through seven main scenes
+
+Start each run on a healthy green baseline and reveal its CVE only when announced.
+Add the Red Hat source lane with selected-fix/dependency versus bulk maintenance
+content, explicit time passage and seven-scene navigation. Keep verification,
+reboot, approval and exact-version promotion as rollout actions inside scenes 5
+and 7. Preserve earlier fixes and distinguish served CVs from installed packages.
+Document existing synchronized-content and explicit-host-scope boundaries; no
+automation, API integration, runtime dependency or deployment target is added.
+
 ## 0.16.0 — Future post-install cold checkpoint
 
 Add the NEW-only post-satellite-install cold checkpoint boundary between

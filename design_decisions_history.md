@@ -1336,3 +1336,33 @@ path, dependency or architecture change is needed. Implementation commit:
 completed successfully. All four deployed assets matched the checkout and all
 six existing interaction checks passed locally and against the deployed page.
 Browser rendering remains unverified; no new tools or tests were introduced.
+
+
+## 2026-11-16 10:33 UTC — Adopt the approved seven-scene story
+
+The user proposed seven states and explicitly accepted the reviewed adjustments
+with “agree, do it”. Version 0.17.0 uses those seven main scenes for both fixed
+CVE stories: green baseline, new alert, Red Hat fix content, targeted minor CV,
+controlled rollout, later patch window/bulk content, and broader rollout. Scenes
+5 and 7 retain visible Test proof/reboot, operator approval, exact-version Prod
+promotion and final checks as substages. Forty actions support the seven-scene
+navigation; no new runtime jobs or orchestration are introduced.
+
+The previous mechanics-first list exposed future CVEs too early. Each run now
+starts green, reveals only announced CVEs, retains earlier fixes and preserves
+separate available/installed CV states. Red Hat content is a labelled source to
+Satellite, with finite targeted-versus-bulk package animation and reduced motion.
+The existing light-blue headers and earlier label removals remain unchanged.
+
+Technical detail distinguishes already synchronized targeted content from the
+full-publication repository sync and limits host applicability to the existing
+explicit Test/Prod pair. The mockup does not claim per-CVE sync, dynamic fleet
+discovery or an implemented AAP approval node. Plain browser APIs, the four-file
+Pages artifact and existing Node tests remain sufficient; no dependency or
+service is added. The authoritative full review-policy blob was rechecked as
+f73e491fb6f25f57daa6903746414b2db29ce056, matching the already-read full source.
+Implementation commit and deployment evidence follow after they exist.
+
+The concurrent cold-checkpoint source reached main as 0.16.0 before this
+frontend push. Preserve that work and advance this feature to 0.17.0; only
+the overlapping release and handover introductions required reconciliation.

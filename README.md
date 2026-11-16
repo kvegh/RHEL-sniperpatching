@@ -1,17 +1,18 @@
 # RHEL-sniperpatching
 
-**Version: 0.16.0.**
+**Version: 0.17.0.**
 
 [Open the interactive RHEL patching mockup](https://kvegh.github.io/RHEL-sniperpatching/)
-to follow two fixed CVE/RHSA cycles through Satellite content, Test verification,
-operator approval and production rollout, followed by broader cutoff updates.
-The architecture stays visible while available CV versions and installed host
-state change independently. The streamlined canvas uses light-blue platform
-headers and a compact current-phase indicator; AAP displays its current action
-without a redundant capability-badge row. This is a code-grounded explanatory simulation;
-it makes no infrastructure connections. See [presenting and testing it](demo/README.md)
-for controls, source mapping, the repeatable deployed functional test and browser
-verification limits.
+to follow two fixed CVE/RHSA cycles through seven explanatory scenes: green
+baseline, CVE alert, Red Hat fix content, targeted CV, controlled Test/Prod
+rollout, the next maintenance window and broader Test/Prod updates. Rollout
+scenes expand into verification, reboot where needed, operator approval and
+exact-version production promotion. Future CVEs stay hidden until announced;
+prior fixes remain verified while routine updates arrive. The architecture,
+Content View versions and installed host state stay visible, with the selected
+fix contrasted against the later bulk content flow. This browser-only mockup
+uses the code's responsibilities and makes no infrastructure connections. See
+[controls, source mapping and deployed test scope](demo/README.md).
 
 Development and publication use **main only**. NEW provides scoped Satellite
 content configuration, full proactive RHEL 9.4 BaseOS/AppStream mirroring,

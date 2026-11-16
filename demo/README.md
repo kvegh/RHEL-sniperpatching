@@ -2,7 +2,7 @@
 
 [Open the visualization](https://kvegh.github.io/RHEL-sniperpatching/).
 
-Version **0.16.0**. This browser-only explanation is for security staff, Linux
+Version **0.17.0**. This browser-only explanation is for security staff, Linux
 administrators and AAP administrators. It follows the checked-in NEW architecture
 while grouping tasks and shortening operations for presentation. It is an
 explanatory mockup: statuses, CV numbers and outcomes are illustrative. No host,
@@ -11,43 +11,64 @@ separately in the project README and handover.
 
 ## Present it
 
-Use **Next**, **Back**, **Restart**, or select a workflow step. The two story
-buttons open their fixed cycles; no CVE/date data entry is needed. At each
-production checkpoint, **Approve Prod** advances to exact-version promotion.
-The real playbooks still run as separately launched AAP stages; this page does
-not add an automatic AAP approval node. Arrow keys navigate outside focused
-controls; the right arrow stops at approval. R restarts. Workflow selection and
-direct links are presentation navigation rather than security controls.
+Use **Next**, **Back**, **Restart**, or select one of the **seven scenes**.
+Run 01 and Run 02 open their healthy baseline before introducing a new CVE.
+The examples and dates are fixed; there are no presenter-entered values.
+The scene counter remains at 5 or 7 while the rollout's action counter advances.
+At production checkpoints, **Approve Prod** continues to exact-version promotion.
+Right-arrow navigation pauses there; Enter/Space on the button also approves.
+The real automation still uses separately launched AAP stages rather than an
+automatic approval node. Scene links are educational navigation, not access controls.
 
-The architecture keeps AAP, Satellite, Test and Prod visible. Both platform
-headers use a softer light blue with dark text; the redundant architecture
-heading is removed, keeping the current phase indicator. The AAP card shows
-its current action without the redundant Resolve/Patch/Verify badge row. Satellite serves
-available CV content; separate AAP host jobs install and verify packages.
-Purple identifies content, blue host execution and amber approval. Hosts pull
-repository content from Satellite; content-flow arrows show package direction.
-Promotion reuses the exact tested version and does not install packages.
+| Scene | What changes |
+| --- | --- |
+| 1. All systems up to date | Test and Prod meet the same defined baseline, with green checks. No future CVE appears. |
+| 2. CVE announced | A named alert reaches AAP; Satellite resolves its security advisory. Only announced issues affect host status. |
+| 3. Ensure fix content is available | A small selected-fix/dependency flow arrives from Red Hat content to Satellite. |
+| 4. Publish targeted CV | Add the selected fix and required dependencies to the baseline minor; Test availability changes before installation. |
+| 5. Apply selected fix | Check the selected pair, patch/reboot/verify Test, approve, promote the exact minor, then patch/reboot/verify Prod. |
+| 6. Routine patch window | Time passes; many security, bug-fix and enhancement updates arrive, retaining the already-applied fix in a broader CV. |
+| 7. Apply broader updates | Fully update and verify Test, approve, promote its exact major, update/verify Prod and finish green. |
 
-Two user-selected stories run in chronological order:
+The Red Hat source lane delivers content to Satellite. One selected fix and its
+dependencies are visually distinct from the later batch of maintenance updates.
+Arrival animations are finite and respect **Motion off** and reduced-motion
+preferences. The page makes no actual download or API request.
+
+The content-availability scene explains the content prerequisite: the targeted
+playbook reads already synchronized repositories and does not launch a per-CVE
+synchronization job. The full-publication playbook explicitly synchronizes the
+selected repositories. Applicability checks apply to the configured Test/Prod
+pair; the page does not claim implemented fleet-wide discovery. These details
+are available beside the source-linked condensed code.
+
+Both AAP and Satellite retain light-blue headers. The removed architecture
+heading and Resolve/Patch/Verify badges stay absent. Green host checks indicate
+baseline compliance or verified fixes; red identifies an announced outstanding
+issue, and amber identifies verification or routine updates available. Previously
+verified CVEs remain Fixed throughout a later maintenance update. Available CV
+content and installed packages remain separate; promotion does not install RPMs.
+
+Two fixed user-selected stories run in chronological order:
 
 | Story | CVE / RHSA | Illustrative full-update cutoff |
 | --- | --- | --- |
 | Python malicious package download | CVE-2024-6345 / RHSA-2024:5534 | 2024-08-23 |
 | Network Privilege Escalation | CVE-2024-36883 / RHSA-2024:6567 | 2024-09-13 |
 
-The first cutoff precedes the second advisory so the kernel example stays
-outstanding. Kernel installation, reboot and effective verification are separate
-stops; technical detail states that this is a local-user networking flaw.
-Both cycles include targeted Test/Prod work, a broader cutoff publication,
-full Test/Prod updates and an independent final check. Earlier fixes persist.
-The illustrative CV sequence is 1.0 → 1.1 → 2.0 → 2.1 → 3.0; real jobs return
-actual versions. Grouped full-update stops include any required reboot checks.
+The first cutoff leaves the second advisory outstanding. Kernel installation,
+reboot and effective verification are separate rollout actions. Technical detail
+identifies a local-user Linux networking flaw. The second run retains the first
+run's fixed packages and starts from its completed baseline. The illustrative
+CV sequence is 1.0 → 1.1 → 2.0 → 2.1 → 3.0; actual jobs return their own versions.
+Grouped full-update actions include any required reboot and independent final
+checks. Forty presenter-controlled actions unfold within the seven scenes per
+run; there is no autoplay or artificial waiting period.
 
 **Technical detail** shows condensed code and a source-pinned repository link.
-URL fragments such as `#step=run-2-input` restore the matching state. Motion is
-finite and can be disabled; reduced-motion preferences are respected. On small
-screens the narrative stacks above the architecture and the host cards remain
-side by side. Browser layout still requires visual verification.
+Existing links such as `#step=run-2-input` still work; `#step=run-2-baseline`
+opens the second run before its alert. On small screens, the narrative stacks
+above the diagram. Browser layout remains separately unverified.
 
 ## Implementation
 
@@ -69,7 +90,8 @@ All source links pin NEW code revision
 | Visual action | Implementing source |
 | --- | --- |
 | Controlled baseline | `playbooks/new/prepare_demo.yml` |
-| CVE to RHSA resolution | `playbooks/new/tasks/resolve.yml` |
+| CVE to RHSA resolution and synchronized-content lookup | `playbooks/new/tasks/resolve.yml`, `playbooks/new/create_minor_update.yml` |
+| Explicit host scope and applicability guards | `playbooks/new/tasks/host_context.yml`, `playbooks/new/tasks/host_preflight.yml` |
 | Minor CV and reuse of Test's exact version | `playbooks/new/create_minor_update.yml` |
 | Targeted/full transactions and reboot | `playbooks/new/patch_hosts.yml` |
 | Effective fix and service checks | `playbooks/new/tasks/check_final.yml` |
@@ -93,7 +115,9 @@ node --test demo/tests/*.test.cjs
 git diff --check
 ```
 
-Tests cover fixed catalog mapping, chronological cutoffs, availability versus
+Tests cover seven-scene navigation, green baseline and announcement timing,
+targeted/bulk content, maintenance state, fixed catalog mapping, chronological
+cutoffs, availability versus
 installation, exact promotions, approval checkpoints, reboot/verification,
 cumulative fixes, rewind/reset, real navigation handlers, deep links, motion and
 source details. Interaction checks load actual HTML and execute its model and

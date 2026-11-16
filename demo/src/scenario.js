@@ -4,9 +4,25 @@
 (function (root) {
   'use strict';
 
-  const version = '0.16.0';
+  const version = '0.17.0';
   const sourceRevision = '2fe10cd27c874691780c72eb66105f87cd5c12fa';
   const source = name => `playbooks/new/${name}`;
+  const scenes = [
+    { number: 1, title: 'All systems up to date' },
+    { number: 2, title: 'CVE announced' },
+    { number: 3, title: 'Ensure fix content is available' },
+    { number: 4, title: 'Publish targeted CV' },
+    { number: 5, title: 'Apply selected fix' },
+    { number: 6, title: 'Routine patch window' },
+    { number: 7, title: 'Apply broader updates' },
+  ];
+  const sceneByKind = {
+    baseline: 1, input: 2, resolve: 2, 'ensure-content': 3, minor: 4,
+    'host-scope': 5, 'patch-test': 5, 'reboot-test': 5, 'verify-test': 5,
+    'approve-targeted': 5, 'promote-targeted': 5, 'patch-prod': 5,
+    'reboot-prod': 5, 'verify-prod': 5, 'time-passes': 6, 'full-publish': 6,
+    'full-test': 7, 'approve-full': 7, 'full-promote': 7, 'full-prod': 7, complete: 7,
+  };
   const scenarios = [
     {
       title: 'Python malicious package download',
@@ -30,6 +46,9 @@
     baseline: 'sniper_baseline_end_date: "2024-04-30"\nsniper_prepare_content_only: true\n# Verify baseline content before direct Test/Prod registration.',
     input: 'sniper_patch_id: "{cve}"\nsniper_environment: test\nsniper_patch_scope: targeted',
     resolve: 'redhat.satellite.resource_info:\n  resource: errata\n  params:\n    repository_id: "{{ item.0.id }}"\n    cve: "{{ item.1 }}"',
+    ensureContent: '# Confirm the selected fix exists in synchronized Satellite content.\nredhat.satellite.resource_info:\n  resource: errata\n# Targeted patching reads already synchronized repositories; no new per-CVE sync job.',
+    hostScope: 'redhat.satellite.resource_info:\n  resource: hosts\n  search: name = "{{ sniper_host_name }}"\n# Match the selected CV/environment, inventory host and affected installed packages.',
+    timePasses: 'sniper_update_end_date: "{cutoff}"\n# A later maintenance window is an explanatory story transition.\n# Launch the existing full-update stage separately.',
     minor: '# Condensed incremental-update body; no host patching here.\nadd_content:\n  errata_ids: "{{ sniper_missing_errata }}"\nresolve_dependencies: true\n# Validate additions, then promote the exact minor to Test.',
     patch: '# Condensed native package transaction, constrained to the CV repositories.\ndnf upgrade-minimal --advisory={advisory}\n# Record changed RPMs and inspect needs-restarting.',
     reboot: 'ansible.builtin.reboot:\n  reboot_timeout: "{{ sniper_reboot_timeout }}"\n  post_reboot_delay: 10\n# Triggered by OS, kernel, advisory or stale-process evidence.',
@@ -49,30 +68,38 @@
       .replaceAll('{full}', full);
   }
 
-  const steps = [{
-    id: 'baseline', title: 'Start with a controlled baseline', phase: 'Baseline', cycle: 0,
-    kind: 'baseline', summary: 'Satellite serves the same baseline to Test and Prod.',
-    detail: 'Both illustrative RHEL clients start on CV 1.0. Satellite controls available content; installed packages are shown separately. The two selected fixes are not yet applied. This is an explanatory mockup, not evidence of the live environment.',
-    source: source('prepare_demo.yml'), code: snippets.baseline, route: 'none',
-  }];
+  const steps = [];
 
   scenarios.forEach((scenario, cycle) => {
     const minor = cycle === 0 ? '1.1' : '2.1';
     const full = cycle === 0 ? '2.0' : '3.0';
     const add = (kind, title, summary, detail, file, snippet, route, phase = 'Targeted fix') => {
-      steps.push({ id: `run-${cycle + 1}-${kind}`, title, phase, cycle, kind, summary, detail,
+      steps.push({ id: cycle === 0 && kind === 'baseline' ? 'baseline' : `run-${cycle + 1}-${kind}`,
+        title, phase, cycle, kind, scene: sceneByKind[kind], summary, detail,
         source: source(file), code: excerpt(snippet, scenario, full), route });
     };
 
-    add('input', scenario.title, `AAP receives ${scenario.cve}.`,
+    add('baseline', 'All systems up to date',
+      cycle === 0 ? 'Test and Prod start on the same verified baseline.' : 'The previous cycle is complete; both environments are up to date.',
+      cycle === 0
+        ? 'Both illustrative RHEL clients start on CV 1.0 with completed checks. No new CVE has been announced in the story. Satellite controls available content; installed packages are shown separately.'
+        : 'Both environments retain CV 2.0 and the verified Python fix from the previous cycle. No next vulnerability has been announced yet; the completed state carries forward without resetting packages.',
+      cycle === 0 ? 'prepare_demo.yml' : 'check_patch.yml', cycle === 0 ? 'baseline' : 'check', 'none', 'Baseline');
+    add('input', 'A new CVE is announced', `${scenario.title}: AAP receives ${scenario.cve}.`,
       `${scenario.description} The example input is fixed for this story. The actual survey accepts a CVE list or one explicit RHSA.`,
       'tasks/resolve.yml', 'input', 'none');
     add('resolve', 'Find the applicable security advisory', `AAP asks Satellite to resolve ${scenario.cve}.`,
       `Satellite supplies ${scenario.advisory} and package metadata from the configured repositories. A CVE can resolve to more than one advisory; this prepared example follows its cataloged RHEL 9.4 advisory.`,
       'tasks/resolve.yml', 'resolve', 'resolve');
+    add('ensure-content', 'Ensure the fix content is available', 'Satellite confirms that the selected Red Hat fix content is ready.',
+      'The incoming content flow explains Red Hat content availability. The targeted playbook reads already synchronized Satellite repositories and validates advisory/package metadata; it does not launch a new per-CVE repository synchronization job.',
+      'create_minor_update.yml', 'ensureContent', 'upstream');
     add('minor', `Add the fix in CV ${minor}`, `Satellite creates a minor CV update and promotes it to Test.`,
       `The incremental update adds the selected advisory and dependencies, preserving baseline content. CV ${minor} is available to Test; the host has not installed it, and Prod still serves its previous version.`,
       'create_minor_update.yml', 'minor', 'content-test');
+    add('host-scope', 'Check the selected Test and Prod pair', 'AAP checks applicability for the explicitly selected hosts.',
+      'This mockup groups the Test/Prod applicability checks. Each real host job queries its explicitly selected existing Satellite host, checks the CV/lifecycle binding and inventory/consumer identity, then verifies affected installed packages. It does not discover or automatically select an entire fleet.',
+      'tasks/host_context.yml', 'hostScope', 'resolve');
     add('patch-test', 'Apply the selected fix to Test', `AAP runs the targeted package update on Test.`,
       `The host job installs the selected advisory from Test's CV repositories and records changed packages. ${cycle === 1 ? 'The fixed kernel is installed, but its running-kernel proof still requires a reboot.' : 'The illustrative Python update needs no reboot; the real job checks the OS and running processes.'}`,
       'patch_hosts.yml', 'patch', 'execute-test');
@@ -97,6 +124,9 @@
     add('verify-prod', 'Verify the targeted fix in Prod', 'Both hosts now have the selected fix verified.',
       'Installed and effective package proof, no pending reboot and smoke checks complete the targeted phase. Broader repository updates remain a later, separate operation.',
       'tasks/check_final.yml', 'verify', 'execute-prod');
+    add('time-passes', 'A routine patch window arrives', 'Time passes after the targeted fix; broader maintenance is now due.',
+      `The urgent security fix is already verified on both hosts. The later maintenance window uses the fixed content cutoff ${scenario.cutoff} to prepare the broader update. This transition explains elapsed time; it creates no runtime scheduler or automatic launch.`,
+      'publish_full_update.yml', 'timePasses', 'none', 'Routine patch window');
     add('full-publish', `Publish the broader CV ${full}`, `Satellite includes all configured content through ${scenario.cutoff}.`,
       `The later maintenance update includes security, bug-fix and enhancement advisories through the explicit cutoff and keeps earlier fixes. ${cycle === 0 ? 'This cutoff precedes the second story\'s September 11 kernel fix, leaving that example outstanding.' : 'Both selected security fixes are retained.'} Only Test receives the new major CV at this stop.`,
       'publish_full_update.yml', 'fullPublish', 'content-test', 'Broader update');
@@ -112,14 +142,14 @@
     add('full-prod', 'Fully update and verify Prod', `AAP updates Prod from CV ${full}.`,
       'The full host job installs the remaining applicable repository updates, handles reboot needs and verifies the fix, services and no pending updates. Both hosts finish on the same available and installed illustrative CV.',
       'patch_hosts.yml', 'fullPatch', 'execute-prod', 'Broader update');
-    add('complete', cycle === 0 ? 'One cycle complete. Another fix arrives.' : 'Two cycles. One repeatable process.',
-      cycle === 0 ? 'The Python fix is retained; the next story introduces the kernel fix.' : 'Both selected fixes and the broader updates are complete on Test and Prod.',
+    add('complete', cycle === 0 ? 'Cycle complete: systems up to date' : 'Two cycles. One repeatable process.',
+      cycle === 0 ? 'The Python fix is retained and both hosts are ready for normal operation.' : 'Both selected fixes and the broader updates are complete on Test and Prod.',
       'The independent read-only check can verify the selected fix and host state again. CV numbers and outcomes here are illustrative; the actual jobs return their own version and evidence.',
       'check_patch.yml', 'check', 'none', 'Cycle complete');
   });
 
   function initialHost() {
-    return { installedCV: '1.0', fixed: [], reboot: 'Not required', verification: 'Baseline', status: 'Baseline ready' };
+    return { installedCV: '1.0', fixed: [], reboot: 'Not required', verification: 'Passed', status: 'Baseline verified' };
   }
 
   function markFixed(host, cve) {
@@ -156,6 +186,7 @@
       testCV: '1.0', prodCV: '1.0',
       versions: [{ version: '1.0', label: 'Controlled baseline' }],
       test: initialHost(), prod: initialHost(), job: steps[index].title,
+      announced: [], delivery: 'none', maintenance: steps[index].scene === 6,
     };
 
     // Rebuild from the baseline so Previous, direct links and Restart cannot leak later state.
@@ -164,6 +195,13 @@
       const minor = step.cycle === 0 ? '1.1' : '2.1';
       const full = step.cycle === 0 ? '2.0' : '3.0';
       switch (step.kind) {
+        case 'input':
+          state.announced.push(scenario.cve);
+          state.test.status = 'Selected fix needed';
+          state.prod.status = 'Selected fix needed';
+          state.test.verification = 'Pending';
+          state.prod.verification = 'Pending';
+          break;
         case 'minor':
           state.versions.push({ version: minor, label: scenario.title });
           state.testCV = minor;
@@ -191,10 +229,19 @@
         default: break;
       }
     }
+    const current = steps[index];
+    state.delivery = current.kind === 'ensure-content' ? 'targeted'
+      : current.kind === 'full-publish' ? 'bulk' : 'none';
+    for (const [host, available] of [[state.test, state.testCV], [state.prod, state.prodCV]]) {
+      const affected = state.announced.some(cve => !host.fixed.includes(cve));
+      host.health = affected ? 'affected'
+        : host.verification === 'Pending' ? 'verifying'
+          : available !== host.installedCV ? 'updates' : 'healthy';
+    }
     return state;
   }
 
-  const story = { version, sourceRevision, scenarios, steps, stateAt };
+  const story = { version, sourceRevision, scenarios, scenes, steps, stateAt };
   if (typeof module !== 'undefined' && module.exports) module.exports = story;
   if (root) root.SniperStory = story;
 }(typeof window !== 'undefined' ? window : globalThis));

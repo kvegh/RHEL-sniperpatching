@@ -17,34 +17,26 @@ an automatic launch time. Wait for each stage to succeed before continuing.
 
 ```mermaid
 flowchart TD
-    BASELINE["Prepare the dedicated baseline and Test/Prod pair once"]
-    BASELINE --> INPUT["Operator enters CVE or RHSA into AAP"]
-
-    subgraph TARGETED["Targeted security patching"]
-        INPUT --> RESOLVE["AAP queries Satellite: resolve CVE to advisories or use supplied RHSA"]
-        RESOLVE --> MINOR["Satellite creates minor CV update and promotes it to Test"]
-        MINOR --> TEST["AAP patches Test from that CV: reboot if needed, verify fix and test services"]
-        TEST --> APPROVE{"Operator approves production rollout?"}
-        APPROVE -->|Yes| PROMOTE["Satellite promotes the exact tested minor CV to Prod"]
-        PROMOTE --> PROD["AAP patches Prod: reboot if needed, verify fix and test services"]
-    end
-
-    PROD --> TIME["Later broader patching cycle: operator supplies content cutoff date"]
-
-    subgraph FULL["Broader maintenance patching"]
-        TIME --> MAJOR["Satellite publishes major CV update to Test: all updates through cutoff, earlier security fix retained"]
-        MAJOR --> FULLTEST["AAP fully updates Test: reboot if needed, verify updates and test services"]
-        FULLTEST --> APPROVEFULL{"Operator approves production rollout?"}
-        APPROVEFULL -->|Yes| PROMOTEFULL["Satellite promotes the exact tested major CV to Prod"]
-        PROMOTEFULL --> FULLPROD["AAP fully updates Prod: reboot if needed, verify updates and test services"]
-    end
-
-    APPROVE -->|No| HOLD["Hold production rollout"]
-    APPROVEFULL -->|No| HOLD
-    FULLPROD --> CHECK["Independent read-only fix verification"]
-    CHECK --> NEXT["Select the next still-unpatched CVE or RHSA"]
-    NEXT --> INPUT
+    A["1. Baseline verified: both hosts green"] --> B["2. New CVE announced to AAP"]
+    B --> C["3. Ensure the Red Hat fix content is available in Satellite"]
+    C --> D["4. Add only the fix and dependencies in a minor CV"]
+    D --> E["5. Test patch/reboot/verify → approval → exact minor to Prod → patch/verify"]
+    E --> F["6. Time passes: regular updates arrive and a broader CV retains the fix"]
+    F --> G["7. Full Test update/verify → approval → exact major to Prod → update/verify"]
+    G --> A
 ```
+
+These are the page's seven main scenes, repeated for both fixed CVE examples.
+Scenes 5 and 7 unfold through separate presenter-controlled rollout actions.
+Both hosts finish green before the next alert. Future CVEs stay hidden until
+announced; a previously fixed issue remains Fixed during broader maintenance.
+The Red Hat lane contrasts the selected fix/dependencies with bulk routine content.
+
+The targeted path uses already synchronized content. The broader publication
+explicitly synchronizes the selected repositories. The page explains these
+responsibilities without adding a per-CVE sync job or automatic host discovery;
+actual host scope remains the explicitly selected Test/Prod pair.
+
 
 A CVE can resolve to several RHSAs. Supply one RHSA when exactly one advisory
 is required. A minor update includes the selected advisory content and required

@@ -2,7 +2,10 @@
 
 [Interactive patching mockup](https://kvegh.github.io/RHEL-sniperpatching/) ·
 [Controls and verification](demo/README.md). The page explains two fixed cycles;
-it does not run AAP jobs or establish live patching results.
+it does not run AAP jobs or establish live patching results. Seven scenes per
+run show healthy baseline → CVE alert → Red Hat fix content → targeted CV →
+controlled rollout → maintenance window → broader rollout. Verification, reboot
+and operator approval unfold within the rollout scenes.
 
 Select the OLD or NEW directory explicitly in each AAP template:
 `playbooks/old/<stage>.yml` or `playbooks/new/<stage>.yml`. The OLD workshop

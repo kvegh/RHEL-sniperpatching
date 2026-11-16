@@ -69,7 +69,11 @@ function go(view, step) {
 
 test('real HTML and scripts render the first story and restore the baseline on restart', () => {
   const v = launch();
-  assert.equal(text(v, 'scenario-title'), 'Python malicious package download');
+  assert.equal(text(v, 'scenario-title'), 'All systems up to date');
+  assert.equal(v.get('test-host').dataset.health, 'healthy');
+  assert.equal(v.get('prod-host').dataset.health, 'healthy');
+  assert.match(text(v, 'test-status'), /^✓/);
+  assert.doesNotMatch(text(v, 'test-fixes'), /CVE-/);
   assert.equal(text(v, 'test-available'), 'CV 1.0');
   assert.equal(v.get('previous').disabled, true);
   v.get('next').click();
@@ -84,7 +88,8 @@ test('all real Next handlers traverse both cycles and expose four approval check
   for (let index = 0; index < v.story.steps.length; index += 1) {
     const step = v.story.steps[index];
     assert.equal(text(v, 'step-title'), step.title);
-    assert.equal(text(v, 'step-count'), `STEP ${index + 1} OF ${v.story.steps.length}`);
+    assert.equal(text(v, 'step-count'), `SCENE ${step.scene} OF 7`);
+    assert.equal(v.get('step-list').children.length, 7);
     if (step.kind.startsWith('approve-')) {
       approvals += 1;
       assert.equal(text(v, 'next'), 'Approve Prod →');
@@ -118,7 +123,10 @@ test('publication and promotion visibly separate available content from installe
 test('kernel reboot and verification are separate visible steps and retain the Python fix', () => {
   const v = launch();
   v.get('cycle-1').click();
-  assert.equal(text(v, 'scenario-title'), 'Network Privilege Escalation');
+  assert.equal(v.window.location.hash, '#step=run-2-baseline');
+  assert.equal(text(v, 'scenario-title'), 'All systems up to date');
+  assert.equal(v.get('test-host').dataset.health, 'healthy');
+  assert.doesNotMatch(text(v, 'test-fixes'), /CVE-2024-36883/);
   go(v, at(v, 1, 'patch-test'));
   assert.equal(text(v, 'test-reboot'), 'Required');
   assert.equal(text(v, 'test-verification'), 'Pending');
@@ -139,6 +147,8 @@ test('workflow buttons, deep links, motion controls and source details remain us
   assert.equal(text(v, 'motion'), 'Motion on');
   const firstButton = v.get('step-list').children[0].children[0];
   firstButton.click();
+  assert.equal(v.window.location.hash, '#step=run-2-baseline');
+  v.get('step-list').children[1].children[0].click();
   assert.equal(v.window.location.hash, '#step=run-2-input');
   assert.match(v.get('source-link').href, /^https:\/\/github\.com\/kvegh\/RHEL-sniperpatching\/blob\/[a-f0-9]{40}\/playbooks\/new\//);
   assert.ok(text(v, 'source-code').includes('sniper_patch_id'));
@@ -151,4 +161,78 @@ test('an unknown deep link returns to a safe baseline', () => {
   const v = launch('#step=not-a-real-scene');
   assert.equal(text(v, 'test-installed'), 'CV 1.0');
   assert.equal(text(v, 'step-title'), v.story.steps[0].title);
+});
+
+
+test('CVE alerts change known host risk without revealing the next story early', () => {
+  const v = launch();
+  assert.equal(v.get('story-event').dataset.tone, 'healthy');
+  go(v, at(v, 0, 'input'));
+  assert.equal(v.get('story-event').dataset.tone, 'alert');
+  assert.equal(v.get('test-host').dataset.health, 'affected');
+  assert.equal(v.get('prod-host').dataset.health, 'affected');
+  assert.equal(text(v, 'test-verification'), 'Pending');
+  assert.equal(text(v, 'prod-verification'), 'Pending');
+  assert.match(text(v, 'event-title'), /Python malicious package download/);
+  assert.match(text(v, 'test-fixes'), /CVE-2024-6345/);
+  assert.doesNotMatch(text(v, 'test-fixes'), /CVE-2024-36883/);
+  go(v, at(v, 0, 'host-scope'));
+  assert.match(text(v, 'target-scope'), /Test node.*Production node/);
+  go(v, at(v, 0, 'complete'));
+  assert.equal(v.get('test-host').dataset.health, 'healthy');
+  assert.equal(v.get('story-event').dataset.tone, 'healthy');
+  assert.doesNotMatch(text(v, 'prod-fixes'), /CVE-2024-36883/);
+  go(v, at(v, 1, 'input'));
+  assert.match(text(v, 'prod-fixes'), /CVE-2024-36883/);
+  assert.match(text(v, 'prod-fixes'), /Python malicious package download.*Fixed/);
+});
+
+test('Red Hat supply distinguishes the single-fix request from the later bulk update', () => {
+  const v = launch();
+  go(v, at(v, 0, 'ensure-content'));
+  assert.equal(v.get('redhat-supply').dataset.delivery, 'targeted');
+  assert.equal(v.get('package-stream').children.length, 2);
+  assert.match(text(v, 'package-stream'), /Selected security fix.*Required dependencies/);
+  go(v, at(v, 0, 'time-passes'));
+  assert.equal(v.get('story-event').dataset.tone, 'maintenance');
+  assert.match(text(v, 'event-title'), /patch window/);
+  assert.match(text(v, 'test-fixes'), /Fixed/);
+  go(v, at(v, 0, 'full-publish'));
+  assert.equal(v.get('redhat-supply').dataset.delivery, 'bulk');
+  assert.ok(v.get('package-stream').children.length >= 8);
+  assert.match(text(v, 'package-stream'), /Earlier fix ✓/);
+  assert.equal(text(v, 'test-installed'), 'CV 1.1');
+  assert.equal(text(v, 'test-available'), 'CV 2.0');
+  assert.match(text(v, 'test-fixes'), /Fixed/);
+  v.get('previous').click();
+  assert.equal(v.get('redhat-supply').dataset.delivery, 'none');
+  assert.equal(v.get('package-stream').children.length, 0);
+});
+
+test('seven scene buttons open their first action within each fixed cycle', () => {
+  const v = launch();
+  for (const cycle of [0, 1]) {
+    v.get(`cycle-${cycle}`).click();
+    for (let number = 1; number <= 7; number += 1) {
+      v.get('step-list').children[number - 1].children[0].click();
+      const first = v.story.steps.find(step => step.cycle === cycle && step.scene === number);
+      assert.equal(v.window.location.hash, `#step=${first.id}`);
+      assert.equal(text(v, 'step-count'), `SCENE ${number} OF 7`);
+      assert.equal(v.get('step-list').children[number - 1].children[0].attributes['aria-current'], 'step');
+    }
+  }
+});
+
+
+test('the architecture skip link preserves the current story state', () => {
+  const v = launch();
+  go(v, at(v, 0, 'minor'));
+  const title = text(v, 'step-title');
+  assert.equal(text(v, 'test-available'), 'CV 1.1');
+  v.window.location.hash = '#architecture';
+  v.window.dispatch('hashchange');
+  assert.equal(text(v, 'step-title'), title);
+  assert.equal(text(v, 'test-available'), 'CV 1.1');
+  v.get('next').click();
+  assert.equal(v.window.location.hash, '#step=run-1-host-scope');
 });

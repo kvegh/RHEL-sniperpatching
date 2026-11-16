@@ -281,6 +281,300 @@ h1 {
 .architecture {
   min-width:0;
 }
+/* The upstream lane illustrates content arriving at Satellite, not an AAP download. */
+.scene-progress {
+  margin-top:4px;
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.5;
+}
+.story-event {
+  display:flex;
+  align-items:flex-start;
+  gap:13px;
+  margin-bottom:17px;
+  padding:16px 19px;
+  background:var(--blue-soft);
+  border:1px solid #c3d6ec;
+  border-radius:9px;
+  color:var(--blue);
+}
+.story-event[hidden] {
+  display:none;
+}
+.event-mark {
+  width:29px;
+  height:29px;
+  flex-shrink:0;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:var(--paper);
+  font-size:18px;
+  font-weight:700;
+}
+.event-mark:before {
+  content:'→';
+}
+.event-copy {
+  min-width:0;
+}
+.event-copy .eyebrow {
+  color:inherit;
+  font-size:9px;
+}
+.event-copy h2 {
+  margin-top:3px;
+  font-size:20px;
+  line-height:1.3;
+  letter-spacing:-.3px;
+  overflow-wrap:anywhere;
+}
+.event-copy>p:last-child {
+  margin-top:5px;
+  color:var(--ink);
+  font-size:12px;
+  line-height:1.6;
+}
+.story-event[data-tone=healthy] {
+  background:var(--green-soft);
+  color:var(--green);
+  border-color:#b9d9c6;
+}
+.story-event[data-tone=healthy] .event-mark:before {
+  content:'✓';
+}
+.story-event[data-tone=alert] {
+  background:var(--red-soft);
+  color:var(--red);
+  border-color:#dfb5b5;
+}
+.story-event[data-tone=alert] .event-mark:before {
+  content:'!';
+}
+.story-event[data-tone=content] {
+  background:var(--purple-soft);
+  color:var(--purple);
+  border-color:#d4c7e5;
+}
+.story-event[data-tone=content] .event-mark:before {
+  content:'↓';
+}
+.story-event[data-tone=maintenance],
+.story-event[data-tone=approval] {
+  background:var(--amber-soft);
+  color:var(--amber);
+  border-color:#e0c68f;
+}
+.story-event[data-tone=maintenance] .event-mark:before {
+  content:'◷';
+}
+.story-event[data-tone=approval] .event-mark:before {
+  content:'?';
+}
+.redhat-supply {
+  position:relative;
+  display:grid;
+  grid-template-columns:minmax(160px,.8fr) minmax(0,1.5fr);
+  align-items:center;
+  gap:23px;
+  margin-bottom:8px;
+  padding:0 0 18px;
+}
+.redhat-source {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:13px 15px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:var(--paper);
+  min-width:0;
+}
+.redhat-mark {
+  display:grid;
+  place-items:center;
+  width:33px;
+  height:33px;
+  flex-shrink:0;
+  border-radius:6px;
+  background:#c9190b;
+  color:#fff;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.03em;
+}
+.source-name {
+  font-size:15px;
+  font-weight:600;
+  line-height:1.3;
+}
+.source-description {
+  margin-top:3px;
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.4;
+}
+.supply-transfer {
+  position:relative;
+  min-width:0;
+  padding:3px 0 13px;
+}
+.delivery-label {
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.5;
+}
+.supply-track {
+  position:relative;
+  min-height:35px;
+  margin-top:6px;
+  padding-right:15px;
+}
+.supply-track:before {
+  content:'';
+  position:absolute;
+  inset:17px 5px auto 0;
+  height:2px;
+  background:#ccd7e0;
+}
+.supply-direction {
+  position:absolute;
+  right:1px;
+  top:13px;
+  width:9px;
+  height:9px;
+  border-top:2px solid #9aacbc;
+  border-right:2px solid #9aacbc;
+  transform:rotate(45deg);
+}
+.package-stream {
+  position:relative;
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:5px;
+  min-height:35px;
+  padding:3px 0;
+}
+.content-parcel {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:24px;
+  max-width:132px;
+  padding:4px 7px;
+  background:var(--purple-soft);
+  border:1px solid #ccbce0;
+  border-radius:4px;
+  color:#54377b;
+  font-size:10px;
+  font-weight:600;
+  line-height:1.3;
+  overflow-wrap:anywhere;
+}
+.content-parcel.selected-fix {
+  background:var(--green-soft);
+  color:var(--green);
+  border-color:#b5d8c4;
+}
+.content-parcel.dependency {
+  background:var(--purple-soft);
+  color:#64488b;
+}
+.content-parcel.routine-update {
+  background:var(--blue-soft);
+  color:var(--blue);
+  border-color:#b6cde6;
+}
+.supply-destination {
+  position:absolute;
+  right:0;
+  bottom:-4px;
+  color:var(--muted);
+  font-size:10px;
+  font-weight:600;
+  line-height:1.4;
+}
+.supply-destination>span {
+  display:inline-block;
+  margin-left:4px;
+  color:var(--purple);
+  font-size:17px;
+  line-height:1;
+}
+.redhat-supply[data-delivery=targeted] .delivery-label,
+.redhat-supply[data-delivery=bulk] .delivery-label {
+  color:var(--purple);
+  font-weight:600;
+}
+.redhat-supply[data-delivery=targeted] .supply-track:before,
+.redhat-supply[data-delivery=bulk] .supply-track:before {
+  background:#aa91c6;
+}
+.redhat-supply[data-delivery=targeted] .supply-direction,
+.redhat-supply[data-delivery=bulk] .supply-direction {
+  border-color:var(--purple);
+}
+/* Each arrival runs once after a presenter action; the rest state remains readable. */
+.redhat-supply[data-delivery=targeted] .content-parcel,
+.redhat-supply[data-delivery=bulk] .content-parcel {
+  animation:parcel-arrival 700ms ease-out both;
+}
+.package-stream .content-parcel:nth-child(2) { animation-delay:80ms; }
+.package-stream .content-parcel:nth-child(3) { animation-delay:160ms; }
+.package-stream .content-parcel:nth-child(4) { animation-delay:240ms; }
+.package-stream .content-parcel:nth-child(5) { animation-delay:320ms; }
+.package-stream .content-parcel:nth-child(6) { animation-delay:400ms; }
+.package-stream .content-parcel:nth-child(7) { animation-delay:480ms; }
+.package-stream .content-parcel:nth-child(8) { animation-delay:560ms; }
+.package-stream .content-parcel:nth-child(9) { animation-delay:640ms; }
+.package-stream .content-parcel:nth-child(10) { animation-delay:720ms; }
+@keyframes parcel-arrival {
+  from {
+    opacity:0;
+    transform:translateX(-28px);
+  }
+  to {
+    opacity:1;
+    transform:translateX(0);
+  }
+}
+[data-motion=off] .redhat-supply .content-parcel {
+  animation:none;
+}
+.target-scope {
+  margin-top:10px;
+  color:var(--muted);
+  font-size:10px;
+  line-height:1.5;
+}
+.target-scope:empty {
+  display:none;
+}
+.environment[data-health=healthy] {
+  border-color:#a7cdb7;
+}
+.environment[data-health=healthy] .host-status {
+  background:var(--green-soft);
+  color:var(--green);
+}
+.environment[data-health=affected] {
+  border-color:#d19e9e;
+}
+.environment[data-health=affected] .host-status {
+  background:var(--red-soft);
+  color:var(--red);
+}
+.environment[data-health=verifying] .host-status,
+.environment[data-health=updates] .host-status {
+  background:var(--amber-soft);
+  color:var(--amber);
+}
+.fix-state.verifying {
+  background:var(--amber-soft);
+  color:var(--amber);
+}
 .phase-indicator {
   display:flex;
   justify-content:flex-end;
@@ -1057,5 +1351,70 @@ h1 {
   }
   .secondary-controls button {
     min-height:38px;
+  }
+}
+
+/* Keep the added story/source row readable without changing the existing platform layout. */
+@media(max-width:850px) {
+  .story-intro h2 {
+    max-width:340px;
+  }
+  .story-event {
+    margin-top:3px;
+  }
+  .redhat-supply {
+    grid-template-columns:minmax(150px,.8fr) minmax(0,1.5fr);
+  }
+}
+@media(max-width:540px) {
+  .story-event {
+    gap:10px;
+    padding:13px 12px;
+  }
+  .event-copy h2 {
+    font-size:17px;
+  }
+  .event-copy>p:last-child {
+    font-size:11px;
+  }
+  .event-mark {
+    width:25px;
+    height:25px;
+    font-size:16px;
+  }
+  .redhat-supply {
+    grid-template-columns:minmax(102px,.75fr) minmax(0,1.25fr);
+    gap:13px;
+    padding-bottom:19px;
+  }
+  .redhat-source {
+    padding:10px 8px;
+    gap:7px;
+  }
+  .redhat-mark {
+    width:24px;
+    height:24px;
+    border-radius:4px;
+    font-size:9px;
+  }
+  .source-name {
+    font-size:12px;
+  }
+  .source-description,
+  .delivery-label,
+  .supply-destination {
+    font-size:9px;
+  }
+  .content-parcel {
+    max-width:105px;
+    min-height:21px;
+    font-size:9px;
+    padding:3px 5px;
+  }
+  .package-stream {
+    gap:4px;
+  }
+  .scene-progress {
+    font-size:10px;
   }
 }

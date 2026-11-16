@@ -1,3 +1,15 @@
+# Seven-scene visualization update — 2026-11-16
+
+Public frontend version **0.17.0** implements the approved seven-scene narrative
+for both fixed stories, retaining the actual code architecture while simplifying
+presentation. Green baselines, announcement timing, Red Hat content, a targeted
+fix versus bulk maintenance and the Test/approval/Prod rollout are visible.
+Existing automation and the operational acceptance records below are unchanged.
+Publication evidence and implementation references follow in the decision history.
+See [presenter controls and functional checks](demo/README.md).
+
+---
+
 # Future pre-sync cold checkpoint — working 0.16.0
 
 The user approved a cold post-satellite-install checkpoint after successful
@@ -27,6 +39,8 @@ Held image, generic VM/rollback and OLD/formal-review work remain held or blocke
 
 Latest verified public release is 0.15.3; 0.16.0 is an unpublished working version.
 The historical nine-cycle acceptance below remains valid for its recorded source.
+
+---
 
 # Nine NEW chronological procedures passed — 2026-11-16
 
