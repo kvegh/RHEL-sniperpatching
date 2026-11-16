@@ -1,5 +1,19 @@
 # Release notes
 
+## 0.14.5 — Diagnose cutoff validation without exposing input values
+
+Date-validation errors now add only reason, runtime type and string length.
+Keep all accepted-type, format, calendar and advisory-preservation checks
+unchanged. Eight focused selected-EE tests passed, including actual Ansible
+input transport and value suppression. Saved input and actual advisory-data
+replays pass; the first AAP cutoff failure's live cause remains unproven.
+
+The first targeted Test/Prod sequence has passed on one identical minor,
+including actual reboots and fix/smoke proof. Complete full-update and NEW/CVE
+acceptance remain unfinished. This diagnostic change is not a successful
+full-update claim.
+
+
 ## 0.14.4 — Record the repository-scope correction provenance
 
 Record implementation `01f476240c0ef45fa2bbd7f21d6ac2273380d6a3` and the

@@ -2,6 +2,7 @@
 # Reason and test scope: ../docs/implementation.md#synthetic-test-modules
 
 
+from datetime import date
 import importlib.util
 import json
 import os
@@ -128,6 +129,73 @@ class CutoffValidation(unittest.TestCase):
 
     def test_empty_value_preserves_explicit_latest_mode(self):
         self.assertEqual(content.update_cutoff("", []), "")
+
+
+@unittest.skipUnless(TRACK == "new", "NEW-only cutoff runtime diagnostics")
+class NativeCutoffTemplating(unittest.TestCase):
+    """Check native input typing and error output through actual Ansible templating."""
+
+    def run_guard(self, cutoff, yaml_input=False):
+        with tempfile.TemporaryDirectory(prefix="sniper-cutoff-templating-") as directory:
+            base = Path(directory)
+            play = [{
+                "name": "Validate the cutoff through native templating",
+                "hosts": "localhost", "connection": "local", "gather_facts": False,
+                "vars_files": [str(ROOT / "vars/main.yml")],
+                "vars": {"sniper_full_before": {"resources": [
+                    {"errata_id": "RHSA-2024:1234", "issued": "2024-01-01"}
+                ]}},
+                "tasks": [
+                    {"name": "Apply the actual publication guard expression",
+                     "ansible.builtin.set_fact": {
+                         "sniper_full_cutoff": "{{ sniper_update_end_date | sniper_update_cutoff(sniper_full_before.resources) }}"}},
+                    {"name": "Require the launch cutoff to override the saved default",
+                     "ansible.builtin.assert": {"that": "sniper_full_cutoff == '2024-05-23'"}},
+                ],
+            }]
+            play_path = base / "guard.yml"
+            play_path.write_text(yaml.safe_dump(play, sort_keys=False))
+            variables = {"sniper_update_end_date": cutoff, "ansible_python_interpreter": sys.executable}
+            var_path = base / "extravars"
+            var_path.write_text(yaml.safe_dump(variables) if yaml_input else json.dumps(variables))
+            var_path.chmod(0o600)
+            environment = dict(os.environ, ANSIBLE_FILTER_PLUGINS=str(ROOT / "filter_plugins"),
+                               ANSIBLE_LOCAL_TEMP=str(base / "local"), ANSIBLE_REMOTE_TEMP=str(base / "remote"),
+                               ANSIBLE_NOCOLOR="1", ANSIBLE_FORCE_COLOR="0", PYTHONDONTWRITEBYTECODE="1")
+            return subprocess.run(
+                ["ansible-playbook", "-u", "root", "--forks=1", "-i", "localhost,",
+                 "-e", "@" + str(var_path), str(play_path)],
+                cwd=base, env=environment, text=True, capture_output=True, timeout=60)
+
+    def test_real_json_cutoff_passes_native_templating_and_overrides_default(self):
+        result = self.run_guard("2024-05-23")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_non_string_runtime_types_remain_rejected_without_values(self):
+        marker = "synthetic-private-cutoff-marker"
+        for value, yaml_input in ((None, False), ({marker: "hidden"}, False), (date(2024, 5, 23), True)):
+            with self.subTest(input_type=type(value).__name__):
+                result = self.run_guard(value, yaml_input=yaml_input)
+                output = result.stdout + result.stderr
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("Missing or invalid update cutoff", output)
+                self.assertIn("reason=type", output)
+                self.assertIn("type=", output)
+                self.assertIn("length=unavailable", output)
+                self.assertNotIn(marker, output)
+                self.assertNotIn("hidden", output)
+
+    def test_invalid_strings_report_reason_and_length_without_value(self):
+        for value, reason in (("synthetic-private-cutoff-marker", "format"), ("2024-02-30", "calendar")):
+            with self.subTest(reason=reason):
+                result = self.run_guard(value)
+                output = result.stdout + result.stderr
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("Missing or invalid update cutoff", output)
+                self.assertIn("reason=" + reason, output)
+                self.assertIn("type=", output)
+                self.assertIn("length=" + str(len(value)), output)
+                self.assertNotIn(value, output)
 
 
 class FullPublicationPlaybook(unittest.TestCase):

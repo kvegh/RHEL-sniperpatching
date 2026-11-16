@@ -1,12 +1,14 @@
 # RHEL-sniperpatching
 
-**Version: 0.14.4.**
+**Version: 0.14.5.**
 
 Development and publication use **main only**. NEW includes scoped CoP content
 configuration, a qualified demo EE, content-first GA preparation and explicit
 direct Test/Prod registration. Full proactive RHEL 9.4 BaseOS/AppStream sync
 and the frozen GA content baseline passed actual AAP execution and independent
-readback. Registration and complete NEW patching acceptance remain unfinished.
+readback. Direct registration, registered-host preparation and the first targeted
+Test/Prod fix have passed. The first full cutoff run stopped safely at input
+validation; complete NEW acceptance remains unfinished.
 Registration now selects repository copies by both published version and
 lifecycle environment; the strict two-repository guard remains in place.
 See [scoped CoP qualification](docs/cop-qualification.md) and
@@ -23,8 +25,10 @@ NEW now prepares and verifies its frozen RHEL 9.4 GA-cutoff content before
 registration, then accepts the directly registered pair in a separate invocation.
 See [NEW baseline sequence](docs/new-baseline.md) for inputs, recovery and the
 explicit limit that selected-package verification does not reproduce a full ISO.
-The GA version is verified in both Test and Prod; direct registration and
-complete live NEW acceptance remain unfinished.
+The first targeted advisory was verified on the same minor version in Test
+and Prod, including reboots and smoke checks. Full-update acceptance remains
+unfinished; [release notes](docs/release-notes.md) distinguish the current
+validation investigation from completed stages.
 The selected NEW content window ends at RHSA-2024:8446 on 2024-10-24; its
 existing full-update cutoff defaults to that date, with no 9.5 demo requirement.
 

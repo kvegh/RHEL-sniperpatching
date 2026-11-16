@@ -1,3 +1,35 @@
+# First targeted pair verified; cutoff diagnostics prepared — 2026-11-16
+
+Version **0.14.5** changes only sanitized date-validation error diagnostics.
+Errors now distinguish type, format and calendar failures, with the runtime
+class and string length; input values and representations remain excluded.
+The accepted types, exact date format, calendar checks, advisory-preservation
+checks and all mutation boundaries are unchanged.
+
+The first advisory-only minor 1.1 passed actual content validation. Both original
+RHEL 9.4 clients then passed targeted RHSA-2024:3339 transactions, actual reboots,
+native package fix proof and smoke checks on that identical version. A fresh
+pinned native screen found the first selected witness fixed on both hosts and
+nine later witnesses still below their first-fixed builds.
+
+The first bounded full-update run supplied 2024-05-23 but stopped at cutoff
+validation before any sync, filter change or publication. Both clients and
+serving paths remain on tested 1.1. The exact saved variables and all 4,456
+published advisory rows pass unchanged validation in the selected EE through
+JSON and safe YAML transports. Native unquoted YAML dates reproduce the error
+as a negative control; this does not establish the failed job's actual type.
+The live cause remains unproven. Eight affected tests, including real Ansible
+templating and value-suppression cases, passed in the unchanged selected EE.
+
+Run one controlled normal cutoff job with the same explicit date only after
+the separate scoped CoP repeat/preservation check is terminal. Inspect the new
+sanitized reason/type if it fails; do not infer publication or silently coerce
+inputs. Finish the Test/Prod date-bounded full cycle and independent check before
+claiming complete NEW acceptance or starting the remaining advisory sequence.
+Preserve held/shared/OLD work. Raw operational data remain private Vault evidence.
+
+---
+
 # GA verified; registration repository selection corrected — 2026-11-15
 
 Version **0.14.4** records the correction from **0.14.3**, which adds the

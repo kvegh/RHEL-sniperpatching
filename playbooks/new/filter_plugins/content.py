@@ -95,18 +95,27 @@ def baseline_searches(ids):
     ]
 
 
+def _date_error(value, label, reason):
+    # Protected inputs stay out of errors; only their runtime shape is useful here.
+    length = len(value) if isinstance(value, str) else "unavailable"
+    return AnsibleFilterError(
+        "Missing or invalid %s (reason=%s; type=%s; length=%s)"
+        % (label, reason, type(value).__name__, length)
+    )
+
+
 def _baseline_date(value, label, timestamp=False):
     if not isinstance(value, str):
-        raise AnsibleFilterError("Missing or invalid " + label)
+        raise _date_error(value, label, "type")
     text = value
     if timestamp and len(text) > 10 and text[10] == "T":
         text = text[:10]
     if not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", text):
-        raise AnsibleFilterError("Missing or invalid " + label)
+        raise _date_error(value, label, "format")
     try:
         return date.fromisoformat(text)
-    except ValueError as exc:
-        raise AnsibleFilterError("Missing or invalid " + label) from exc
+    except ValueError:
+        raise _date_error(value, label, "calendar") from None
 
 
 def baseline_plan(ids, repository_errata, requested_cutoff="", existing_versions=None):
