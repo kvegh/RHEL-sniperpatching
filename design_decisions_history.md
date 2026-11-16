@@ -1614,3 +1614,13 @@ it. A 24px mobile source gutter now preserves the requested rightward exit.
 The geometry regression includes that narrow layout in addition to the desktop
 and resize cases. This fixes the concrete reviewed edge case; browser rendering
 remains unverified.
+
+
+Implementation: `df9f8352d5e08db4f41f0ba278437052667f3527` (0.19.1).
+[Pages run 43948699552](https://github.com/kvegh/RHEL-sniperpatching/actions/runs/43948699552)
+succeeded. All four public assets match source and all fourteen deployed
+HTML/script interaction checks pass, including desktop/narrow connector
+endpoints, resize updates and inactive visibility. Source review confirmed the
+24px gutter correction; local syntax, markup, version and whitespace checks
+passed. Browser appearance remains unverified. No dependency, automation or
+infrastructure change was made.
