@@ -1217,3 +1217,15 @@ The first warning-bearing deployment ended at 05:01:29 UTC, so the bounded
 compatibility correction through final deployment took 2 minutes 45 seconds of
 wall time. Active effort versus approval/CI waiting was not measured separately.
 No automation job, host or Satellite content was changed by this frontend work.
+
+
+## 2026-11-16 05:51 UTC — Simplify the visualization canvas
+
+The user requested removal of “THE PATCHING ARCHITECTURE / One tested version.
+Two environments.” and friendlier, lighter-blue AAP and Satellite headers.
+Version 0.15.2 removes that heading and its unused styles, retains the compact
+current-phase indicator, and gives both platform headers a light blue with dark
+text. This is a focused presentation correction; interaction behavior, source
+mapping and automation architecture are unchanged. No new components or tools
+are needed. Implementation commit: pending the implementation commit.
+Verification and deployment evidence follow once available.

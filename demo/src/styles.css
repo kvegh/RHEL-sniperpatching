@@ -281,18 +281,10 @@ h1 {
 .architecture {
   min-width:0;
 }
-.canvas-heading {
+.phase-indicator {
   display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:16px;
-  margin:6px 0 23px;
-}
-.canvas-heading h2 {
-  font-size:22px;
-  font-weight:600;
-  letter-spacing:-.5px;
-  margin-top:4px;
+  justify-content:flex-end;
+  margin:6px 0 12px;
 }
 .phase-badge {
   font-size:11px;
@@ -319,20 +311,20 @@ h1 {
   display:flex;
   align-items:center;
   gap:11px;
-  background:#183247;
-  color:#fff;
+  background:#dceefb;
+  color:#193e5b;
   padding:17px 19px;
   min-height:88px;
   border-top:3px solid #c9190b;
 }
 .satellite .platform-header {
-  background:#263c50;
+  background:#dceefb;
   border-top-color:var(--purple);
 }
 .platform-header p {
   font-size:9px;
   letter-spacing:.1em;
-  color:#c1d0dd;
+  color:#47647c;
   font-weight:600;
 }
 .platform-header h3 {
@@ -345,7 +337,7 @@ h1 {
   width:35px;
   height:35px;
   flex-shrink:0;
-  border:1px solid #ffffff50;
+  border:1px solid #98bdd8;
   border-radius:7px;
   display:grid;
   place-items:center;
@@ -802,9 +794,6 @@ h1 {
   .route-label {
     font-size:9px;
   }
-  .canvas-heading h2 {
-    font-size:19px;
-  }
   .header-links {
     gap:10px;
   }
@@ -861,9 +850,6 @@ h1 {
   }
   .story-footnote {
     grid-column:1/-1;
-  }
-  .canvas-heading {
-    margin-top:7px;
   }
   .platform-header h3 {
     font-size:18px;
@@ -933,15 +919,6 @@ h1 {
   .step-list button {
     font-size:11px;
     padding:6px;
-  }
-  .canvas-heading {
-    gap:9px;
-  }
-  .canvas-heading h2 {
-    font-size:17px;
-  }
-  .canvas-heading .eyebrow {
-    font-size:9px;
   }
   .phase-badge {
     font-size:10px;

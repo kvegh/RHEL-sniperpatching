@@ -1,5 +1,11 @@
 # Release notes
 
+## 0.15.2 — Simplify the canvas and lighten platform headers
+
+Remove the redundant architecture heading and retain the compact dynamic phase
+indicator. Give both AAP and Satellite headers a softer light blue with readable
+dark text. Existing story controls and state transitions are unchanged.
+
 ## 0.15.1 — Use current supported Pages action runtimes
 
 Replace inherited Node20-based Pages actions with the verified official

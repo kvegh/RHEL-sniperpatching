@@ -1,12 +1,13 @@
 # RHEL-sniperpatching
 
-**Version: 0.15.1.**
+**Version: 0.15.2.**
 
 [Open the interactive RHEL patching mockup](https://kvegh.github.io/RHEL-sniperpatching/)
 to follow two fixed CVE/RHSA cycles through Satellite content, Test verification,
 operator approval and production rollout, followed by broader cutoff updates.
 The architecture stays visible while available CV versions and installed host
-state change independently. This is a code-grounded explanatory simulation;
+state change independently. The streamlined canvas uses light-blue platform
+headers and a compact current-phase indicator. This is a code-grounded explanatory simulation;
 it makes no infrastructure connections. See [presenting and testing it](demo/README.md)
 for controls, source mapping, the repeatable deployed functional test and browser
 verification limits.

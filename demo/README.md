@@ -2,7 +2,7 @@
 
 [Open the visualization](https://kvegh.github.io/RHEL-sniperpatching/).
 
-Version **0.15.1**. This browser-only explanation is for security staff, Linux
+Version **0.15.2**. This browser-only explanation is for security staff, Linux
 administrators and AAP administrators. It follows the checked-in NEW architecture
 while grouping tasks and shortening operations for presentation. It is an
 explanatory mockup: statuses, CV numbers and outcomes are illustrative. No host,
@@ -19,7 +19,9 @@ not add an automatic AAP approval node. Arrow keys navigate outside focused
 controls; the right arrow stops at approval. R restarts. Workflow selection and
 direct links are presentation navigation rather than security controls.
 
-The architecture keeps AAP, Satellite, Test and Prod visible. Satellite serves
+The architecture keeps AAP, Satellite, Test and Prod visible. Both platform
+headers use a softer light blue with dark text; the redundant architecture
+heading is removed, keeping the current phase indicator. Satellite serves
 available CV content; separate AAP host jobs install and verify packages.
 Purple identifies content, blue host execution and amber approval. Hosts pull
 repository content from Satellite; content-flow arrows show package direction.

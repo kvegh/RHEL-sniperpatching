@@ -1,6 +1,6 @@
 # Interactive visualization published — 2026-11-16
 
-Public source version **0.15.1** adds a code-grounded explanatory frontend;
+Public source version **0.15.2** adds a code-grounded explanatory frontend;
 it leaves the automation and live-runtime evidence below unchanged. The
 [two-cycle GitHub Pages mockup](https://kvegh.github.io/RHEL-sniperpatching/)
 shows the user-selected Python and kernel stories. Implementation is
