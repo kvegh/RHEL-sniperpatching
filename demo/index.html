@@ -29,28 +29,30 @@
     </aside>
     <main id="architecture" class="architecture" tabindex="-1">
       <div class="phase-indicator"><span id="phase-badge" class="phase-badge">Baseline</span></div>
-      <section id="story-event" class="story-event" data-tone="healthy" role="status" aria-live="polite" aria-atomic="true">
-        <div class="event-mark" aria-hidden="true"></div>
-        <div class="event-copy">
-          <p id="event-kicker" class="eyebrow">BASELINE VERIFIED</p>
-          <h2 id="event-title">All systems up to date</h2>
-          <p id="event-detail">Test and Prod meet the defined baseline.</p>
-        </div>
-      </section>
-      <section id="redhat-supply" class="redhat-supply" data-delivery="none" aria-label="Red Hat software content delivered to Satellite">
-        <div class="redhat-source">
-          <span class="redhat-mark" aria-hidden="true">RH</span>
-          <div><p class="source-name">Red Hat</p><p class="source-description">Software repositories</p></div>
-        </div>
-        <div class="supply-transfer">
-          <p id="delivery-label" class="delivery-label">Trusted software content</p>
-          <div class="supply-track" aria-hidden="true">
-            <div id="package-stream" class="package-stream"></div>
-            <span class="supply-direction"></span>
+      <div class="story-source-row">
+        <section id="story-event" class="story-event" data-tone="healthy" role="status" aria-live="polite" aria-atomic="true">
+          <div class="event-mark" aria-hidden="true"></div>
+          <div class="event-copy">
+            <p id="event-kicker" class="eyebrow">BASELINE VERIFIED</p>
+            <h2 id="event-title">All systems up to date</h2>
+            <p id="event-detail">Test and Prod meet the defined baseline.</p>
           </div>
-          <span class="supply-destination">To Satellite <span aria-hidden="true">↓</span></span>
-        </div>
-      </section>
+        </section>
+        <section id="redhat-supply" class="redhat-supply" data-delivery="none" aria-label="Red Hat software content delivered to Satellite">
+          <div class="redhat-source">
+            <span class="redhat-mark" aria-hidden="true">RH</span>
+            <div><p class="source-name">Red Hat</p><p class="source-description">Software repositories</p></div>
+          </div>
+          <div class="supply-transfer">
+            <p id="delivery-label" class="delivery-label">Trusted software content</p>
+            <div class="supply-track" aria-hidden="true">
+              <div id="package-stream" class="package-stream"></div>
+              <span class="supply-direction"></span>
+            </div>
+            <span class="supply-destination">To Satellite <span aria-hidden="true">↓</span></span>
+          </div>
+        </section>
+      </div>
       <div class="control-row">
         <section class="platform aap" aria-labelledby="aap-title"><header class="platform-header"><span class="product-symbol">A</span><div><p>ORCHESTRATION</p><h3 id="aap-title">Ansible Automation Platform</h3></div></header><div class="platform-body"><p class="body-label">CURRENT ACTION</p><p id="job-label" class="job-label"></p><p id="target-scope" class="target-scope"></p></div><footer>Runs the playbooks and verifies the hosts</footer></section>
         <div id="flow-resolve" class="api-connection" aria-label="AAP talks to Satellite over HTTPS"><span>HTTPS API</span><div class="api-arrow" aria-hidden="true">→</div></div>

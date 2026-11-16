@@ -1,5 +1,11 @@
 # Release notes
 
+## 0.17.1 — Compact the status and repository row
+
+Place the status box beside Red Hat software repositories, shorten the baseline
+copy and reduce panel spacing. Stack the panels on screens up to 640px for
+readability. Existing scene controls and state transitions are unchanged.
+
 ## 0.17.0 — Explain both cycles through seven main scenes
 
 Start each run on a healthy green baseline and reveal its CVE only when announced.

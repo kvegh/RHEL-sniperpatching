@@ -48,7 +48,7 @@
   }
 
   function eventContent(step, state, approval) {
-    if (step.scene === 1) return ['healthy', 'BASELINE VERIFIED', 'All systems up to date', `Test and Prod comply with baseline CV ${state.testCV}. Previously verified fixes remain installed.`];
+    if (step.scene === 1) return ['healthy', 'BASELINE VERIFIED', 'All systems up to date', `Test and Prod verified on baseline CV ${state.testCV}.`];
     if (step.scene === 2) return ['alert', 'NEW SECURITY ALERT', state.scenario.title, `${state.scenario.cve} is announced and named to AAP. Only this newly announced issue changes the hosts’ security status.`];
     if (step.scene === 3) return ['content', 'RED HAT CONTENT', 'One fix, scoped content', 'AAP asks Satellite to ensure the required fix is available from synchronized Red Hat content.'];
     if (step.scene === 4) return ['content', 'TARGETED CONTENT VIEW', 'Baseline + selected fix + dependencies', `CV ${state.testCV} is available to Test. Publishing content has not installed packages on either host.`];

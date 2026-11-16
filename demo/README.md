@@ -2,7 +2,7 @@
 
 [Open the visualization](https://kvegh.github.io/RHEL-sniperpatching/).
 
-Version **0.17.0**. This browser-only explanation is for security staff, Linux
+Version **0.17.1**. This browser-only explanation is for security staff, Linux
 administrators and AAP administrators. It follows the checked-in NEW architecture
 while grouping tasks and shortening operations for presentation. It is an
 explanatory mockup: statuses, CV numbers and outcomes are illustrative. No host,
@@ -30,6 +30,8 @@ automatic approval node. Scene links are educational navigation, not access cont
 | 6. Routine patch window | Time passes; many security, bug-fix and enhancement updates arrive, retaining the already-applied fix in a broader CV. |
 | 7. Apply broader updates | Fully update and verify Test, approve, promote its exact major, update/verify Prod and finish green. |
 
+The compact status box sits beside the Red Hat software repositories on wider
+screens, saving vertical space. The two panels stack on screens up to 640px.
 The Red Hat source lane delivers content to Satellite. One selected fix and its
 dependencies are visually distinct from the later batch of maintenance updates.
 Arrival animations are finite and respect **Motion off** and reduced-motion

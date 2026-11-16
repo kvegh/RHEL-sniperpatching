@@ -1410,3 +1410,15 @@ real-browser layout; no browser or browser automation package was installed.
 No AAP/Satellite configuration, automation job or client state was changed by
 this frontend release. Active effort and approval/CI waiting were not separately
 measured.
+
+
+## 2026-11-16 16:53 UTC — Compact the status and repository row
+
+The user requested a narrower green baseline box with Red Hat software
+repositories alongside it to save space. Version 0.17.1 groups the existing
+status and source panels in a two-column row, shortens the baseline copy and
+stacks the panels on screens up to 640px. Existing source delivery and presenter
+controls remain in place. Native HTML/CSS is sufficient; no dependency or
+architectural change is needed. Implementation and publication evidence follow
+after verification. Browser rendering is not established by the existing Node
+interaction checks.
