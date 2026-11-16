@@ -1,3 +1,28 @@
+# Preserve exact NEW promotion text; live Prod verification next — 2026-11-16
+
+Version **0.14.9** accepts a leading `v` on exact NEW version text and removes
+only that prefix. The normal AAP input is `v2.0` (or `v2.10`); compare, promotion
+and final readback still require the exact Test version through the normal path.
+Numeric, Boolean and list inputs are rejected. The separate NEW survey explains
+the format; OLD and controller trust/runtime settings remain unchanged.
+
+Controlled live diagnostics proved the requested 2.0 reached Ansible as a float,
+while Satellite returned text and the lifecycle path was correct. The unchanged
+selected Core 2.20 runtime reproduces this for AWX-style `!unsafe` scalars, even
+quoted ones: numeric-looking strings lose their exact digits and date-looking
+strings become native dates. The deployed controller writer itself was not read;
+the upstream serializer and selected-runtime reproduction match both observed
+failures. Preserve all earlier failure and diagnostic receipts.
+
+The May 23 publication and Test full update have passed on actual 2.0; Prod
+still serves targeted minor 1.1. Apply/read back the survey-only protected CaC
+change through the existing importer after publication, then run one normal
+promotion with `v2.0`, verify the exact resulting source/version, update Prod
+fully and run the independent final check/matrix. Complete first-cycle NEW and
+later-CVE acceptance remain pending. Keep held/shared/OLD scopes intact.
+
+---
+
 # Full Test passed; bounded promotion diagnostics prepared — 2026-11-16
 
 Published executable **0.14.7** completed the May 23 bounded full publication

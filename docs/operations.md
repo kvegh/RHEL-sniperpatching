@@ -24,7 +24,7 @@ configuration, not a security sandbox against an authorized AAP administrator.
 | `sniper_prepare_content_only` | NEW only: Boolean `true` publishes/verifies the GA-cutoff baseline without host access; default `false` requires an already-served path and verifies/assigns the registered pair. |
 | `sniper_update_end_date` | Explicit issue-date cap. NEW defaults to `2024-10-24` (last selected RHSA); OLD keeps its empty default. An explicit empty override still selects unbounded/latest content, so NEW private callers must pin the agreed date. |
 | `sniper_baseline_filter`, `sniper_original_filter` | Namespace-derived filter names owned only by this project. |
-| `sniper_version` | Required exact Test version for explicit production promotion. |
+| `sniper_version` | Required exact Test version for explicit production promotion. NEW AAP: use `v2.0` (or `v2.10`); only the leading `v` is removed. OLD retains its existing plain-version input. |
 | `sniper_task_timeout`, `sniper_reboot_timeout` | Default 1800 and 900 seconds. |
 | `sniper_rpm_python` | Optional trusted override for the operating-system Python with native RPM bindings. Normally inferred for the declared OS. |
 | `sniper_smoke_services`, `sniper_smoke_urls` | Defaults are `[sshd]` and `[]`. Add application service names and `{url, status}` checks when meaningful; the default does not establish application-level coverage. |

@@ -24,7 +24,18 @@
       ansible.builtin.assert:
         that:
           - sniper_environment == 'prod'
-          - sniper_version is match('^[0-9]+[.][0-9]+$')
+          - sniper_version is string
+          - sniper_version is match('^v?[0-9]+[.][0-9]+$')
+        fail_msg: >-
+          Select prod and enter the exact tested version as text. Use v2.0 in AAP
+          (v2.10 preserves minor 10); numeric, Boolean and list inputs are refused.
+          requested_type={{ sniper_version | type_debug }};
+          requested_length={{ (sniper_version | length) if sniper_version is string else 'unavailable' }}.
+
+    # The v prefix survives AAP's !unsafe YAML scalar loading without losing minor digits.
+    - name: Record the exact requested version text without its optional prefix
+      ansible.builtin.set_fact:
+        sniper_promotion_version: "{{ sniper_version | regex_replace('^v', '') }}"
 
     - name: Find our Test environment
       redhat.satellite.resource_info:
@@ -44,23 +55,25 @@
     - name: Require the selected version to be the Test version and the normal lifecycle path
       ansible.builtin.assert:
         that:
-          - (sniper_test_version.resources | sniper_one).version == sniper_version
+          - (sniper_test_version.resources | sniper_one).version == sniper_promotion_version
           - sniper_env.prior.id | int == (sniper_promote_test.resources | sniper_one).id | int
         fail_msg: >-
           Promote the exact Test version through the project path; force promotion is never used.
           requested_type={{ sniper_version | type_debug }};
           requested_length={{ (sniper_version | length) if sniper_version is string else 'unavailable' }};
+          normalized_type={{ sniper_promotion_version | type_debug }};
+          normalized_length={{ (sniper_promotion_version | length) if sniper_promotion_version is string else 'unavailable' }};
           test_type={{ (sniper_test_version.resources | sniper_one).version | type_debug }};
           test_length={{ ((sniper_test_version.resources | sniper_one).version | length)
             if (sniper_test_version.resources | sniper_one).version is string else 'unavailable' }};
-          version_equal={{ (sniper_test_version.resources | sniper_one).version == sniper_version }};
+          version_equal={{ (sniper_test_version.resources | sniper_one).version == sniper_promotion_version }};
           path_equal={{ sniper_env.prior.id | int == (sniper_promote_test.resources | sniper_one).id | int }}.
 
     - name: Promote the selected tested version
       redhat.satellite.content_view_version:
         organization: "{{ sniper_organization }}"
         content_view: "{{ sniper_content_view }}"
-        version: "{{ sniper_version }}"
+        version: "{{ sniper_promotion_version }}"
         lifecycle_environments: "{{ [sniper_prod_environment] }}"
 
     - name: Read back production version
@@ -73,4 +86,4 @@
 
     - name: Confirm production serves the selected version
       ansible.builtin.assert:
-        that: (sniper_promoted_version.resources | sniper_one).version == sniper_version
+        that: (sniper_promoted_version.resources | sniper_one).version == sniper_promotion_version

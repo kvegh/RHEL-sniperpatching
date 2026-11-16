@@ -1,0 +1,28 @@
+{
+  "name": "RHEL-sniperpatching NEW production promotion",
+  "description": "Promote the exact version currently serving Test through the normal path after successful Test validation.",
+  "spec": [
+    {
+      "question_name": "Destination stage",
+      "question_description": "Production only. This stage never patches a host.",
+      "variable": "sniper_environment",
+      "type": "multiplechoice",
+      "required": true,
+      "default": "prod",
+      "choices": "prod",
+      "min": 0,
+      "max": 1024
+    },
+    {
+      "question_name": "Exact tested Content View version (for example v2.0)",
+      "question_description": "Enter the exact Test version with a leading v, for example v2.0 or v2.10. The same tested version is promoted through the normal path; no latest-version inference or force promotion.",
+      "variable": "sniper_version",
+      "type": "text",
+      "required": true,
+      "default": "",
+      "choices": "",
+      "min": 4,
+      "max": 32
+    }
+  ]
+}

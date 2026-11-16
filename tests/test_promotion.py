@@ -19,6 +19,17 @@ from track_paths import TRACK
 
 ROOT = Path(__file__).resolve().parents[1] / "playbooks/new"
 MODULES = ("resource_info", "content_view_version")
+
+
+class SafeStringDumper(yaml.SafeDumper):
+    """Match AWX's survey extra-vars writer, including explicit !unsafe scalars."""
+
+    def represent_data(self, value):
+        if isinstance(value, str):
+            return self.represent_scalar("!unsafe", value)
+        return super().represent_data(value)
+
+
 MODULE = r'''
 import json
 import os
@@ -75,7 +86,8 @@ else:
 
 @unittest.skipUnless(TRACK == "new", "NEW-only exact-version promotion")
 class PromotionPlaybook(unittest.TestCase):
-    def run_promotion(self, requested="2.0", test_version="2.0", wrong_prior=False, bad_readback=False):
+    def run_promotion(self, requested="2.0", test_version="2.0", wrong_prior=False,
+                      bad_readback=False, unsafe_transport=False):
         with tempfile.TemporaryDirectory(prefix="sniper-promotion-") as directory:
             base = Path(directory)
             collection = base / "collections/ansible_collections/redhat/satellite"
@@ -100,7 +112,8 @@ class PromotionPlaybook(unittest.TestCase):
                 "ansible_python_interpreter": sys.executable,
             }
             var_path = base / "extravars"
-            var_path.write_text(json.dumps(variables))
+            var_path.write_text(yaml.dump(variables, Dumper=SafeStringDumper, default_flow_style=False)
+                                if unsafe_transport else json.dumps(variables))
             environment = dict(os.environ, ANSIBLE_COLLECTIONS_PATH=str(base / "collections"),
                                ANSIBLE_LOCAL_TEMP=str(base / "local"), ANSIBLE_REMOTE_TEMP=str(base / "remote"),
                                ANSIBLE_NOCOLOR="1", ANSIBLE_FORCE_COLOR="0", PYTHONDONTWRITEBYTECODE="1",
@@ -127,24 +140,50 @@ class PromotionPlaybook(unittest.TestCase):
                 self.assertFalse(promotions[0]["force_promote"])
                 self.assertTrue(state["promoted"])
 
-    def test_wrong_version_fails_before_promotion_with_bounded_diagnostics(self):
-        result, state = self.run_promotion(requested="2.10")
+    def test_awx_unsafe_prefixed_strings_preserve_minor_digits(self):
+        for version in ("2.0", "2.10"):
+            with self.subTest(version=version):
+                result, state = self.run_promotion(requested="v" + version, test_version=version,
+                                                   unsafe_transport=True)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                promotions = [call for call in state["calls"] if call["module"] == "content_view_version"]
+                self.assertEqual(len(promotions), 1)
+                self.assertEqual(promotions[0]["version"], version)
+                self.assertFalse(promotions[0]["force_promote"])
+
+    def test_bare_unsafe_version_cannot_select_a_different_minor(self):
+        result, state = self.run_promotion(requested="2.10", test_version="2.1", unsafe_transport=True)
         self.assert_not_promoted(result, state)
         output = result.stdout + result.stderr
-        self.assertIn("requested_type=str", output)
-        self.assertIn("requested_length=4", output)
-        self.assertIn("test_type=str", output)
-        self.assertIn("test_length=3", output)
-        self.assertIn("version_equal=False", output)
-        self.assertIn("path_equal=True", output)
-        self.assertNotIn("requested_value", output)
+        self.assertIn("Use v2.0", output)
+        self.assertIn("requested_type=float", output)
+        self.assertFalse(any(call["params"].get("environment_id") == 30 for call in state["calls"]))
+
+    def test_wrong_version_fails_before_promotion_with_bounded_diagnostics(self):
+        for requested, unsafe_transport in (("2.10", False), ("v2.10", True)):
+            with self.subTest(unsafe_transport=unsafe_transport):
+                result, state = self.run_promotion(requested=requested, unsafe_transport=unsafe_transport)
+                self.assert_not_promoted(result, state)
+                output = result.stdout + result.stderr
+                self.assertIn("requested_type=str", output)
+                self.assertIn("requested_length=" + str(len(requested)), output)
+                self.assertIn("normalized_type=str", output)
+                self.assertIn("normalized_length=4", output)
+                self.assertIn("test_type=str", output)
+                self.assertIn("test_length=3", output)
+                self.assertIn("version_equal=False", output)
+                self.assertIn("path_equal=True", output)
+                self.assertNotIn("requested_value", output)
 
     def test_wrong_predecessor_remains_blocked(self):
-        result, state = self.run_promotion(wrong_prior=True)
-        self.assert_not_promoted(result, state)
-        output = result.stdout + result.stderr
-        self.assertIn("version_equal=True", output)
-        self.assertIn("path_equal=False", output)
+        for requested, unsafe_transport in (("2.0", False), ("v2.0", True)):
+            with self.subTest(unsafe_transport=unsafe_transport):
+                result, state = self.run_promotion(requested=requested, wrong_prior=True,
+                                                   unsafe_transport=unsafe_transport)
+                self.assert_not_promoted(result, state)
+                output = result.stdout + result.stderr
+                self.assertIn("version_equal=True", output)
+                self.assertIn("path_equal=False", output)
 
     def test_bool_list_and_numeric_versions_never_promote(self):
         marker = "synthetic-private-version-marker"
@@ -157,10 +196,10 @@ class PromotionPlaybook(unittest.TestCase):
                 if isinstance(value, float):
                     self.assertIn("requested_type=float", output)
                     self.assertIn("requested_length=unavailable", output)
-                    self.assertIn("version_equal=False", output)
+                    self.assertIn("Use v2.0", output)
 
     def test_final_readback_must_still_match_exact_requested_version(self):
-        result, state = self.run_promotion(bad_readback=True)
+        result, state = self.run_promotion(requested="v2.0", bad_readback=True, unsafe_transport=True)
         self.assertNotEqual(result.returncode, 0)
         self.assertTrue(state["promoted"])
         self.assertIn("Confirm production serves the selected version", result.stdout)

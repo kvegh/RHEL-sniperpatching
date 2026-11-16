@@ -1,5 +1,26 @@
 # Release notes
 
+## 0.14.9 — Preserve exact NEW promotion version text
+
+Accept `v2.0`/`v2.10` in the NEW promotion input and remove only that leading `v`
+after strict text/format validation. Compare, promote and read back the exact
+remaining text; reject numeric values rather than reconstructing lost digits.
+Plain string versions remain accepted for local/JSON callers. A separate NEW
+survey explains the input; the OLD survey and playbooks are unchanged.
+
+Controlled live diagnostics proved the requested version reached Ansible as a
+float while Satellite returned text. Selected-runtime replay reproduces the
+conversion for quoted and unquoted `!unsafe` numeric strings, including loss of
+2.10 to 2.1, and reproduces the earlier calendar-date conversion. Prefixing the
+input preserves its identity without controller policy or runtime changes.
+All seven promotion regression methods are covered by six confirmed original
+passes and a focused final-method recovery, which passed in 9.312 seconds.
+The original full-suite final summary and duration were lost and remain unknown;
+no uninterrupted-suite result is claimed. Independent scoped source review found
+no concrete defect. Matching-EE strict lint remains unavailable without installing
+a tool. Complete corrected live Prod/full-cycle acceptance remains pending.
+
+
 ## 0.14.8 — Diagnose the exact-version promotion comparison
 
 Add bounded type, string-length and equality diagnostics to failed promotion

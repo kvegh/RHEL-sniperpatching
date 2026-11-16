@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Version: 0.14.8.**
+**Version: 0.14.9.**
 
 Development and publication use **main only**. NEW includes scoped CoP content
 configuration, a qualified demo EE, content-first GA preparation and direct
@@ -13,10 +13,11 @@ The corrected May 23 publication passed and returned version 2.0. Independent
 reads checked all 4,469 advisories against that inclusive cutoff and retained
 all 4,456 prior advisories. Test completed its full update, fix/smoke checks and
 no-pending-update/reboot checks. The following Prod promotion stopped at its
-exact-version equality guard before changing Prod; its runtime comparison is
-under investigation. Bounded failure diagnostics now expose only types, lengths
-and equality results while retaining the exact-version and lifecycle-path guards.
-Prod still serves 1.1, so complete NEW acceptance remains unfinished. See [scoped CoP qualification](docs/cop-qualification.md) and
+exact-version equality guard before changing Prod; its runtime input arrived as a number. NEW now accepts `v2.0` promotion input
+and removes only the leading `v`, preserving exact version digits through AAP
+transport. Numeric values remain rejected; exact-version and lifecycle-path
+guards remain in place. Corrected live Prod acceptance is still pending, and
+Prod still serves 1.1. See [scoped CoP qualification](docs/cop-qualification.md) and
 [release notes](docs/release-notes.md) for verified scope and remaining work.
 
 The owner selected the [ten-CVE catalog](docs/rhel94-cve-candidates.md) for

@@ -45,6 +45,25 @@ or supply the explicit GA value; an empty override is intentionally refused.
 Existing SATELLITE_* credentials, strict HTTPS validation and forced job-local
 CA cleanup are unchanged. No new authentication or transport is introduced.
 
+## Exact NEW promotion input
+
+Use [the NEW promotion survey](../surveys/new-promotion.json), with the exact
+currently tested version written as `v2.0` or `v2.10`. The NEW playbook validates
+text, removes only the leading `v`, and compares/promotes the exact remaining
+version through the normal Test-to-Prod path. Plain strings remain accepted for
+local/JSON callers; numeric input is rejected because lost minor digits cannot
+be safely reconstructed. Keep the existing OLD survey unchanged.
+
+The selected Core 2.20 runtime re-resolves numeric/date-looking `!unsafe` YAML
+scalars, including quoted values. The upstream AWX string serializer applies that
+tag to survey values. This matches the actual float promotion input and native
+calendar cutoff observed live; a selected-runtime replay reproduces both. The
+deployed controller writer itself was not read.
+See the [AWX serializer](https://github.com/ansible/awx/blob/24.6.1/awx/main/utils/safe_yaml.py)
+and [Core YAML constructor](https://github.com/ansible/ansible/blob/stable-2.20/lib/ansible/_internal/_yaml/_constructor.py).
+No controller trust policy, runtime, credential or force-promotion change is
+needed. The existing cutoff validator already normalizes native calendar dates.
+
 ## Selected demonstration window
 
 The selected client-content interval is RHEL 9.4 GA (`2024-04-30`) through
