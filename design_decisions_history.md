@@ -1,5 +1,34 @@
 # Design decisions history
 
+## 2026-11-16 — Normalize the native calendar date proven by AAP
+
+Implementation: `63fe436499d7a19b8dd6ac84db3ff99f777f60ba`, version **0.14.7**.
+The follow-up documentation commit records this actual implementation ID without
+changing that tested executable version.
+
+The controlled live retry identified `_AnsibleTaggedDate` at the publication
+guard. Its stored cutoff was the intended ISO text, but the validator received a
+native calendar object. The runner's conversion point remains unknown. Both
+failed attempts stopped before repository sync, filters or publication, so the
+same tested 1.1 content remained serving and no new content version was created.
+
+Normalize only native calendar dates with `isoformat()` before the same strict
+text/calendar and advisory-retention validation. Exclude datetime timestamps and
+retain rejection of arbitrary objects rather than coercing their string forms.
+Empty/latest semantics and all content ownership/promotion boundaries remain
+unchanged. The actual native-date regression failed before the correction and
+passed afterward. All fifteen publication tests passed in 82.908 seconds; saved
+actual inputs and all 4,456 immutable advisories passed through both JSON text
+and native YAML calendar types in the unchanged selected EE.
+
+The separate scoped CoP repeat also passed on source `22b21e5`, preserving all
+material content and both full 443-RPM client inventories, identities, consumers
+and kernels. Native repository syncs and execution-local CA-file handling explain
+reported changes; no zero-change or full CoP-feature compatibility is claimed.
+Corrected full publication and complete NEW/CVE acceptance still require their
+normal AAP execution; full formal review and held/OLD work remain separate.
+
+
 ## 2026-11-16 — Diagnose the live cutoff rejection without disclosing its value
 
 Implementation: `cde7988fafce8416ca22e470093aa1d033f64daf`, version **0.14.5**.
