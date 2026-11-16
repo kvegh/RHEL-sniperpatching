@@ -1227,5 +1227,8 @@ Version 0.15.2 removes that heading and its unused styles, retains the compact
 current-phase indicator, and gives both platform headers a light blue with dark
 text. This is a focused presentation correction; interaction behavior, source
 mapping and automation architecture are unchanged. No new components or tools
-are needed. Implementation commit: pending the implementation commit.
-Verification and deployment evidence follow once available.
+are needed. Implementation commit: `e2e0fc80ec424503ff786af9831069b63cc5f152`.
+The existing six interaction checks passed locally and against the deployed
+page. GitHub Pages run `43813046943` succeeded; all four public assets matched
+the checkout. Header text contrast is 9.39:1 and 5.22:1 against the new light
+blue. Browser visual/mobile rendering remains unverified.

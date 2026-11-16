@@ -1,6 +1,10 @@
 # Interactive visualization published — 2026-11-16
 
-Public source version **0.15.2** adds a code-grounded explanatory frontend;
+Public source version **0.15.2** includes the user-requested heading removal
+and lighter-blue platform headers, implemented in
+e2e0fc80ec424503ff786af9831069b63cc5f152 and published by successful Pages run
+43813046943. Four deployed assets match and six interaction checks pass. It
+adds a code-grounded explanatory frontend;
 it leaves the automation and live-runtime evidence below unchanged. The
 [two-cycle GitHub Pages mockup](https://kvegh.github.io/RHEL-sniperpatching/)
 shows the user-selected Python and kernel stories. Implementation is
