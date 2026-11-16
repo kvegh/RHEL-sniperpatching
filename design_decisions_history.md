@@ -1,5 +1,28 @@
 # Design decisions history
 
+## 2026-11-16 — Record all nine chronological NEW procedures
+
+Automation correction: implementation
+61ba62232e425a1a7497cd0813c8249976325e43 (0.14.11). Final-cycle executable source:
+28ab1a5da4984da5e9c768d3704a61720788d086 (public 0.15.2), with the qualified
+automation tree unchanged by the intervening presentation updates.
+
+Finish the agreed ten-CVE catalog on the original pair without resetting or
+recreating clients. All nine advisory cycles and 81 distinct successful normal
+stages passed. Both clients reached full 10.0 through October 24, stayed on
+RHEL 9.4 and ran kernel 5.14.0-427.40.1.el9_4. Final native evidence verifies
+all ten selected CVEs, including the running kernel for four CVEs and all
+installed witness builds for six userspace CVEs. Preserve the five earlier
+failed attempts and the correctly already_current fourth-case Test recovery.
+
+Update current summaries and add a sanitized acceptance table; retain raw
+events, identities and hash-linked receipts under the existing whole-file
+Vault mechanism. This records actual runtime evidence, with no new executable
+or infrastructure behavior and no full formal-review, exploitability,
+installation-ISO equivalence or latest-source full-suite claim. The separately
+requested pre-sync Satellite snapshot and its pending power-cycle choice remain
+outside this acceptance; existing held and OLD scopes are preserved.
+
 ## 2026-11-16 — Include standard versioned modules in NEW running-kernel proof
 
 Implementation: `61ba62232e425a1a7497cd0813c8249976325e43`, version **0.14.11**.

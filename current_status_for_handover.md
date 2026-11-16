@@ -1,3 +1,41 @@
+# Nine NEW chronological procedures passed — 2026-11-16
+
+Both original RHEL 9.4 clients reached full **10.0** through **2024-10-24**.
+All ten selected CVEs passed native package verification after nine advisory
+cycles and **81 distinct successful normal-stage jobs**. Each client has
+456 RPMs, retains its original identity and consumer, and runs
+5.14.0-427.40.1.el9_4.x86_64. Native redhat-release remains 0:9.4-0.5.el9.
+The final proof binds all four kernel CVEs to the actual running kernel and
+requires all installed witness builds fixed for the six userspace CVEs.
+
+Every cycle passed targeted Test/Prod updates, exact tested-version promotion,
+the inclusive date-bounded full Test/Prod updates, required reboots, smoke and
+no-pending-update/reboot checks, independent Prod verification, and fresh paired
+Satellite/native identity and package acceptance. Five earlier failed attempts
+remain in protected evidence. The corrected fourth-case Test recovery correctly
+reported already_current after the original failed proof had installed and
+booted the fixed kernel; actual Prod patching and all later cycles passed.
+This is recovered end-to-end acceptance, not an uninterrupted first attempt.
+
+See the [sanitized cycle table and limits](docs/new-cycle-acceptance.md).
+Public source version remains **0.15.2**; the final two cycles ran 28ab1a5.
+Earlier mixed presentation-only revisions retain exact automation-tree
+equivalence evidence. No executable, survey, catalog-JSON, EE or canonical CaC
+change is made by this documentation checkpoint. Preserve the independently
+published interactive visualization and its separate verification scope.
+
+Raw receipts and the hash-linked all-nine index remain whole-file Vault data.
+Local evidence and publication of encrypted evidence to the private companion
+remain separate outcomes. Full formal review, matching-EE strict lint, OLD
+qualification and held image/shared/rollback work are unchanged. The separately
+requested post-install/pre-sync Satellite snapshot is not implemented or
+retroactively claimed by these tests; its pending power-cycle decision remains
+separate. No client reset, recreation, reinstall, snapshot restore or RHEL 9.5
+upgrade was used. Older dated runtime-recovery instructions below are historical
+and superseded by this accepted result.
+
+---
+
 # Interactive visualization published — 2026-11-16
 
 Public source version **0.15.2** includes the user-requested heading removal

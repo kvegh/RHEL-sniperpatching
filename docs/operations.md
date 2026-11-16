@@ -57,11 +57,14 @@ checks and Satellite inspection to plan changes; promotion is accepted only
 when actual readback shows the requested version.
 
 OLD acceptance remains the tested standard RHEL 7.9 workshop pair. The
-separate NEW standard RHEL 9.4 x86_64 pair has completed three targeted/full cycles.
-Its fourth kernel-advisory Test run exposed retained-module verification; the
-NEW correction includes only `kernel-modules` and `kernel-modules-core` in the
-existing exact running-release/native-EVR proof. Corrected live recovery and
-the remaining cycles are pending. Other RHEL branches, debug/realtime/other
+separate NEW standard RHEL 9.4 x86_64 pair has completed
+[all nine targeted/full cycles](new-cycle-acceptance.md), with all ten selected CVEs
+verified fixed. Its fourth kernel-advisory Test run exposed retained-module
+verification; the NEW correction includes only `kernel-modules` and
+`kernel-modules-core` in the existing exact running-release/native-EVR proof.
+Corrected live Test recovery, actual Prod patching and subsequent cycles passed.
+Both original clients reached full 10.0 through October 24 and remain RHEL 9.4.
+Other RHEL branches, debug/realtime/other
 kernel variants, modular content, major OS upgrades and application-specific
 mitigation have no new verified-support claim. Debug-kernel release suffixes
 need separate proof logic and tests before acceptance.

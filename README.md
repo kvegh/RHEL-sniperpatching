@@ -15,14 +15,16 @@ verification limits.
 Development and publication use **main only**. NEW provides scoped Satellite
 content configuration, full proactive RHEL 9.4 BaseOS/AppStream mirroring,
 GA-content-first preparation and direct registration of the selected Test/Prod
-pair. Those stages and the first three targeted/full-update cycles passed
+pair. Those stages and all nine targeted/full-update cycles passed
 through AAP with independent native content, identity and package verification.
 Both original clients received the same tested minor, then the same bounded full
 version, with required reboots, smoke checks and no remaining repository updates.
 
 The accepted [ten-CVE catalog](docs/rhel94-cve-candidates.md) is validated against
-both original clients and the synchronized content. The first three cases are complete;
-six remaining RHSA cycles are being tested in order. Ten CVEs share nine advisories,
+both original clients and the synchronized content.
+[All nine chronological cycles](docs/new-cycle-acceptance.md) verify all ten
+selected CVEs fixed on both clients through the final October cutoff. Ten CVEs
+share nine advisories,
 and cumulative updates can cover earlier fixes. The selected RHEL 9.4 window ends
 at RHSA-2024:8446 on 2024-10-24, with no 9.5 requirement. Keep per-cycle cutoffs
 explicit so later examples remain available.
@@ -32,7 +34,8 @@ a proof defect: retained older `kernel-modules` and `kernel-modules-core` RPMs
 were treated as ordinary package duplicates. The NEW correction applies the
 existing exact running-release and native fixed-EVR checks to those two module
 packages. Retained fallback builds remain visible; userspace checks remain
-strict. Corrected live Test/Prod acceptance is pending.
+strict. Corrected Test recovery, actual Prod patching and the complete fourth
+cycle passed; subsequent cycles retained that proof.
 
 The qualified runtime uses Core 2.20.10, certified Satellite 6.0.0 and unchanged
 CoP 1.5.0 for the scoped foundation paths. NEW promotion accepts exact text such
@@ -40,7 +43,7 @@ as `v2.0` or `v2.10`, removing only the leading `v` before the normal exact-vers
 checks. See [baseline and promotion inputs](docs/new-baseline.md),
 [scoped CoP qualification](docs/cop-qualification.md) and
 [release notes](docs/release-notes.md). Full formal review and OLD compatibility
-remain separate from the completed first NEW procedure.
+remain separate from the completed NEW procedure and chronological cycles.
 
 See [current handover status](current_status_for_handover.md) for recorded
 validation, review status and continuation boundaries.
@@ -56,7 +59,7 @@ Both tracks remain available in this public repository:
 | Directory | Purpose | Verification |
 |---|---|---|
 | `playbooks/old/` | Remote demo Satellite and its own remote AAP, with the tested runtime helpers. | Three Test-to-Prod cycles passed before this path-only reorganization. |
-| `playbooks/new/` | Our local Satellite and up-to-date production AAP; includes separate NEW setup stages. | Satellite installation, scoped foundation/GA/registration and the first paired targeted/full cycle passed; later CVE cycles continue. |
+| `playbooks/new/` | Our local Satellite and up-to-date production AAP; includes separate NEW setup stages. | Satellite installation, scoped foundation/GA/registration and all nine paired targeted/full cycles passed on the original RHEL 9.4 clients. |
 
 Each directory contains its demo entry points, tasks, variables, filter plugins,
 native RPM/runtime helpers, synthetic inventory and collection declarations.
@@ -80,8 +83,8 @@ and published with Core 2.20.10, certified Satellite collection 6.0.0 and
 unchanged CoP 1.5.0. Its dedicated immutable binding was applied through the
 existing CaC importer. The normal read-only runtime template passed through AAP
 with authenticated collection and native URI HTTPS verification. The complete
-procedure bindings pass exact protected readback. Client registration and the
-first complete Test/Prod targeted/full-update procedure are verified.
+procedure bindings pass exact protected readback. Client registration and all
+nine chronological Test/Prod targeted/full-update procedures are verified.
 
 There are no root-level forwarding playbooks. Update a template's playbook path
 and synchronize the matching source revision together. The private companion
@@ -451,7 +454,7 @@ source for actual CVE mappings, affected installed packages and available conten
 
 ## Configuration and checks
 
-Public playbooks and surveys stay here. Protected AAP configuration is whole-file Vault ciphertext in the private RHEL-sniperpatching-secrets companion. Deploy RHEL Sniperpatching CaC uses the shared importer and an explicit destination. Its configuration import, receiving-runtime diagnostic, direct registration and first paired targeted/full procedure have passed. Remaining CVE cases and formal review retain their separate acceptance scope.
+Public playbooks and surveys stay here. Protected AAP configuration is whole-file Vault ciphertext in the private RHEL-sniperpatching-secrets companion. Deploy RHEL Sniperpatching CaC uses the shared importer and an explicit destination. Its configuration import, receiving-runtime diagnostic, direct registration and all nine chronological paired targeted/full procedures have passed. Full formal review and OLD compatibility retain their separate acceptance scope.
 
 The observed-failure protections remain: compatible original-package filters, normal Library → Test promotion, bounded reuse of an interrupted minor, signing-key inventory handling, authoritative RPM epochs and bounded transient read retries. Host/CV ownership, consumer UUID, repository restrictions, cutoff checks and final host completion assertions remain enforced.
 
@@ -474,7 +477,7 @@ interfaces must also pass in the selected EE. Offline fixture results on a
 newer local runtime supplement, rather than replace, the actual AAP baseline.
 The separate formal review batch is **not accepted yet**: mandatory APME coverage,
 the full restarted review and its final AAP end-to-end re-test remain pending.
-The first complete NEW procedure passed separately and does not close that review. See the
+All nine NEW chronological procedures passed separately and do not close that review. See the
 [dated evidence](docs/review-2026-11-12.md) for exact results and limitations.
 
 
@@ -504,9 +507,11 @@ Record the actual interpreter/core/collection versions alongside results.
 
 ### Repeatable functional test of a deployed client
 
-Use the existing **RHEL-sniperpatching - Check patch** Job Template
-(`playbooks/old/check_patch.yml`). Select `test` or `prod` and the same already-applied RHSA/CVE
-input; retain the protected inventory, credential and exact authorized pair.
+Use the existing template for the selected track: **RHEL-sniperpatching - Check
+patch** (`playbooks/old/check_patch.yml`) or **RHEL-sniperpatching NEW - Check
+patch** (`playbooks/new/check_patch.yml`). Select `test` or `prod` and the same
+already-applied RHSA/CVE input; retain that track’s protected inventory,
+credential and exact authorized pair.
 Keep Limit empty and require existing SSH/become, native RPM/reboot tools and
 Satellite read access. The job checks current CV/consumer binding, every requested
 fix using native RPM/kernel proof, no pending reboot and configured smoke tests.
@@ -518,4 +523,5 @@ This check is safe to repeat on the owned pair: it creates no test resources,
 installs nothing and requires no cleanup. Run it after patching and as the final
 independent presenter check. It supplements the complete Test/Prod publication,
 patching, reboot and full-update acceptance sequence; it does not replace it.
-The corrected revision has not yet passed that AAP acceptance sequence.
+The remaining corrected-artifact OLD/formal-review re-test is separate from the
+[accepted nine-cycle NEW procedure](docs/new-cycle-acceptance.md).
