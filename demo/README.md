@@ -2,7 +2,7 @@
 
 [Open the visualization](https://kvegh.github.io/RHEL-sniperpatching/).
 
-Version **0.18.0**. This browser-only explanation is for security staff, Linux
+Version **0.18.1**. This browser-only explanation is for security staff, Linux
 administrators and AAP administrators. It follows the checked-in NEW architecture
 while grouping tasks and shortening operations for presentation. It is an
 explanatory mockup: statuses, CV numbers and outcomes are illustrative. No host,
@@ -32,11 +32,15 @@ automatic approval node. Scene links are educational navigation, not access cont
 
 The compact status box sits beside the Red Hat software repositories on wider
 screens, aligned with the workflow panel’s top edge and saving vertical space.
-The secondary phase badge sits in the footer. AAP and Satellite are centered
-in equal halves, at least 40% narrower on desktop with tighter spacing. The Red
-Hat box, icon and text are enlarged by about 30%. Narrow screens retain readable
-platform widths; the Red Hat source stays above Satellite with one continuous
-arrow. The top status/source panels stack on screens up to 640px.
+The secondary phase badge sits in the footer. Compact AAP and Satellite cards
+are centered in equal halves. The latest refinement makes the server cards 20%
+narrower with tighter padding and enlarges Satellite and Red Hat another 10%.
+Narrow screens retain readable card widths; the Red Hat source stays above
+Satellite with one continuous arrow. The top status/source panels stack on
+screens up to 640px. The AAP-to-Satellite API arrow spans the gap between the
+cards, carrying the current action label. Connectors use thin rounded lines,
+small open arrowheads and slower, finer animated dashes; request arrows still
+travel toward Satellite, and package responses travel back toward clients.
 The Red Hat source lane delivers content to Satellite. One selected fix and its
 dependencies are visually distinct from the later batch of maintenance updates.
 Arrival animations are finite and respect **Motion off** and reduced-motion

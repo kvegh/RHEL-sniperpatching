@@ -1,5 +1,13 @@
 # Release notes
 
+## 0.18.1 — Refine card balance and connection arrows
+
+Reduce server-card width by 20%, enlarge Satellite and Red Hat another 10%, and
+retain centered responsive placement. Replace the short API glyph with a long
+connected arrow. Use finer rounded lines, small open heads and smoother flow
+motion throughout, preserving request direction, labels and motion controls.
+Existing orchestration actions and package states are unchanged.
+
 ## 0.18.0 — Make AAP orchestration explicit
 
 Show query, repository-update, CV-composition and publication triggers as distinct

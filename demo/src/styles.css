@@ -389,11 +389,11 @@ h1 {
   min-width:0;
 }
 .redhat-source {
-  width:min(100%,260px);
+  width:min(100%,286px);
   display:flex;
   align-items:center;
-  gap:13px;
-  padding:17px 20px;
+  gap:14px;
+  padding:19px 22px;
   border:1px solid var(--line);
   border-radius:8px;
   background:var(--paper);
@@ -402,25 +402,25 @@ h1 {
 .redhat-mark {
   display:grid;
   place-items:center;
-  width:43px;
-  height:43px;
+  width:47px;
+  height:47px;
   flex-shrink:0;
   border-radius:6px;
   background:#c9190b;
   color:#fff;
-  font-size:16px;
+  font-size:18px;
   font-weight:700;
   letter-spacing:.03em;
 }
 .source-name {
-  font-size:20px;
+  font-size:22px;
   font-weight:600;
   line-height:1.3;
 }
 .source-description {
   margin-top:4px;
   color:var(--muted);
-  font-size:14px;
+  font-size:15.5px;
   line-height:1.4;
 }
 .supply-transfer {
@@ -448,17 +448,19 @@ h1 {
   left:calc(50% - 1px);
   top:0;
   bottom:4px;
-  width:2px;
-  background:#ccd7e0;
+  width:1.5px;
+  border-radius:2px;
+  background:#a9bacb;
 }
 .supply-direction {
   position:absolute;
   left:50%;
   bottom:3px;
-  width:9px;
-  height:9px;
-  border-right:2px solid #9aacbc;
-  border-bottom:2px solid #9aacbc;
+  width:7px;
+  height:7px;
+  border-right:1.5px solid #8ca2b8;
+  border-bottom:1.5px solid #8ca2b8;
+  border-radius:1px;
   transform:translateX(-50%) rotate(45deg);
 }
 .package-stream {
@@ -508,9 +510,9 @@ h1 {
 }
 .redhat-supply[data-delivery=targeted] .supply-track:before,
 .redhat-supply[data-delivery=bulk] .supply-track:before {
-  background:repeating-linear-gradient(to bottom,var(--purple) 0 8px,transparent 8px 13px);
-  background-size:100% 26px;
-  animation:content-download 900ms linear 2;
+  background:repeating-linear-gradient(to bottom,var(--purple) 0 5px,transparent 5px 12px);
+  background-size:100% 24px;
+  animation:content-download 1.8s linear 2;
 }
 .redhat-supply[data-delivery=targeted] .supply-direction,
 .redhat-supply[data-delivery=bulk] .supply-direction {
@@ -531,7 +533,7 @@ h1 {
 .package-stream .content-parcel:nth-child(9) { animation-delay:640ms; }
 .package-stream .content-parcel:nth-child(10) { animation-delay:720ms; }
 @keyframes content-download {
-  to { background-position:0 26px; }
+  to { background-position:0 24px; }
 }
 @keyframes parcel-arrival {
   from {
@@ -613,6 +615,9 @@ h1 {
   min-height:54px;
   border-top:3px solid #c9190b;
 }
+.satellite {
+  width:calc(66% - 25.3px);
+}
 .satellite .platform-header {
   background:#dceefb;
   border-top-color:var(--purple);
@@ -665,9 +670,9 @@ h1 {
 }
 .api-connection {
   position:absolute;
-  left:50%;
+  left:49.25%;
   top:50%;
-  width:140px;
+  width:calc(18.5% + 12px);
   transform:translate(-50%,-50%);
   text-align:center;
   color:var(--muted);
@@ -675,15 +680,42 @@ h1 {
   font-weight:600;
 }
 .api-arrow {
-  font-size:32px;
-  line-height:1.2;
-  color:#bdc8d2;
+  position:relative;
+  height:18px;
+  width:100%;
+  margin-top:7px;
+  color:#8ca2b8;
 }
-.api-connection.is-active {
-  color:var(--blue);
+.api-arrow:before {
+  content:'';
+  position:absolute;
+  top:8px;
+  left:0;
+  right:1px;
+  height:1.5px;
+  border-radius:2px;
+  background:currentColor;
 }
+.api-arrow:after {
+  content:'';
+  position:absolute;
+  right:1px;
+  top:5px;
+  width:7px;
+  height:7px;
+  border-right:1.5px solid currentColor;
+  border-bottom:1.5px solid currentColor;
+  border-radius:1px;
+  transform:rotate(-45deg);
+}
+.api-connection.is-active,
 .api-connection.is-active .api-arrow {
   color:var(--blue);
+}
+.api-connection.is-active .api-arrow:before {
+  background:repeating-linear-gradient(to right,currentColor 0 5px,transparent 5px 12px);
+  background-size:24px 100%;
+  animation:api-flow 1.8s linear 2;
 }
 .cv-update {
   margin-top:8px;
@@ -731,8 +763,8 @@ h1 {
   color:var(--purple);
 }
 .promotion-arrow {
-  color:#ac9cc6;
-  font-size:24px;
+  color:#8d79ad;
+  font-size:18px;
 }
 .satellite.is-promoting {
   outline:3px solid #b19bcf;
@@ -750,9 +782,14 @@ h1 {
 }
 .routes svg>path {
   fill:none;
-  stroke-width:2;
-  stroke:#d0d9e3;
+  stroke-width:1.5;
+  stroke:#adbed0;
+  vector-effect:non-scaling-stroke;
+  stroke-linecap:round;
+  stroke-linejoin:round;
 }
+#arrow-execution { color:var(--blue); }
+#arrow-content { color:var(--purple); }
 .routes svg>path.execution-route {
   color:var(--blue);
   marker-end:url(#arrow-execution);
@@ -763,9 +800,9 @@ h1 {
 }
 .routes svg>path.is-active {
   stroke:currentColor;
-  stroke-width:3;
-  stroke-dasharray:9 5;
-  animation:flow 1.4s linear 2;
+  stroke-width:1.8;
+  stroke-dasharray:5 7;
+  animation:flow 1.8s linear 2;
 }
 .routes svg>path.content-route.is-active {
   color:var(--purple);
@@ -774,7 +811,7 @@ h1 {
 .routes svg>path.content-route.is-requesting {
   marker-end:none;
   marker-start:url(#arrow-content);
-  animation:request-flow 1.4s linear 2;
+  animation:request-flow 1.8s linear 2;
 }
 .routes svg>path.execution-route.is-active {
   color:var(--blue);
@@ -811,10 +848,12 @@ h1 {
   gap:24px;
 }
 .environment {
+  width:80%;
+  justify-self:center;
   background:var(--paper);
   border:1px solid #b9c7d4;
   border-radius:10px;
-  padding:19px;
+  padding:15px;
   box-shadow:0 3px 10px #182f4810;
   min-width:0;
 }
@@ -1029,13 +1068,20 @@ h1 {
 .is-approval .narrative h3 {
   color:var(--amber);
 }
+@keyframes api-flow {
+  to { background-position:24px 0; }
+}
 @keyframes request-flow {
-  to { stroke-dashoffset:56; }
+  to { stroke-dashoffset:48; }
 }
 @keyframes flow {
   to {
-    stroke-dashoffset:-56;
+    stroke-dashoffset:-48;
   }
+}
+[data-motion=off] .api-connection.is-active .api-arrow:before {
+  animation:none;
+  background:currentColor;
 }
 [data-motion=off] .routes svg>path.is-active {
   animation:none;
@@ -1056,7 +1102,7 @@ h1 {
     font-size:16px;
   }
   .environment {
-    padding:23px;
+    padding:18px;
   }
   .fix-name {
     font-size:14px;
@@ -1093,7 +1139,7 @@ h1 {
     padding:6px 9px;
   }
   .environment {
-    padding:14px;
+    padding:11px;
   }
   .environments {
     gap:15px;
@@ -1178,7 +1224,7 @@ h1 {
     padding:10px 12px;
   }
   .environment {
-    padding:19px;
+    padding:15px;
   }
 }
 @media(max-width:540px) {
@@ -1270,9 +1316,6 @@ h1 {
   .api-connection {
     font-size:8px;
   }
-  .api-arrow {
-    font-size:25px;
-  }
   .bindings {
     gap:3px;
     flex-wrap:wrap;
@@ -1305,7 +1348,7 @@ h1 {
     gap:10px;
   }
   .environment {
-    padding:11px 9px;
+    padding:9px 7px;
   }
   .environment header {
     align-items:flex-start;
@@ -1392,10 +1435,11 @@ h1 {
   .control-row {
     column-gap:32px;
   }
-  .platform {
+  .platform,.environment {
     width:100%;
   }
   .api-connection {
+    left:50%;
     width:31px;
     overflow-wrap:anywhere;
   }
@@ -1428,20 +1472,20 @@ h1 {
     font-size:16px;
   }
   .redhat-source {
-    padding:13px 10px;
-    gap:9px;
+    padding:14px 11px;
+    gap:10px;
   }
   .redhat-mark {
-    width:31px;
-    height:31px;
+    width:34px;
+    height:34px;
     border-radius:4px;
-    font-size:12px;
+    font-size:13px;
   }
   .source-name {
-    font-size:16px;
+    font-size:18px;
   }
   .source-description {
-    font-size:12px;
+    font-size:13px;
   }
   .delivery-label {
     font-size:9px;

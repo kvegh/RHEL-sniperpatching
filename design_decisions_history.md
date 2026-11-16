@@ -1484,3 +1484,19 @@ changes; it verified the matching column math, reverse request marker and motion
 controls by source inspection. This is not formal project-review acceptance or
 browser rendering verification. No browser tooling was installed and no AAP,
 Satellite or client runtime was changed.
+
+
+## 2026-11-16 19:29 UTC — Refine card balance and arrow styling
+
+Recorded after the user requested server nodes 20% smaller, Satellite and Red
+Hat another 10% larger, a long AAP-to-Satellite arrow, and more elegant technical
+connectors with visible but lighter animation. Version 0.18.1 narrows centered
+server cards and tightens padding, enlarges Satellite's existing width and the
+Red Hat source dimensions, and preserves readable narrow-screen card widths.
+The API connector spans the gap between cards with its existing action label.
+All routes use thinner rounded strokes, small open heads and finer, slower
+finite flow dashes. Motion-off and reduced-motion preferences remain effective;
+client request/response direction and all orchestration behavior are preserved.
+Native CSS and SVG are sufficient. No dependency or runtime changes are made.
+Implementation and publication evidence follow after verification. Browser
+layout and perceived animation quality remain unverified by the Node checks.
