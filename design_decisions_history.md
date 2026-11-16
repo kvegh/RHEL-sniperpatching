@@ -1,5 +1,31 @@
 # Design decisions history
 
+## 2026-11-16 — Preserve exact NEW version digits through AAP transport
+
+Implementation: `d7e14bb2b67254ebbbcf6ba6580d0ec24ee251c3`, version **0.14.9**.
+Controlled diagnostics proved a native float request against a string Test
+version, while the lifecycle path was correct. The unchanged selected Core 2.20
+runtime reproduces float/date re-resolution of quoted and unquoted `!unsafe`
+scalars from the upstream AWX string-writer pattern. The exact deployed writer
+was not directly read; source behavior and local reproduction match both live
+failures. Never reconstruct a version from a float because 2.10 becomes 2.1.
+
+Require text and an optional single `v` prefix, remove only that prefix into a
+fresh string, then compare/promote/read back the exact remaining version. Keep
+numeric/Boolean/list rejection, normal lifecycle and no-force guards. Add a
+NEW-only survey prescribing v2.0/v2.10; retain the OLD source/shared survey.
+No controller trust setting, runtime, credential or architecture change is made.
+
+All seven regression methods are covered by six confirmed original-method
+passes plus a focused final-method recovery in 9.312 seconds. The original
+suite final output/end time/duration were lost and remain unknown. The recovery
+captured output/result/timing inside whole-file Vault evidence before returning.
+Independent scoped static review found no concrete defect. Matching-EE strict
+lint remains unavailable; no tool was installed or full formal review claimed.
+Publish and import/read back the protected survey-only change normally, then
+verify the actual prefixed promotion/Prod update before first-cycle acceptance.
+
+
 ## 2026-11-16 — Diagnose exact-version equality before Prod promotion
 
 Implementation: `4a50e1af12f1dc0c888eb48371f7002d641074e0`, version **0.14.8**.
