@@ -1,5 +1,41 @@
 # Design decisions history
 
+## 2026-11-16 — Guard a future NEW Satellite cold installation checkpoint
+
+Implementation: 3eb8f368d4c22e7024e8f94700027011a7bcbd7f, working version
+0.16.0 (unpublished). The user explicitly selected a cold checkpoint named
+post-satellite-install after successful installation and before the first sync.
+
+Keep the existing certified installer, native Machine/API credentials and private
+whole-file Vault configuration. Separate guest and hypervisor jobs retain their
+own credentials. The selected libvirt module exposes no snapshot-create action;
+the existing AAP helper has AAP-only ownership constraints. Add a NEW-only
+standard-library virsh/qemu-img helper with exact identity/storage/provenance
+guards, a per-VM native lock, bounded ACPI shutdown, verified cold readback and
+restart. Refuse foreign snapshots and unsupported storage; preserve uncertain
+capture outcomes without automatic retry or restart.
+
+Share native service/TLS verification with the installer. Bind successful final
+guest verification to its original VM UUID and public CA. Initial content setup
+requires that result plus the owned cold checkpoint before any content write.
+An integration review identified the missing final-result dependency; the
+implemented correction and negative regressions close that gap. Read-only
+preflight never claims capture, and temporary SSH/CA files are cleaned up.
+
+The selected Core2.20.10 EE passed 33 focused helper/orchestration tests; related
+CA/installer checks passed 11 tests. Four playbook syntax checks passed before
+the final artifact-binding addition, which is covered by the focused suite.
+The helper also passed its 22 focused tests under Python3.12 and3.9. These are
+synthetic/local results, not fresh live capture or formal acceptance. Review of
+the final trailing-blank-line correction found no behavior change.
+
+Native AAP workflow versus separate manual-job sequencing is awaiting the
+existing user choice; new template/CaC wiring and publication remain pending.
+The current Satellite already has synchronized content and was not stopped,
+reset, reinstalled or snapshotted. Preserve completed nine-cycle evidence and
+all separate private-publication, held image/rollback and OLD/review boundaries.
+
+
 ## 2026-11-16 — Record all nine chronological NEW procedures
 
 Automation correction: implementation
