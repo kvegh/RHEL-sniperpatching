@@ -31,6 +31,9 @@ _RUNTIME_KERNELS = frozenset(
     (
         "kernel",
         "kernel-core",
+        # Standard versioned modules must pass the same exact running-release proof.
+        "kernel-modules",
+        "kernel-modules-core",
         "kernel-rt",
         "kernel-rt-core",
         "kernel-debug",

@@ -56,12 +56,15 @@ planning interfaces: they refuse mutation in check mode. Use explicit read-only
 checks and Satellite inspection to plan changes; promotion is accepted only
 when actual readback shows the requested version.
 
-The declared acceptance scope is the tested standard RHEL 7.9 kernel on the
-workshop pair. RHEL 8/9 branches, debug/realtime/other kernel variants, modular
-content, major OS upgrades and application-specific mitigation are not newly
-verified support. In particular, debug-kernel release suffixes need separate
-proof logic and tests before that variant is accepted. This is not a claim that
-all other platforms are incompatible.
+OLD acceptance remains the tested standard RHEL 7.9 workshop pair. The
+separate NEW standard RHEL 9.4 x86_64 pair has completed three targeted/full cycles.
+Its fourth kernel-advisory Test run exposed retained-module verification; the
+NEW correction includes only `kernel-modules` and `kernel-modules-core` in the
+existing exact running-release/native-EVR proof. Corrected live recovery and
+the remaining cycles are pending. Other RHEL branches, debug/realtime/other
+kernel variants, modular content, major OS upgrades and application-specific
+mitigation have no new verified-support claim. Debug-kernel release suffixes
+need separate proof logic and tests before acceptance.
 
 ## Recovery and repeat behavior
 

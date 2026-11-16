@@ -1,5 +1,29 @@
 # Release notes
 
+## 0.14.11 — Verify the running standard kernel module packages
+
+A fourth-case targeted Test update installed and booted the fixed kernel but
+failed proof because retained older `kernel-modules` and `kernel-modules-core`
+RPMs were checked like ordinary userspace duplicates. Add only these two names
+to NEW's existing runtime-kernel allowlist. Each requires a native fixed-EVR
+build matching the exact running release; newer-but-not-running and missing
+matching module builds still fail. Keep retained backups visible, userspace and
+unknown-name checks strict, and OLD unchanged.
+
+The intended regression failed before the change. In the selected EE, 38 NEW
+tests passed; 31 unchanged OLD tests passed with seven NEW-only skips. A saved
+failed-state replay using native RPM 4.16.1.3 passes after the fix, while old or
+unmatched running-release/module controls still fail. The EE tests use synthetic
+RPM fixtures; the native comparator replay is separate. Independent scoped
+source review found no concrete defect. Corrected live Test retry, Prod and
+full-update acceptance remain pending. Preserve the initial
+failed transaction/reboot evidence; the recovery may correctly report already
+current. No package removal, host reset or content rebuild is required by this
+verification correction. The first three complete chronological cycles passed
+on both original clients; six advisory cycles remain. Full formal review and
+held/shared/OLD scopes remain separate.
+
+
 ## 0.14.10 — Record the first complete NEW paired procedure
 
 The first RHSA-2024:3339/CVE-2024-2961 cycle passed on both original RHEL 9.4

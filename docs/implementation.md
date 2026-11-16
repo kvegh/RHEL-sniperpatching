@@ -102,6 +102,13 @@ Tests cover epochs, multilib, missing components, per-CVE proof and kernel state
 mock comparisons are distinct from actual native-RPM AAP evidence. Supported
 kernel coverage is limited as described in [operations](operations.md).
 
+NEW additionally treats standard `kernel-modules` and `kernel-modules-core` as
+versioned runtime kernel packages. A fixed build must match the exact running
+release and pass native RPM EVR comparison. Merely installing a newer fixed
+module while running an older or unmatched release cannot pass. Older fallback
+RPMs remain in the detailed proof. This changes neither the OLD helper nor the
+all-installed-build checks for userspace, kernel tools or unlisted package names.
+
 ## Runtime inspection
 
 `files/runtime_probe.py` uses the selected EE's own `ansible-galaxy`,

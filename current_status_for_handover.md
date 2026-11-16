@@ -1,3 +1,35 @@
+# Fourth NEW kernel case: correct retained-module proof — 2026-11-16
+
+Version **0.14.11** corrects NEW proof classification for standard
+`kernel-modules` and `kernel-modules-core`, using the existing exact running
+release and native fixed-EVR checks. The before-fix regression failed as intended;
+38 NEW and 31 OLD selected-EE tests passed afterward (seven NEW-only OLD skips).
+Exact saved-state replay with native RPM 4.16.1.3 passes, and negative controls
+remain false. Independent scoped review found no concrete defect. Corrected live
+recovery remains pending; OLD and other package classifications are unchanged.
+
+The first three complete original-pair cases passed: RHSA-2024:3339,
+RHSA-2024:4312 and RHSA-2024:4457. Both clients reached full 4.0 through July 10,
+retain original identities/consumers, have 456 RPMs and run kernel
+5.14.0-427.24.1.el9_4. The first three selected witnesses are fixed and seven
+later witnesses remain below their first-fixed builds.
+
+The fourth Test minor 4.1 passed all immutable-baseline/content/path guards.
+Its targeted kernel update installed and booted 5.14.0-427.31.1.el9_4, then failed
+verification only for retained older module RPMs. Prod remains on full 4.0.
+Preserve the failed run; publish the qualified narrow correction, then retry
+only the normal Test patch stage against the same 4.1. After native acceptance,
+verify Prod still matches the immutable baseline, promote exact v4.1, patch Prod
+and publish the next full cutoff **2024-08-15**. Do not rebuild the minor, reset a
+guest or advance to the final October cutoff. Six advisory cycles remain.
+
+All raw operational evidence remains whole-file Vault data. Publication and
+latest-source live acceptance are separate from local evidence. The full formal
+review, blocked OLD compatibility and held shared/image work are unchanged.
+Earlier dated checkpoints below are historical.
+
+---
+
 # First NEW cycle accepted; remaining chronological cases active — 2026-11-16
 
 Version **0.14.10** records the first complete NEW targeted/full Test/Prod cycle;

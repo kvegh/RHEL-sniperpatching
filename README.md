@@ -1,21 +1,28 @@
 # RHEL-sniperpatching
 
-**Version: 0.14.10.**
+**Version: 0.14.11.**
 
 Development and publication use **main only**. NEW provides scoped Satellite
 content configuration, full proactive RHEL 9.4 BaseOS/AppStream mirroring,
 GA-content-first preparation and direct registration of the selected Test/Prod
-pair. Those stages and the first complete targeted/full-update cycle passed
+pair. Those stages and the first three targeted/full-update cycles passed
 through AAP with independent native content, identity and package verification.
 Both original clients received the same tested minor, then the same bounded full
 version, with required reboots, smoke checks and no remaining repository updates.
 
 The accepted [ten-CVE catalog](docs/rhel94-cve-candidates.md) is validated against
-both original clients and the synchronized content. The first case is complete;
-the remaining eight RHSA cycles are being tested in order. Ten CVEs share nine advisories,
+both original clients and the synchronized content. The first three cases are complete;
+six remaining RHSA cycles are being tested in order. Ten CVEs share nine advisories,
 and cumulative updates can cover earlier fixes. The selected RHEL 9.4 window ends
 at RHSA-2024:8446 on 2024-10-24, with no 9.5 requirement. Keep per-cycle cutoffs
 explicit so later examples remain available.
+
+The fourth targeted Test run installed and booted the fixed kernel, then exposed
+a proof defect: retained older `kernel-modules` and `kernel-modules-core` RPMs
+were treated as ordinary package duplicates. The NEW correction applies the
+existing exact running-release and native fixed-EVR checks to those two module
+packages. Retained fallback builds remain visible; userspace checks remain
+strict. Corrected live Test/Prod acceptance is pending.
 
 The qualified runtime uses Core 2.20.10, certified Satellite 6.0.0 and unchanged
 CoP 1.5.0 for the scoped foundation paths. NEW promotion accepts exact text such
