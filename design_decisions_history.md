@@ -1429,3 +1429,14 @@ succeeded. All four live assets match; all ten existing deployed HTML/script
 interaction checks pass. Local interaction, syntax, markup, shared-row and
 version checks also pass. Real-browser layout remains unverified; no browser
 tool was available or installed. No automation or infrastructure was changed.
+
+
+## 2026-11-16 17:30 UTC — Align the top panels
+
+The user requested aligning the green status and Red Hat boxes with the top
+of the workflow panel. Version 0.17.2 moves the secondary phase badge from
+its separate top row into the existing footer, removes the obsolete offset
+styles and top-aligns the source content. This preserves the badge and
+walkthrough behavior while bringing the requested panels to the same top edge.
+No new component or dependency is needed. Implementation and publication
+references follow after verification; real-browser layout remains unverified.

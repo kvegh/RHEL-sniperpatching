@@ -1,5 +1,11 @@
 # Release notes
 
+## 0.17.2 — Align the top panels
+
+Align the compact status and Red Hat repository boxes with the top of the
+workflow panel. Move the secondary phase badge to the existing canvas footer
+and remove the unused offset styles. Story behavior remains unchanged.
+
 ## 0.17.1 — Compact the status and repository row
 
 Place the status box beside Red Hat software repositories, shorten the baseline

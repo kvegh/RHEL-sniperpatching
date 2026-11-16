@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Version: 0.17.1.**
+**Version: 0.17.2.**
 
 [Open the interactive RHEL patching mockup](https://kvegh.github.io/RHEL-sniperpatching/)
 to follow two fixed CVE/RHSA cycles through seven explanatory scenes: green
@@ -9,7 +9,8 @@ rollout, the next maintenance window and broader Test/Prod updates. Rollout
 scenes expand into verification, reboot where needed, operator approval and
 exact-version production promotion. Future CVEs stay hidden until announced;
 prior fixes remain verified while routine updates arrive. A compact status box
-shares a row with Red Hat software repositories. The architecture,
+shares a row with Red Hat software repositories, aligned with the workflow
+panel’s top edge. The architecture,
 Content View versions and installed host state stay visible, with the selected
 fix contrasted against the later bulk content flow. This browser-only mockup
 uses the code's responsibilities and makes no infrastructure connections. See

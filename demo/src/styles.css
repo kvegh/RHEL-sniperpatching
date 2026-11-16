@@ -383,7 +383,7 @@ h1 {
   position:relative;
   display:flex;
   flex-wrap:wrap;
-  align-items:center;
+  align-items:flex-start;
   gap:10px 16px;
   margin:0;
   padding:0 0 8px;
@@ -584,11 +584,6 @@ h1 {
 .fix-state.verifying {
   background:var(--amber-soft);
   color:var(--amber);
-}
-.phase-indicator {
-  display:flex;
-  justify-content:flex-end;
-  margin:6px 0 12px;
 }
 .phase-badge {
   font-size:11px;
@@ -987,6 +982,7 @@ h1 {
 }
 .canvas-footer {
   display:flex;
+  align-items:center;
   justify-content:space-between;
   gap:15px;
   margin-top:23px;
@@ -1368,9 +1364,6 @@ h1 {
 @media(max-width:850px) {
   .story-intro h2 {
     max-width:340px;
-  }
-  .story-event {
-    margin-top:3px;
   }
 }
 @media(max-width:640px) {
