@@ -1641,3 +1641,14 @@ animation. Motion-off and reduced-motion hide highlights while leaving the solid
 line/head visible. The existing story, CV counters, labels, card sizes and layout
 are preserved. No dependency or runtime change is introduced. Implementation and
 publication references follow verification; browser appearance remains unverified.
+
+
+Implementation: `2e4e64036789b8ba390973b3211473818c17f20e` (0.19.2).
+[Pages run 43951122610](https://github.com/kvegh/RHEL-sniperpatching/actions/runs/43951122610)
+succeeded. Four public assets match source and all fourteen deployed interaction
+checks pass, including API highlight restart, reused highlight geometry and
+reversed client-request flow. Local syntax, markup, ID, version and whitespace
+checks passed. Independent source review found no concrete issue in the combined
+pulse selectors, solid heads, direction or motion-control behavior. Browser
+appearance and perceived animation quality remain unverified; no browser tooling
+or dependency was installed. Existing automation/runtime was unchanged.
