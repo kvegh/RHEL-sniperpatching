@@ -1,5 +1,9 @@
 # RHEL sniper patching: quick guide
 
+[Interactive patching mockup](https://kvegh.github.io/RHEL-sniperpatching/) ·
+[Controls and verification](demo/README.md). The page explains two fixed cycles;
+it does not run AAP jobs or establish live patching results.
+
 Select the OLD or NEW directory explicitly in each AAP template:
 `playbooks/old/<stage>.yml` or `playbooks/new/<stage>.yml`. The OLD workshop
 results below do not certify the pending NEW Satellite installation. See

@@ -1,6 +1,15 @@
 # RHEL-sniperpatching
 
-**Version: 0.14.11.**
+**Version: 0.15.0.**
+
+[Open the interactive RHEL patching mockup](https://kvegh.github.io/RHEL-sniperpatching/)
+to follow two fixed CVE/RHSA cycles through Satellite content, Test verification,
+operator approval and production rollout, followed by broader cutoff updates.
+The architecture stays visible while available CV versions and installed host
+state change independently. This is a code-grounded explanatory simulation;
+it makes no infrastructure connections. See [presenting and testing it](demo/README.md)
+for controls, source mapping, the repeatable deployed functional test and browser
+verification limits.
 
 Development and publication use **main only**. NEW provides scoped Satellite
 content configuration, full proactive RHEL 9.4 BaseOS/AppStream mirroring,
@@ -35,7 +44,7 @@ remain separate from the completed first NEW procedure.
 See [current handover status](current_status_for_handover.md) for recorded
 validation, review status and continuation boundaries.
 
-[Quick guide](TLDR.md) · [Process diagram](docs/process.md) ·
+[Quick guide](TLDR.md) · [CVE/RHSA patching cycle diagram](docs/process.md) ·
 [Inputs and recovery](docs/operations.md) · [Implementation rationale](docs/implementation.md) ·
 [Review evidence](docs/review-2026-11-12.md)
 
@@ -95,6 +104,12 @@ that sequence. Satellite controls which packages are available; AAP runs the
 host updates, handles required reboots, and verifies the installed result.
 Each stage is launched explicitly by the person leading the demonstration.
 Test and Prod are the two stages of this dedicated demo environment.
+
+The [patching cycle diagram](docs/process.md) shows both the CVE/RHSA-triggered
+minor update and the later date-bounded full update, including the operator's
+decision before each production rollout. These decisions currently use separate
+manual stage launches; automatic approval prompts and scheduling are not
+implemented.
 
 ## Why deploy a single security fix?
 

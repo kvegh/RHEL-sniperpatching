@@ -1,5 +1,16 @@
 # Release notes
 
+## 0.15.0 — Add the interactive patching mockup
+
+Publish a buildless two-cycle explanatory walkthrough for the selected Python
+setuptools and kernel CVEs. Keep AAP, Satellite, Test and Prod visible; separate
+CV availability from installation and verification, include operator approval
+checkpoints, broader cutoff updates and explicit kernel reboot stops. Add
+source-linked technical detail, keyboard/motion controls, Node model/handler
+checks, a repeatable deployed functional command and allowlisted Pages publication.
+This feature changes presentation only; existing automation and its acceptance
+evidence are preserved. Real-browser layout remains unverified.
+
 ## 0.14.11 — Verify the running standard kernel module packages
 
 A fourth-case targeted Test update installed and booted the fixed kernel but

@@ -1117,3 +1117,55 @@ updates documentation and VERSION only. GA publication, direct registration,
 host applicability/dependencies, complete NEW patching acceptance and the
 agreed CVE cycles remain pending. No complete CoP or full-review acceptance is
 claimed. Development and publication remain on existing main.
+## 2026-11-15 15:14 EST — Publish the CVE/RHSA patching cycle visualization
+
+The user explicitly requested publishing the conversation's visualization in
+the public RHEL-sniperpatching repository. Update the existing docs/process.md
+and README links rather than introduce a second diagram, website or rendering
+dependency. The diagram follows CVE/RHSA input through a minor CV, Test patching
+and verification, an operator decision and exact-version production promotion;
+it then shows the later date-bounded full update and repeating advisory cycle.
+Retain the independent read-only fix check and failure/recovery guidance.
+
+The approval gates describe human decisions between existing separate AAP stage
+launches. They do not claim implemented automatic approval prompts, schedules
+or new live acceptance. No playbook, infrastructure or runtime behavior changes.
+The code release remains 0.13.4 because this change updates documentation only.
+The alternative of adding automated approval nodes or scheduling would change
+execution behavior and is outside this publication request.
+
+This initial static documentation proposal was superseded by the interactive
+publication requirement below before any commit or publication.
+
+
+## 2026-11-15/16 — Build and publish the first explanatory interactive mockup
+
+The user requested a dynamic interactive visualization in this public repository
+and GitHub Pages, using the Windows disconnected, AAP AutoDeploy and AIOps pages
+as presentation references. The audience is security staff, Linux administrators
+and AAP administrators. Architecture is central, with workflow and Content View
+versions also visible. The user clarified that the page follows the code's core
+architecture and responsibilities while grouping tasks and simplifying timings
+for explanation. This supersedes the initial static-diagram-only proposal.
+
+The user selected two fixed stories with no presenter-entered data: “Python
+malicious package download” (setuptools, CVE-2024-6345, RHSA-2024:5534) and
+“Network Privilege Escalation” (kernel, CVE-2024-36883, RHSA-2024:6567). Technical
+detail identifies the latter as a local-user kernel networking flaw. Illustrative
+cutoff dates leave the second advisory outstanding after the first broader update.
+The presentation retains already installed fixes across both cycles.
+
+On the subsequent instruction to create and publish the first version, adopt the
+previously proposed reference pattern: browser-local HTML/CSS/JavaScript, fixed
+Next/Previous/Restart navigation and explicit operator approval checkpoints before
+Prod. The user did not separately choose playback preferences; these first-version
+defaults were stated before implementation. The actual playbooks still use
+separate manual launches; the page adds no AAP approval node or runtime scheduler.
+
+No framework, package installation, frontend API access or live infrastructure
+operation is needed. Native Ansible/Satellite content cannot render an interactive
+browser explanation; small browser scripts and Node built-in checks follow the
+existing reference sites. GitHub Pages Actions publishes an explicit allowlist
+of four frontend files from main. Source links pin the current NEW playbooks,
+separate from the mockup's own version. The code feature version is 0.15.0.
+Implementation and verification references follow after the implementation commit.
