@@ -38,7 +38,7 @@ and superseded by this accepted result.
 
 # Interactive visualization published — 2026-11-16
 
-Public source version **0.15.2** includes the user-requested heading removal
+Public source version **0.15.3** includes the user-requested heading removal
 and lighter-blue platform headers, implemented in
 e2e0fc80ec424503ff786af9831069b63cc5f152 and published by successful Pages run
 43813046943. Four deployed assets match and six interaction checks pass. It

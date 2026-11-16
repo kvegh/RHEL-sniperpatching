@@ -360,19 +360,6 @@ h1 {
   font-weight:600;
   margin-top:8px;
 }
-.capability-line {
-  display:flex;
-  gap:6px;
-  flex-wrap:wrap;
-  margin-top:11px;
-}
-.capability-line span {
-  font-size:10px;
-  background:var(--blue-soft);
-  color:var(--blue);
-  border-radius:3px;
-  padding:3px 6px;
-}
 .platform footer {
   padding:10px 19px;
   border-top:1px solid var(--line);
@@ -951,13 +938,6 @@ h1 {
   }
   .body-label {
     font-size:8px;
-  }
-  .capability-line {
-    gap:3px;
-  }
-  .capability-line span {
-    font-size:8px;
-    padding:3px 4px;
   }
   .platform footer {
     font-size:8px;

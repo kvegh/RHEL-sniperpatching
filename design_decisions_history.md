@@ -1255,3 +1255,12 @@ The existing six interaction checks passed locally and against the deployed
 page. GitHub Pages run `43813046943` succeeded; all four public assets matched
 the checkout. Header text contrast is 9.39:1 and 5.22:1 against the new light
 blue. Browser visual/mobile rendering remains unverified.
+
+
+## 2026-11-16 08:20 UTC — Remove redundant AAP capability badges
+
+The user requested removing Resolve/Patch/Verify from the AAP card. Version
+0.15.3 deletes that static badge row and its unused desktop/mobile styles,
+retaining the current action and existing presentation behavior. No new code
+path, dependency or architecture change is needed. Implementation commit and
+publication verification follow after the implementation commit exists.

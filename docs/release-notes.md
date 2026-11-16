@@ -1,5 +1,11 @@
 # Release notes
 
+## 0.15.3 — Remove redundant AAP capability badges
+
+Remove the Resolve/Patch/Verify row from the AAP card and delete its unused
+desktop/mobile styles. The current action, story controls and state transitions
+remain unchanged.
+
 ## 0.15.2 — Simplify the canvas and lighten platform headers
 
 Remove the redundant architecture heading and retain the compact dynamic phase
