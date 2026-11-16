@@ -1,5 +1,38 @@
 # Design decisions history
 
+## 2026-11-16 — Include standard versioned modules in NEW running-kernel proof
+
+Implementation: `61ba62232e425a1a7497cd0813c8249976325e43`, version **0.14.11**.
+The fourth targeted Test kernel update installed and booted the fixed build,
+then failed verification because older retained `kernel-modules` and
+`kernel-modules-core` RPMs were treated as ordinary userspace duplicates. Add
+only those two names to the existing NEW runtime-kernel allowlist; keep exact
+running version-release.arch matching and native fixed-EVR comparison. Older
+fallback builds stay visible in proof. Userspace, tools, unknown names and
+installed-architecture checks remain strict; OLD source is unchanged. This is a
+focused correction within the authorized procedure testing, with no package
+removal, content rebuild, runtime/dependency or architecture change.
+
+The before-fix positive regression failed as intended. Existing selected-EE
+qualification passed 38 NEW tests in 0.013 seconds and 31 OLD tests in 0.004
+seconds, with seven NEW-only skips under OLD. Seven new methods cover 22
+scenarios. A replay of the actual failed package snapshot with native RPM
+4.16.1.3 passes after the correction, while old or unmatched running-release
+and missing-matching-module controls fail. The EE tests use synthetic RPM
+fixtures; its Python lacks native RPM bindings, so the native comparator replay
+is recorded separately. Independent scoped source review found no concrete
+defect. Raw failures and complete qualification output remain whole-file Vault
+evidence. Matching-EE strict lint and full formal review remain unperformed.
+
+The first three complete chronological cases passed on both original RHEL 9.4
+clients. Corrected fourth-case live recovery is still pending: retry only Test
+against its existing immutable 4.1, verify the original Prod baseline before
+exact promotion, then complete Prod and the August 15 bounded full update. An
+already-current retry must retain the original transaction/reboot failure
+history rather than claiming an uninterrupted case. Keep remaining cutoffs,
+OLD boundaries and shared/image holds intact.
+
+
 ## 2026-11-16 — Record first complete NEW acceptance and catalog validation
 
 Documentation/catalog-status checkpoint: `273d423a0f9ccf97f699b61a3eb07e2bbd2edeeb`,
