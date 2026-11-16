@@ -1,5 +1,29 @@
 # Design decisions history
 
+## 2026-11-16 — Record first complete NEW acceptance and catalog validation
+
+Documentation/catalog-status checkpoint: `273d423a0f9ccf97f699b61a3eb07e2bbd2edeeb`,
+version **0.14.10**. Executable automation is unchanged from the qualified/live
+0.14.9 prefix correction. Catalog candidates, fixed builds, dates and sources
+are unchanged; only its previously unverified applicability status is updated.
+
+The first RHSA-2024:3339 case completed targeted Test/Prod minor 1.1 and bounded
+full version 2.0 through May 23, with actual reboots, native fix/smoke and no
+pending-update/reboot checks. Independent Prod verification and a fresh native
+matrix confirm original identities/consumers, 447 RPMs and kernel
+5.14.0-427.18.1.el9_4 on both clients. The first selected witness is fixed and the
+remaining nine witnesses are below their first-fixed builds. Earlier failures
+and the multiple actual stage-source revisions remain preserved in private Vault
+evidence; this is not an uninterrupted first-run or full formal-review claim.
+
+Close only the achieved NEW procedure and list-validation tasks. Preserve the
+broader deployment parent's blocked OLD child and held image/generic work; use
+specific completed NEW prerequisite records rather than force-closing unrelated
+work. The next chronological case started on prior immutable source 9a162e3.
+Remaining eight RHSA/nine-CVE cycles retain per-cycle cutoffs and separate actual
+outcomes. No guest reset, reinstall, new instance or OLD action was performed.
+
+
 ## 2026-11-16 — Preserve exact NEW version digits through AAP transport
 
 Implementation: `d7e14bb2b67254ebbbcf6ba6580d0ec24ee251c3`, version **0.14.9**.
