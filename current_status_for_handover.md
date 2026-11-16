@@ -1,3 +1,31 @@
+# Native calendar cutoff fix; full acceptance next — 2026-11-16
+
+Version **0.14.7** normalizes genuine native calendar dates to ISO text before
+existing strict validation. The AAP diagnostic proved `_AnsibleTaggedDate` was
+rejected by the string-only check even though the recorded input was the intended
+2024-05-23. Timestamp values, arbitrary objects and malformed/invalid dates
+remain rejected. Empty/latest mode and advisory-retention boundaries are unchanged.
+
+The actual native-YAML regression failed before the correction and passed after
+it. All fifteen publication tests passed in the selected EE. Saved actual job
+variables and all 4,456 immutable advisory rows passed with both JSON text and
+the proven native calendar type, with the exact May 23 result. Run the normal
+bounded publication again; live full-update acceptance is still pending.
+
+Both original clients already passed the first targeted fix on identical
+minor 1.1, actual reboots and native fix/smoke checks. The scoped CoP foundation
+repeat also passed: content views/history/filters, activation keys, mappings,
+repository bindings/policies/counts and both complete 443-RPM client arrays,
+identities and kernels stayed unchanged. Expected reported changes were the
+two native repository syncs and local CA-file handling; no zero-change claim.
+
+Finish the first Test/Prod date-bounded full-update cycle and independent check,
+then the remaining chronological advisories. Preserve held/shared/OLD work;
+full formal review remains separate. Raw operational evidence remains whole-file
+Vault data in the private companion.
+
+---
+
 # First targeted pair verified; cutoff diagnostics prepared — 2026-11-16
 
 Version **0.14.6** records the diagnostic implementation from **0.14.5**;
@@ -153,7 +181,7 @@ six stage syntaxes pass; uncached image verification passed. Private demo EE/JT
 bindings, CoP Satellite application configuration, client registration and the
 full NEW patching demo are unfinished. The verified public native CA is captured
 in Vault. The corrected CaC import and read-only runtime template have passed
-through AAP: actual Core2.20.10/Python3.12.15/Satellite6.0.0, six stage syntaxes,
+through AAP: actual Core2.20.10/Python3.12.15/Satellite 6.0.0, six stage syntaxes,
 module interfaces and both authenticated HTTPS paths verified. No clients or
 content were changed. Remaining demo-stage bindings and application/client setup
 are unfinished. OLD source/runtime are preserved.

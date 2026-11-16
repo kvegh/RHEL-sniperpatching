@@ -1,14 +1,16 @@
 # RHEL-sniperpatching
 
-**Version: 0.14.6.**
+**Version: 0.14.7.**
 
 Development and publication use **main only**. NEW includes scoped CoP content
 configuration, a qualified demo EE, content-first GA preparation and explicit
 direct Test/Prod registration. Full proactive RHEL 9.4 BaseOS/AppStream sync
 and the frozen GA content baseline passed actual AAP execution and independent
 readback. Direct registration, registered-host preparation and the first targeted
-Test/Prod fix have passed. The first full cutoff run stopped safely at input
-validation; complete NEW acceptance remains unfinished.
+Test/Prod fix have passed. The first full cutoff run exposed native calendar
+date input handling, now corrected with targeted real-templating tests; live
+full-update acceptance
+remains unfinished.
 Registration now selects repository copies by both published version and
 lifecycle environment; the strict two-repository guard remains in place.
 See [scoped CoP qualification](docs/cop-qualification.md) and

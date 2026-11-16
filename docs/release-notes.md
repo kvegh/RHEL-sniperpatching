@@ -1,5 +1,18 @@
 # Release notes
 
+## 0.14.7 — Accept native calendar cutoff values
+
+AAP supplied a native YAML calendar date to a string-only validator. Normalize
+that genuine date type with `isoformat()` before the existing exact format,
+valid-calendar and advisory-retention checks. Continue rejecting timestamps and
+arbitrary date-looking objects; retain explicit latest mode and safe diagnostics.
+The native regression failed before the fix and passed afterward. All fifteen
+publication tests and the exact saved-input/4,456-advisory replays passed in the
+selected EE. Corrected live full publication and complete NEW acceptance remain
+pending. The first targeted Test/Prod sequence and scoped CoP repeat/preservation
+have passed separately.
+
+
 ## 0.14.6 — Record the cutoff diagnostic implementation
 
 Record implementation `cde7988fafce8416ca22e470093aa1d033f64daf` and the

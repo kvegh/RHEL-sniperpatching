@@ -3,7 +3,7 @@
 
 
 import re
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from ansible.errors import AnsibleFilterError
 
 
@@ -105,6 +105,9 @@ def _date_error(value, label, reason):
 
 
 def _baseline_date(value, label, timestamp=False):
+    # Native YAML/AAP calendar dates need normalization; datetime timestamps stay unsupported.
+    if isinstance(value, date) and not isinstance(value, datetime):
+        value = value.isoformat()
     if not isinstance(value, str):
         raise _date_error(value, label, "type")
     text = value

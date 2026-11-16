@@ -171,3 +171,12 @@ selected `environment_id` through the certified resource-info module, then
 requires the exact two protected repositories, products and RHSM labels. A
 version-only query can return eight copies for this two-repository setup; it
 must not be deduplicated to hide an ambiguous serving destination.
+
+### Native calendar cutoff input
+
+AAP/YAML can supply a real calendar date even when its stored survey value is
+ISO text. The date validator accepts that calendar type and `YYYY-MM-DD` text,
+normalizing the former with `isoformat()` before the same format/calendar and
+advisory-retention checks. Datetime timestamps, arbitrary objects and invalid
+dates remain rejected. This normalization does not change the selected date,
+the explicit empty/latest mode or the published-content cutoff boundary.

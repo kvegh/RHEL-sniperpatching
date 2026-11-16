@@ -2,7 +2,7 @@
 # Reason and test scope: ../docs/implementation.md#synthetic-test-modules
 
 
-from datetime import date
+from datetime import date, datetime
 import importlib.util
 import json
 import os
@@ -130,6 +130,14 @@ class CutoffValidation(unittest.TestCase):
     def test_empty_value_preserves_explicit_latest_mode(self):
         self.assertEqual(content.update_cutoff("", []), "")
 
+    def test_date_looking_objects_are_not_coerced(self):
+        class DateLookingObject:
+            def __str__(self):
+                return "2024-05-23"
+
+        with self.assertRaises(AnsibleFilterError):
+            content.update_cutoff(DateLookingObject(), [])
+
 
 @unittest.skipUnless(TRACK == "new", "NEW-only cutoff runtime diagnostics")
 class NativeCutoffTemplating(unittest.TestCase):
@@ -171,9 +179,15 @@ class NativeCutoffTemplating(unittest.TestCase):
         result = self.run_guard("2024-05-23")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
-    def test_non_string_runtime_types_remain_rejected_without_values(self):
+    def test_native_yaml_calendar_date_is_normalized(self):
+        result = self.run_guard(date(2024, 5, 23), yaml_input=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_unrelated_runtime_types_and_timestamps_remain_rejected_without_values(self):
         marker = "synthetic-private-cutoff-marker"
-        for value, yaml_input in ((None, False), ({marker: "hidden"}, False), (date(2024, 5, 23), True)):
+        cases = ((None, False), (True, False), (20240523, False),
+                 ({marker: "hidden"}, False), (datetime(2024, 5, 23), True))
+        for value, yaml_input in cases:
             with self.subTest(input_type=type(value).__name__):
                 result = self.run_guard(value, yaml_input=yaml_input)
                 output = result.stdout + result.stderr

@@ -3,7 +3,9 @@
 This is a scoped qualification record, not complete NEW demo acceptance. It retains
 certified Satellite collection **6.0.0**, CoP Satellite Configuration **1.5.0**,
 and official AAP Core **2.20.10**. The combined EE is now adopted and its normal
-AAP runtime check passed; full CoP content acceptance remains unfinished.
+AAP runtime check passed. The first scoped foundation apply and a repeated
+apply with exact configuration and client preservation have passed; complete NEW
+patching and full formal review remain separate.
 
 ## Why qualification is scoped
 
@@ -148,15 +150,39 @@ The implementation records remain `8fb9753` for foundation/EE work and
 belongs to preparation; this foundation run does not establish publication,
 activation keys, registration or client patching.
 
+## Completed live foundation and repeated apply
+
+The first normal foundation run completed both full proactive regular RHEL 9.4
+mirrors and verified the owned lifecycle path and exact content-view bindings.
+GA publication, direct registration and the first paired targeted fix then passed
+through their separate AAP stages.
+
+At **2026-11-16 00:15 UTC**, one normal foundation repeat from source `22b21e5`
+had succeeded in **38.116 seconds**. Both selected native repository syncs
+completed successfully. Pre/post checks verified unchanged material CV history,
+serving 1.1, filters/rules/timestamps/IDs, activation keys, consumer mappings and
+repository bindings, Immediate policies and counts. Both complete 443-RPM client
+arrays, identities, consumers, running kernels and twenty package-witness rows
+were unchanged; temporary trust was removed.
+
+The native recap was 37 ok / 4 changed / 0 failed / 0 unreachable / 1 skipped.
+Changes were
+allocation/copy/cleanup of the execution-local public CA and one repository-sync
+loop with two changed items. This proves desired-state preservation with expected
+sync/local-file actions, not zero reported changes. Only the two human-relative
+age display fields in nested filter responses were excluded from material
+comparison; raw pre/post snapshots and exact exclusions remain encrypted.
+
 ## Remaining acceptance
 
-The actual CoP-inclusive EE passed collection provenance, selected native role
-syntax/rendering, module-constructor and current-project runtime checks offline.
-The image is published with fresh immutable readback verification and its
-selected normal AAP runtime template passed. At the dated live checkpoint,
-selected repository operations and guards had passed; foundation completion,
-owned-resource readback, CA cleanup, refusal/recovery behavior, repeated
-apply/idempotency and preservation checks still required verification. Then
-verify GA publication, directly registered client baselines and the complete
-patching workflow through AAP before the agreed CVE cycles. The bounded results
-above do not establish promotion, host assignment or complete review.
+The bounded evidence above qualifies the foundation paths actually used with
+the unchanged CoP 1.5.0 archive and certified Satellite 6.0.0. It does not establish
+compatibility with every CoP feature or compliance with its declared 5.8.0
+metadata dependency. Live foreign-resource failure/recovery scenarios were not
+exercised; that coverage gap remains separate from the verified first and
+repeated application to the owned demo resources.
+
+Complete the NEW Test/Prod full-update workflow and chronological CVE cycles
+through AAP. The native calendar-date cutoff correction has passed targeted and
+actual-data offline checks; its live full-publication acceptance remains pending.
+Full formal review is separate and remains unfinished.
