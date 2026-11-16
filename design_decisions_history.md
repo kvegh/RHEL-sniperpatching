@@ -1202,3 +1202,18 @@ Explicit hidden-file inclusion retains only the staged .nojekyll marker alongsid
 the four allowlisted frontend files. The first-version interaction behavior is
 unchanged. The correction commit and resulting deployment are recorded below
 after they exist; browser-rendering verification remains outstanding.
+
+
+### Corrected Pages publication — 2026-11-16 05:04 UTC
+
+Correction commit: `cc30e8406cbb6b9d1b410dcf559848508ecb8249` (0.15.1).
+GitHub Pages run `43807803364` completed successfully at 05:04:14 UTC; check took
+4 seconds and publication 13 seconds. The Node20 deprecation warning is gone.
+The four deployed frontend assets again matched this checkout, and the deployed
+HTML/model/handlers passed all six functional interaction checks. The content
+and interaction behavior remains the reviewed first version. Real-browser visual
+review remains a disclosed gap; the public page is ready for the user's review.
+The first warning-bearing deployment ended at 05:01:29 UTC, so the bounded
+compatibility correction through final deployment took 2 minutes 45 seconds of
+wall time. Active effort versus approval/CI waiting was not measured separately.
+No automation job, host or Satellite content was changed by this frontend work.

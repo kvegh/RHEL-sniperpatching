@@ -1,3 +1,16 @@
+# Interactive visualization published — 2026-11-16
+
+Public source version **0.15.1** adds a code-grounded explanatory frontend;
+it leaves the automation and live-runtime evidence below unchanged. The
+[two-cycle GitHub Pages mockup](https://kvegh.github.io/RHEL-sniperpatching/)
+shows the user-selected Python and kernel stories. Implementation is
+45f2d6835446213c5c1075d17d3fed2267242937; the supported Pages-action correction is
+cc30e8406cbb6b9d1b410dcf559848508ecb8249. Pages run 43807803364 succeeded and
+four published assets plus six deployed interaction checks passed. Browser
+layout remains unverified. See [controls and test scope](demo/README.md).
+
+---
+
 # Fourth NEW kernel case: correct retained-module proof — 2026-11-16
 
 Version **0.14.11** corrects NEW proof classification for standard
