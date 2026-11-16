@@ -1262,5 +1262,8 @@ blue. Browser visual/mobile rendering remains unverified.
 The user requested removing Resolve/Patch/Verify from the AAP card. Version
 0.15.3 deletes that static badge row and its unused desktop/mobile styles,
 retaining the current action and existing presentation behavior. No new code
-path, dependency or architecture change is needed. Implementation commit and
-publication verification follow after the implementation commit exists.
+path, dependency or architecture change is needed. Implementation commit:
+`70d517f58089ca1375f07b1bcc35638922fda656`. Pages run `43830568573`
+completed successfully. All four deployed assets matched the checkout and all
+six existing interaction checks passed locally and against the deployed page.
+Browser rendering remains unverified; no new tools or tests were introduced.
