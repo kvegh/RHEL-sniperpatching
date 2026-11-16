@@ -1440,3 +1440,9 @@ styles and top-aligns the source content. This preserves the badge and
 walkthrough behavior while bringing the requested panels to the same top edge.
 No new component or dependency is needed. Implementation and publication
 references follow after verification; real-browser layout remains unverified.
+
+Implementation: `8895e950f025fda8dfc0e4a1ceae964c9f4fd289` (0.17.2).
+[Pages run 43919181329](https://github.com/kvegh/RHEL-sniperpatching/actions/runs/43919181329)
+succeeded. All four public assets match source and all ten deployed
+HTML/script interaction checks pass. Local interaction, markup and whitespace
+checks passed. These checks preserve behavior but do not verify browser layout.
