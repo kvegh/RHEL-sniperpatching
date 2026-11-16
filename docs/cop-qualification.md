@@ -4,8 +4,9 @@ This is a scoped qualification record, not complete NEW demo acceptance. It reta
 certified Satellite collection **6.0.0**, CoP Satellite Configuration **1.5.0**,
 and official AAP Core **2.20.10**. The combined EE is now adopted and its normal
 AAP runtime check passed. The first scoped foundation apply and a repeated
-apply with exact configuration and client preservation have passed; complete NEW
-patching and full formal review remain separate.
+apply with exact configuration and client preservation have passed. The first
+complete paired NEW targeted/full procedure has also passed; remaining CVE cycles
+and full formal review remain separate.
 
 ## Why qualification is scoped
 
@@ -182,7 +183,8 @@ metadata dependency. Live foreign-resource failure/recovery scenarios were not
 exercised; that coverage gap remains separate from the verified first and
 repeated application to the owned demo resources.
 
-Complete the NEW Test/Prod full-update workflow and chronological CVE cycles
-through AAP. The native calendar-date cutoff correction has passed targeted and
-actual-data offline checks; its live full-publication acceptance remains pending.
-Full formal review is separate and remains unfinished.
+The first complete NEW Test/Prod targeted/full workflow passed through AAP,
+including live calendar-cutoff publication and exact-text promotion corrections,
+independent final verification and the original-client native package matrix.
+Continue the remaining chronological CVE cycles. Full formal review is separate
+and remains unfinished.

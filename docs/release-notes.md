@@ -1,5 +1,22 @@
 # Release notes
 
+## 0.14.10 — Record the first complete NEW paired procedure
+
+The first RHSA-2024:3339/CVE-2024-2961 cycle passed on both original RHEL 9.4
+clients: exact targeted minor 1.1, bounded full version 2.0 through May 23,
+required reboots, native fix/smoke/no-pending-update checks and independent Prod
+verification. Native identity/consumer joins remained intact. Each client has
+447 RPMs, runs kernel 5.14.0-427.18.1.el9_4 and retains nine later selected package
+witnesses below their first-fixed builds. The ten-CVE list is validated; eight
+RHSA/nine-CVE demonstrations remain in progress.
+
+Calendar and exact-text promotion fixes passed live after preserved failed
+attempts. This records combined actual stage evidence, not an uninterrupted
+first run or a latest-source 140-test rerun. Executable automation is unchanged
+from 0.14.9; catalog candidates/fixed builds are unchanged. Full formal review,
+OLD qualification and held/shared work remain separate.
+
+
 ## 0.14.9 — Preserve exact NEW promotion version text
 
 Accept `v2.0`/`v2.10` in the NEW promotion input and remove only that leading `v`

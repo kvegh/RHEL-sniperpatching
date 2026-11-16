@@ -1,34 +1,29 @@
 # RHEL-sniperpatching
 
-**Version: 0.14.9.**
+**Version: 0.14.10.**
 
-Development and publication use **main only**. NEW includes scoped CoP content
-configuration, a qualified demo EE, content-first GA preparation and direct
-Test/Prod registration. Full proactive RHEL 9.4 BaseOS/AppStream sync, the frozen
-GA baseline, direct registration and registered-host preparation passed actual
-AAP execution and independent readback. Both original clients passed the first
-targeted fix on identical minor 1.1, including reboots and smoke checks.
+Development and publication use **main only**. NEW provides scoped Satellite
+content configuration, full proactive RHEL 9.4 BaseOS/AppStream mirroring,
+GA-content-first preparation and direct registration of the selected Test/Prod
+pair. Those stages and the first complete targeted/full-update cycle passed
+through AAP with independent native content, identity and package verification.
+Both original clients received the same tested minor, then the same bounded full
+version, with required reboots, smoke checks and no remaining repository updates.
 
-The corrected May 23 publication passed and returned version 2.0. Independent
-reads checked all 4,469 advisories against that inclusive cutoff and retained
-all 4,456 prior advisories. Test completed its full update, fix/smoke checks and
-no-pending-update/reboot checks. The following Prod promotion stopped at its
-exact-version equality guard before changing Prod; its runtime input arrived as a number. NEW now accepts `v2.0` promotion input
-and removes only the leading `v`, preserving exact version digits through AAP
-transport. Numeric values remain rejected; exact-version and lifecycle-path
-guards remain in place. Corrected live Prod acceptance is still pending, and
-Prod still serves 1.1. See [scoped CoP qualification](docs/cop-qualification.md) and
-[release notes](docs/release-notes.md) for verified scope and remaining work.
+The accepted [ten-CVE catalog](docs/rhel94-cve-candidates.md) is validated against
+both original clients and the synchronized content. The first case is complete;
+the remaining eight RHSA cycles are being tested in order. Ten CVEs share nine advisories,
+and cumulative updates can cover earlier fixes. The selected RHEL 9.4 window ends
+at RHSA-2024:8446 on 2024-10-24, with no 9.5 requirement. Keep per-cycle cutoffs
+explicit so later examples remain available.
 
-The owner selected the [ten-CVE catalog](docs/rhel94-cve-candidates.md) for
-validation and chronological demonstrations. Both clients passed original
-package-version screening, all selected first-fixed builds are synchronized,
-and Satellite reported all nine RHSAs applicable to both registered hosts.
-Actual DNF transactions are being tested in chronological order; ten CVEs share
-nine advisories, and cumulative updates can cover earlier fixes. The selected
-RHEL 9.4 window ends at RHSA-2024:8446 on 2024-10-24, with no 9.5 requirement.
-Use each explicit per-cycle cutoff so the first full update does not consume
-later examples.
+The qualified runtime uses Core 2.20.10, certified Satellite 6.0.0 and unchanged
+CoP 1.5.0 for the scoped foundation paths. NEW promotion accepts exact text such
+as `v2.0` or `v2.10`, removing only the leading `v` before the normal exact-version
+checks. See [baseline and promotion inputs](docs/new-baseline.md),
+[scoped CoP qualification](docs/cop-qualification.md) and
+[release notes](docs/release-notes.md). Full formal review and OLD compatibility
+remain separate from the completed first NEW procedure.
 
 See [current handover status](current_status_for_handover.md) for recorded
 validation, review status and continuation boundaries.
@@ -44,12 +39,12 @@ Both tracks remain available in this public repository:
 | Directory | Purpose | Verification |
 |---|---|---|
 | `playbooks/old/` | Remote demo Satellite and its own remote AAP, with the tested runtime helpers. | Three Test-to-Prod cycles passed before this path-only reorganization. |
-| `playbooks/new/` | Our local Satellite and up-to-date production AAP; includes separate NEW setup stages. | Satellite 6.19.6 installation, service health and authenticated HTTPS passed; the NEW patching demo remains unverified. |
+| `playbooks/new/` | Our local Satellite and up-to-date production AAP; includes separate NEW setup stages. | Satellite installation, scoped foundation/GA/registration and the first paired targeted/full cycle passed; later CVE cycles continue. |
 
-Each directory contains all seven demo entry points, tasks, variables, filter plugins,
+Each directory contains its demo entry points, tasks, variables, filter plugins,
 native RPM/runtime helpers, synthetic inventory and collection declarations.
-Surveys remain shared generic input definitions under `surveys/`. AAP Job
-Templates must save the full path for their selected track. OLD always runs
+Survey definitions are under `surveys/`; NEW has its own exact-text promotion
+survey. AAP Job Templates must save the full path for their selected track. OLD always runs
 through the remote environment's own AAP. NEW runs through our production AAP.
 The current private CaC describes NEW setup, content and procedure bindings;
 the historical OLD capture is preserved separately and must never be imported into the NEW controller.
@@ -68,8 +63,8 @@ and published with Core 2.20.10, certified Satellite collection 6.0.0 and
 unchanged CoP 1.5.0. Its dedicated immutable binding was applied through the
 existing CaC importer. The normal read-only runtime template passed through AAP
 with authenticated collection and native URI HTTPS verification. The complete
-procedure bindings pass exact protected readback. Client registration is verified;
-complete Test/Prod full-update acceptance remains unfinished.
+procedure bindings pass exact protected readback. Client registration and the
+first complete Test/Prod targeted/full-update procedure are verified.
 
 There are no root-level forwarding playbooks. Update a template's playbook path
 and synchronize the matching source revision together. The private companion
@@ -180,13 +175,15 @@ Python/RPM inventory, runtime settings and base layers are preserved; no extra
 packages are needed. Image publication was verified through uncached manifest,
 configuration and every-blob hash checks. Complete NEW template bindings and
 the normal AAP runtime diagnostic passed separately. Managed-host registration
-and patching acceptance remain unverified.
+and the first paired targeted/full-update procedure have since passed through
+AAP and independent native checks.
 The two NEW DNS/RHEL preparation templates use built-in modules and the existing
 Core 2.20 management EE. They do not require a Satellite collection to bootstrap
 the server. The historical OLD runs remain separate from NEW acceptance.
 
-All 140 NEW offline tests passed inside the selected unchanged Core 2.20.10 EE.
-These checks do not establish fresh Satellite access or live patching acceptance.
+Before the later calendar/promotion corrections, 140 NEW offline tests passed
+in the unchanged Core 2.20.10 EE. Changed areas received focused regressions and
+actual AAP verification; no latest-source full-suite rerun is claimed.
 
 ## How to demonstrate the functionality
 
@@ -431,7 +428,7 @@ source for actual CVE mappings, affected installed packages and available conten
 
 ## Configuration and checks
 
-Public playbooks and surveys stay here. Protected AAP configuration is whole-file Vault ciphertext in the private RHEL-sniperpatching-secrets companion. Deploy RHEL Sniperpatching CaC uses the shared importer and an explicit destination. Its configuration import and receiving-runtime diagnostic have passed; actual managed-host SSH, registration and patching remain separate acceptance checks.
+Public playbooks and surveys stay here. Protected AAP configuration is whole-file Vault ciphertext in the private RHEL-sniperpatching-secrets companion. Deploy RHEL Sniperpatching CaC uses the shared importer and an explicit destination. Its configuration import, receiving-runtime diagnostic, direct registration and first paired targeted/full procedure have passed. Remaining CVE cases and formal review retain their separate acceptance scope.
 
 The observed-failure protections remain: compatible original-package filters, normal Library → Test promotion, bounded reuse of an interrupted minor, signing-key inventory handling, authoritative RPM epochs and bounded transient read retries. Host/CV ownership, consumer UUID, repository restrictions, cutoff checks and final host completion assertions remain enforced.
 
@@ -452,8 +449,9 @@ Use the existing local Python/Ansible tooling for focused regressions and
 `ansible-lint --profile production --strict`; all entry-point syntax and module
 interfaces must also pass in the selected EE. Offline fixture results on a
 newer local runtime supplement, rather than replace, the actual AAP baseline.
-The current review/fix batch is **not accepted yet**: mandatory APME coverage and
-the final corrected-source AAP end-to-end re-test remain pending. See the
+The separate formal review batch is **not accepted yet**: mandatory APME coverage,
+the full restarted review and its final AAP end-to-end re-test remain pending.
+The first complete NEW procedure passed separately and does not close that review. See the
 [dated evidence](docs/review-2026-11-12.md) for exact results and limitations.
 
 

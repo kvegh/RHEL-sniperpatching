@@ -1,3 +1,31 @@
+# First NEW cycle accepted; remaining chronological cases active — 2026-11-16
+
+Version **0.14.10** records the first complete NEW targeted/full Test/Prod cycle;
+executable automation is unchanged from **0.14.9**. Both original clients passed
+RHSA-2024:3339/CVE-2024-2961 targeted minor 1.1, bounded full version 2.0 through
+May 23, actual reboots, fix/smoke/no-pending-update checks and independent Prod
+verification. The final native matrix preserves identities/consumers and records
+447 RPMs and running kernel 5.14.0-427.18.1.el9_4 on each. Only the first selected
+witness is at/above its first-fixed build; the nine later witnesses remain below.
+
+The validated list has ten CVEs across nine RHSAs. Continue the next eight
+advisories in the documented order; the RHSA-2024:4312 Test minor job has started
+on prior source **9a162e3**. Keep its full cutoff July 3 rather than the final
+October cutoff. Use v-prefixed exact versions for NEW explicit promotion. Raw
+stage/failure/source/identity/package evidence is whole-file Vault data in the
+private companion; first-cycle acceptance does not erase earlier failures.
+
+Beads NEW acceptance and list-validation tasks are complete. The broader
+deployment parent remains blocked on its separate OLD child; the image/generic
+umbrella remains held. Their broad prerequisite links were replaced only for
+the completed NEW acceptance task by its actual closed GA/foundation/validation
+prerequisites. No held/OLD work was resumed or force-closed. Remaining CVE work
+is active separately; full formal review and universal CoP compatibility remain
+unclaimed. Matching-EE strict lint and the original prefix-suite final summary
+remain accurately recorded limitations; focused recovery covered the lost test.
+
+---
+
 # Preserve exact NEW promotion text; live Prod verification next — 2026-11-16
 
 Version **0.14.9** accepts a leading `v` on exact NEW version text and removes

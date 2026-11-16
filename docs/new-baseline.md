@@ -4,9 +4,9 @@ This source prepares the frozen baseline before either client is
 registered. The owner selected direct registration to that served content,
 without temporary registration to Library. GA publication, direct registration
 and registered-host preparation passed through AAP and independent native reads.
-Both clients passed the first targeted cycle; the bounded full publication and
-Test full update passed, while Prod promotion stopped at its exact-version guard.
-Complete NEW acceptance remains unfinished. OLD retains its existing host-derived
+Both clients passed the first targeted cycle and the complete bounded full
+Test/Prod update, including exact-version promotion and independent final checks.
+The remaining chronological CVE cycles and full formal review remain separate. OLD retains its existing host-derived
 preparation.
 
 ## Sequence and inputs
@@ -105,7 +105,7 @@ cutoff, every selected RHSA and first-fixed NEVRA must be absent, and all six
 original affected builds must be available. Package metadata needs an explicit
 usable epoch; missing or conflicting identities fail closed. The live 6.19 API
 schema confirms `packages.index` supports `content_view_version_id`. Its actual
-package response shape remains an acceptance check after synchronization.
+package response shape passed the native GA publication acceptance checks.
 
 `original_packages` means packages without errata; it does **not** mean GA
 packages. Date filters plus these selected-package checks do not prove exact

@@ -1,6 +1,6 @@
 # NEW track
 
-This directory contains seven demo playbooks and separate NEW setup stages. Select its full
+This directory contains demo playbooks and separate NEW setup stages. Select its full
 `playbooks/new/<stage>.yml` path in AAP, with this track's protected environment
 inputs, inventory and execution environment. Generic survey definitions remain
 at the repository's `surveys/` directory.
@@ -8,8 +8,9 @@ at the repository's `surveys/` directory.
 See the [project guide](../../README.md) and [operations](../../docs/operations.md).
 
 The NEW tree starts from the reviewed OLD demo logic. A copied playbook is not
-proof of new Satellite/API/EE compatibility. The new Satellite installation,
-new environment CaC and end-to-end demo acceptance are separate pending stages.
+proof of new Satellite/API/EE compatibility. The NEW Satellite installation, environment CaC and first complete paired
+targeted/full-update procedure have passed. Remaining CVE cycles and the full
+formal review retain their own acceptance scope.
 Follow the [installation sequence](../../docs/new-satellite.md).
 
 NEW always means our local Satellite and up-to-date production AAP. Run
@@ -31,4 +32,7 @@ run `prepare_demo.yml` with `sniper_prepare_content_only: true`, require the
 verified version in both dedicated environments, register clients directly to
 that path, then run the default registered-host verification/assignment phase.
 The explicit cutoff is `2024-04-30`; no host-errata bootstrap or temporary
-Library registration is used. Live acceptance remains pending.
+Library registration is used. GA publication, direct registration and the first
+complete targeted/full Test/Prod cycle passed through AAP. Use the separate
+[NEW promotion survey](../../surveys/new-promotion.json) with exact v-prefixed
+version text such as `v2.0`; keep the OLD survey unchanged.
