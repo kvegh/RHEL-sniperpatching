@@ -1422,3 +1422,10 @@ controls remain in place. Native HTML/CSS is sufficient; no dependency or
 architectural change is needed. Implementation and publication evidence follow
 after verification. Browser rendering is not established by the existing Node
 interaction checks.
+
+Implementation: `2da296becc0e4e788904e77c78e4f6ff3975841f` (0.17.1).
+[Pages run 43912832338](https://github.com/kvegh/RHEL-sniperpatching/actions/runs/43912832338)
+succeeded. All four live assets match; all ten existing deployed HTML/script
+interaction checks pass. Local interaction, syntax, markup, shared-row and
+version checks also pass. Real-browser layout remains unverified; no browser
+tool was available or installed. No automation or infrastructure was changed.
