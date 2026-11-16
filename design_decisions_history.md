@@ -1366,3 +1366,20 @@ Implementation commit and deployment evidence follow after they exist.
 The concurrent cold-checkpoint source reached main as 0.16.0 before this
 frontend push. Preserve that work and advance this feature to 0.17.0; only
 the overlapping release and handover introductions required reconciliation.
+
+
+## 2026-11-16 10:40 UTC — Publish and verify the seven-scene walkthrough
+
+Implementation `da35b9fd15ed3b7f3401a3b2d2882ba801d2481e` publishes version
+0.17.0 on main, preserving concurrent checkpoint implementation 89426ac.
+[Pages run 43850827769](https://github.com/kvegh/RHEL-sniperpatching/actions/runs/43850827769)
+succeeded (created 10:39:33 UTC, last updated 10:40:02 UTC). The repeatable live
+check downloaded all four public assets, confirmed exact checkout equality and
+passed all ten actual model/UI-handler interaction checks across both cycles.
+Local model checks passed all nineteen cases, and syntax/whitespace checks passed.
+Independent integration review found no remaining concrete issue after the
+skip-link state-reset regression was fixed. These checks do not establish
+real-browser layout; no browser or browser automation package was installed.
+No AAP/Satellite configuration, automation job or client state was changed by
+this frontend release. Active effort and approval/CI waiting were not separately
+measured.

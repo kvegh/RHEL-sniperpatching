@@ -5,7 +5,11 @@ for both fixed stories, retaining the actual code architecture while simplifying
 presentation. Green baselines, announcement timing, Red Hat content, a targeted
 fix versus bulk maintenance and the Test/approval/Prod rollout are visible.
 Existing automation and the operational acceptance records below are unchanged.
-Publication evidence and implementation references follow in the decision history.
+Implementation da35b9fd15ed3b7f3401a3b2d2882ba801d2481e was SSH-published;
+Pages run 43850827769 succeeded. All four public assets match and all ten
+live model/UI-handler checks pass. Real-browser layout remains unverified.
+See the decision history for publication evidence. This frontend release does
+not establish live acceptance of the separate cold-checkpoint implementation.
 See [presenter controls and functional checks](demo/README.md).
 
 ---
