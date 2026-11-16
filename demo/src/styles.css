@@ -357,6 +357,11 @@ h1 {
   color:var(--red);
   border-color:#dfb5b5;
 }
+.story-event[data-tone=alert] .event-copy .eyebrow {
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:.06em;
+}
 .story-event[data-tone=alert] .event-mark:before {
   content:'!';
 }
@@ -435,7 +440,8 @@ h1 {
   top:22px;
   width:calc(50% - 12px);
   color:var(--muted);
-  font-size:11px;
+  font-size:13px;
+  font-weight:700;
   line-height:1.5;
 }
 .supply-track {
@@ -456,10 +462,10 @@ h1 {
   position:absolute;
   left:50%;
   bottom:3px;
-  width:7px;
-  height:7px;
-  border-right:1.5px solid #8ca2b8;
-  border-bottom:1.5px solid #8ca2b8;
+  width:10px;
+  height:10px;
+  border-right:2px solid #8ca2b8;
+  border-bottom:2px solid #8ca2b8;
   border-radius:1px;
   transform:translateX(-50%) rotate(45deg);
 }
@@ -506,7 +512,7 @@ h1 {
 .redhat-supply[data-delivery=targeted] .delivery-label,
 .redhat-supply[data-delivery=bulk] .delivery-label {
   color:var(--purple);
-  font-weight:600;
+  font-weight:700;
 }
 .redhat-supply[data-delivery=targeted] .supply-track:before,
 .redhat-supply[data-delivery=bulk] .supply-track:before {
@@ -615,6 +621,9 @@ h1 {
   min-height:54px;
   border-top:3px solid #c9190b;
 }
+.aap {
+  width:calc(72% - 27.6px);
+}
 .satellite {
   width:calc(66% - 25.3px);
 }
@@ -670,14 +679,17 @@ h1 {
 }
 .api-connection {
   position:absolute;
-  left:49.25%;
+  left:50.75%;
   top:50%;
-  width:calc(18.5% + 12px);
+  width:calc(15.5% + 14px);
   transform:translate(-50%,-50%);
   text-align:center;
   color:var(--muted);
-  font-size:9px;
-  font-weight:600;
+  font-size:12px;
+  font-weight:700;
+}
+.api-connection[hidden] {
+  display:none;
 }
 .api-arrow {
   position:relative;
@@ -700,11 +712,11 @@ h1 {
   content:'';
   position:absolute;
   right:1px;
-  top:5px;
-  width:7px;
-  height:7px;
-  border-right:1.5px solid currentColor;
-  border-bottom:1.5px solid currentColor;
+  top:3px;
+  width:10px;
+  height:10px;
+  border-right:2px solid currentColor;
+  border-bottom:2px solid currentColor;
   border-radius:1px;
   transform:rotate(-45deg);
 }
@@ -716,6 +728,12 @@ h1 {
   background:repeating-linear-gradient(to right,currentColor 0 5px,transparent 5px 12px);
   background-size:24px 100%;
   animation:api-flow 1.8s linear 2;
+}
+.cv-definition {
+  margin-top:8px;
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.5;
 }
 .cv-update {
   margin-top:8px;
@@ -761,6 +779,58 @@ h1 {
   font-size:18px;
   letter-spacing:-.5px;
   color:var(--purple);
+}
+/* Clip one CV value while its replacement pushes it down like a mechanical counter. */
+.cv-counter {
+  position:relative;
+  display:inline-block;
+  height:1.35em;
+  line-height:1.35;
+  overflow:hidden;
+  vertical-align:bottom;
+  white-space:nowrap;
+}
+strong.cv-counter > span.cv-counter-value,
+strong.cv-counter > span.cv-counter-previous {
+  display:block;
+  font:inherit;
+  letter-spacing:inherit;
+  color:inherit;
+  transform:translateY(0);
+}
+.cv-counter > span.cv-counter-previous {
+  position:absolute;
+  inset:0;
+}
+.cv-counter > span.cv-counter-previous::before {
+  content:attr(data-previous);
+  position:absolute;
+  inset:0;
+  transform:translateY(100%);
+}
+.cv-counter.is-rolling > .cv-counter-value {
+  animation:cv-roll-in 650ms cubic-bezier(.22,.7,.28,1) both;
+}
+.cv-counter.is-rolling > span.cv-counter-previous::before {
+  animation:cv-roll-out 650ms cubic-bezier(.22,.7,.28,1) both;
+}
+@keyframes cv-roll-in {
+  from { transform:translateY(-100%); }
+  to { transform:translateY(0); }
+}
+@keyframes cv-roll-out {
+  from { transform:translateY(0); }
+  to { transform:translateY(100%); }
+}
+[data-motion=off] .cv-counter.is-rolling > .cv-counter-value,
+[data-motion=off] .cv-counter.is-rolling > span.cv-counter-previous::before {
+  animation:none;
+}
+@media(prefers-reduced-motion:reduce) {
+  .cv-counter.is-rolling > .cv-counter-value,
+  .cv-counter.is-rolling > span.cv-counter-previous::before {
+    animation:none;
+  }
 }
 .promotion-arrow {
   color:#8d79ad;
@@ -819,7 +889,9 @@ h1 {
 .route-label {
   position:absolute;
   z-index:1;
-  font-size:10px;
+  font-size:12px;
+  font-weight:700;
+  line-height:1.4;
   display:flex;
   gap:6px;
   align-items:center;
@@ -1154,7 +1226,7 @@ h1 {
     font-size:11px;
   }
   .route-label {
-    font-size:9px;
+    font-size:11px;
   }
   .header-links {
     gap:10px;
@@ -1314,7 +1386,7 @@ h1 {
     line-height:1.5;
   }
   .api-connection {
-    font-size:8px;
+    font-size:10px;
   }
   .bindings {
     gap:3px;
@@ -1333,7 +1405,7 @@ h1 {
     height:100px;
   }
   .route-label {
-    font-size:8px;
+    font-size:10px;
     padding:3px 4px;
   }
   .execution-label {
@@ -1488,7 +1560,7 @@ h1 {
     font-size:13px;
   }
   .delivery-label {
-    font-size:9px;
+    font-size:11px;
   }
   .content-parcel {
     max-width:105px;

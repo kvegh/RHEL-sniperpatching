@@ -1,5 +1,22 @@
 # Release notes
 
+## 0.19.0 — Animate CV changes and simplify the walkthrough
+
+Hide the generic HTTPS API label and arrow, retaining the named query,
+repository-update, CV-update and publication arrows. Enlarge AAP another 20%
+and refit its connector gap. Increase open arrowhead size and weight while
+preserving thin shafts, motion controls and existing orchestration behavior.
+Remove the generic inactive Red Hat connector too. Merge the separate CVE
+announcement into the query, make its alert heading larger/bold, and drop the
+selected-pair check stop so publication leads directly to deployment. Increase
+all arrow label sizes and weight; retain legacy deep links. The two stories
+contain 42 presenter actions in total. Client request/response/install is one
+pull-and-apply action. Use Test Server and Prod Server throughout the visible
+copy. All six current CV readouts roll like mechanical counters on actual value
+changes, respecting motion controls. Required kernel reboots are folded into
+the update action, omitting the two intermediate kernel-state stops. Add a
+visible definition of CV versions as predefined repository snapshots.
+
 ## 0.18.1 — Refine card balance and connection arrows
 
 Reduce server-card width by 20%, enlarge Satellite and Red Hat another 10%, and

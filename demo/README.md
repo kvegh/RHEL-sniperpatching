@@ -2,7 +2,7 @@
 
 [Open the visualization](https://kvegh.github.io/RHEL-sniperpatching/).
 
-Version **0.18.1**. This browser-only explanation is for security staff, Linux
+Version **0.19.0**. This browser-only explanation is for security staff, Linux
 administrators and AAP administrators. It follows the checked-in NEW architecture
 while grouping tasks and shortening operations for presentation. It is an
 explanatory mockup: statuses, CV numbers and outcomes are illustrative. No host,
@@ -14,21 +14,29 @@ separately in the project README and handover.
 Use **Next**, **Back**, **Restart**, or select one of the **seven scenes**.
 Run 01 and Run 02 open their healthy baseline before introducing a new CVE.
 The examples and dates are fixed; there are no presenter-entered values.
+The CVE is announced directly at the query action with a larger bold alert
+heading.
+All six current CV readouts use a 650ms mechanical counter: the new version
+descends from above as the old version exits below. Only actual value changes
+animate; first render and unchanged values stay still. Motion off and reduced
+motion show the latest value immediately. The visual old value is hidden from
+assistive technology. Separate announcement and selected-pair-check stops are omitted;
+publication leads directly to Test Server deployment.
 The scene counter remains at 5 or 7 while the rollout's action counter advances.
-At production checkpoints, **Approve Prod** continues to exact-version promotion.
+At production checkpoints, **Approve Prod Server** continues to exact-version promotion.
 Right-arrow navigation pauses there; Enter/Space on the button also approves.
 The real automation still uses separately launched AAP stages rather than an
 automatic approval node. Scene links are educational navigation, not access controls.
 
 | Scene | What changes |
 | --- | --- |
-| 1. All systems up to date | Test and Prod meet the same defined baseline, with green checks. No future CVE appears. |
+| 1. All systems up to date | Test Server and Prod Server meet the same defined baseline, with green checks. No future CVE appears. |
 | 2. CVE announced | A named alert reaches AAP; Satellite resolves its security advisory. Only announced issues affect host status. |
 | 3. Ensure fix content is available | AAP triggers the repository update, then one connected Download fix arrow delivers the selected fix/dependencies to Satellite. |
-| 4. Publish targeted CV | AAP triggers CV composition and the baseline + fix equation appears. A separate publication action makes the minor available to Test without installing it. |
-| 5. Apply selected fix | AAP launches CVE-scoped deployment; the host requests packages and Satellite responds. Test installs/reboots/verifies first, then approval and exact promotion precede the same Prod exchange. |
+| 4. Publish targeted CV | AAP triggers CV composition and the baseline + fix equation appears. A separate publication action makes the minor available to Test Server without installing it. |
+| 5. Apply selected fix | AAP launches CVE-scoped deployment; the host requests packages and Satellite responds. Test Server installs/reboots/verifies first, then approval and exact promotion precede the same Prod Server exchange. |
 | 6. Routine patch window | Time passes; many security, bug-fix and enhancement updates arrive, retaining the already-applied fix in a broader CV. |
-| 7. Apply broader updates | Fully update and verify Test, approve, promote its exact major, update/verify Prod and finish green. |
+| 7. Apply broader updates | Fully update and verify Test Server, approve, promote its exact major, update/verify Prod Server and finish green. |
 
 The compact status box sits beside the Red Hat software repositories on wider
 screens, aligned with the workflow panel’s top edge and saving vertical space.
@@ -38,30 +46,39 @@ narrower with tighter padding and enlarges Satellite and Red Hat another 10%.
 Narrow screens retain readable card widths; the Red Hat source stays above
 Satellite with one continuous arrow. The top status/source panels stack on
 screens up to 640px. The AAP-to-Satellite API arrow spans the gap between the
-cards, carrying the current action label. Connectors use thin rounded lines,
-small open arrowheads and slower, finer animated dashes; request arrows still
-travel toward Satellite, and package responses travel back toward clients.
+cards, carrying the current action label only when a named query/repository/CV
+action applies. The generic HTTPS API label and arrow are absent. AAP is another
+20% wider than the preceding revision; the connector fits its new gap. Open
+arrowheads are larger and stronger for visibility while shafts remain thin. Arrow
+labels are larger and bold across AAP, download and host routes. Generic Red Hat
+content labels/arrows stay hidden when no download is happening. Connectors use thin rounded lines,
+open arrowheads and slower, finer animated dashes. Host arrows show the client
+pulling from Satellite; package return and installation share that action.
 The Red Hat source lane delivers content to Satellite. One selected fix and its
 dependencies are visually distinct from the later batch of maintenance updates.
 Arrival animations are finite and respect **Motion off** and reduced-motion
 preferences. The page makes no actual download or API request.
 
+Satellite includes a visible definition: a Content View (CV) version is a
+predefined snapshot of selected software repositories. This explains why the
+same tested version can be promoted without changing its package contents.
+
 The explicit AAP arrow labels are **Query: fix available?**, **Trigger software
 repository update**, **Trigger Content View update**, and **Trigger publishing
 updated Content View**. The equation **CV 1.0 + fix == CV 1.1** appears at CV
-composition; only the next publication action highlights Test's newly available
-CV. Installed packages and Prod availability stay unchanged at publication.
-The second cycle uses the corresponding 2.0/2.1 equation. Deployment and client
-request actions do not install anything; the following package response/install
-action does. Reverse arrows show the host's DNF request to Satellite, followed
-by Satellite's response with the selected advisory packages and dependencies.
+composition; only the next publication action highlights Test Server's newly available
+CV. Installed packages and Prod Server availability stay unchanged at publication.
+The second cycle uses the corresponding 2.0/2.1 equation. The deployment trigger does not install packages. The following client pull
+and apply action combines the DNF request, Satellite response and installation
+of selected advisory packages/dependencies; it has no separate return step. Intermediate kernel-installed/reboot-pending
+and fixed-kernel-running stops are omitted.
 
 These composition/publication actions and the repository trigger are explanatory
 presentation stops rather than additional implemented AAP jobs or separate API
 calls. The content-availability scene explains the content prerequisite: the targeted
 playbook reads already synchronized repositories and does not launch a per-CVE
 synchronization job. The full-publication playbook explicitly synchronizes the
-selected repositories. Applicability checks apply to the configured Test/Prod
+selected repositories. Applicability checks apply to the configured Test Server/Prod Server
 pair; the page does not claim implemented fleet-wide discovery. These details
 are available beside the source-linked condensed code.
 
@@ -79,17 +96,19 @@ Two fixed user-selected stories run in chronological order:
 | Python malicious package download | CVE-2024-6345 / RHSA-2024:5534 | 2024-08-23 |
 | Network Privilege Escalation | CVE-2024-36883 / RHSA-2024:6567 | 2024-09-13 |
 
-The first cutoff leaves the second advisory outstanding. Kernel installation,
-reboot and effective verification are separate rollout actions. Technical detail
+The first cutoff leaves the second advisory outstanding. Kernel updates include any required reboot in the same action; effective
+verification follows separately. Technical detail
 identifies a local-user Linux networking flaw. The second run retains the first
 run's fixed packages and starts from its completed baseline. The illustrative
 CV sequence is 1.0 → 1.1 → 2.0 → 2.1 → 3.0; actual jobs return their own versions.
 Grouped full-update actions include any required reboot and independent final
-checks. Fifty-two presenter-controlled actions unfold within the seven scenes per
+checks. Forty-two presenter-controlled actions unfold within the seven scenes per
 run; there is no autoplay or artificial waiting period.
 
 **Technical detail** shows condensed code and a source-pinned repository link.
-Existing links such as `#step=run-2-input` still work; `#step=run-2-baseline`
+Legacy `#step=run-2-input` links open the query/announcement action; removed
+`#step=run-2-host-scope` links open Test Server deployment; removed request
+links open the combined pull-and-apply action; `#step=run-2-baseline`
 opens the second run before its alert. On small screens, the narrative stacks
 above the diagram. Browser layout remains separately unverified.
 

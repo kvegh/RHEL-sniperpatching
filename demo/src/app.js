@@ -10,7 +10,15 @@
   let index = 0;
 
   function indexFromHash() {
-    const id = new URLSearchParams(window.location.hash.slice(1)).get('step');
+    const requested = new URLSearchParams(window.location.hash.slice(1)).get('step');
+    const aliases = {
+      'run-1-input': 'run-1-resolve', 'run-2-input': 'run-2-resolve',
+      'run-1-host-scope': 'run-1-deploy-test', 'run-2-host-scope': 'run-2-deploy-test',
+      'run-1-request-test': 'run-1-patch-test', 'run-2-request-test': 'run-2-patch-test',
+      'run-1-request-prod': 'run-1-patch-prod', 'run-2-request-prod': 'run-2-patch-prod',
+      'run-2-reboot-test': 'run-2-patch-test', 'run-2-reboot-prod': 'run-2-patch-prod',
+    };
+    const id = aliases[requested] || requested;
     const found = story.steps.findIndex(step => step.id === id);
     return found < 0 ? 0 : found;
   }
@@ -22,10 +30,34 @@
     return item;
   }
 
+  function renderCV(id, version) {
+    const node = byId(id);
+    const value = `CV ${version}`;
+    node.classList.add('cv-counter');
+    node.setAttribute('aria-label', value);
+    if (!motion) {
+      node.classList.remove('is-rolling');
+      node.dataset.previous = '';
+    }
+    if (node.textContent === value) return;
+    const previous = node.textContent;
+    node.classList.remove('is-rolling');
+    node.dataset.previous = motion ? previous : '';
+    const oldValue = element('span', 'cv-counter-previous');
+    oldValue.dataset.previous = motion ? previous : '';
+    oldValue.setAttribute('aria-hidden', 'true');
+    node.replaceChildren(oldValue, element('span', 'cv-counter-value', value));
+    if (previous && motion) {
+      // Flush the removed class so consecutive CV changes restart the counter.
+      void node.offsetWidth;
+      node.classList.add('is-rolling');
+    }
+  }
+
   function renderHost(name, host, available, announced, currentCve) {
     byId(`${name}-host`).dataset.health = host.health;
-    byId(`${name}-available`).textContent = `CV ${available}`;
-    byId(`${name}-installed`).textContent = `CV ${host.installedCV}`;
+    renderCV(`${name}-available`, available);
+    renderCV(`${name}-installed`, host.installedCV);
     byId(`${name}-status`).textContent = `${host.health === 'healthy' ? '✓ ' : ''}${host.status}`;
     byId(`${name}-reboot`).textContent = host.reboot;
     byId(`${name}-verification`).textContent = host.verification;
@@ -48,18 +80,18 @@
   }
 
   function eventContent(step, state, approval) {
-    if (step.scene === 1) return ['healthy', 'BASELINE VERIFIED', 'All systems up to date', `Test and Prod verified on baseline CV ${state.testCV}.`];
-    if (step.scene === 2) return ['alert', 'NEW SECURITY ALERT', state.scenario.title, `${state.scenario.cve} is announced and named to AAP. Only this newly announced issue changes the hosts’ security status.`];
+    if (step.scene === 1) return ['healthy', 'BASELINE VERIFIED', 'All systems up to date', `Test Server and Prod Server verified on baseline CV ${state.testCV}.`];
+    if (step.scene === 2) return ['alert', 'CVE ANNOUNCED', state.scenario.title, `${state.scenario.cve} is announced and named to AAP. Only this newly announced issue changes the hosts’ security status.`];
     if (step.kind === 'trigger-sync') return ['content', 'AAP ORCHESTRATES', 'Update the software repositories', 'AAP instructs Satellite to update its repository content before preparing the fix.'];
     if (step.scene === 3) return ['content', 'RED HAT CONTENT', 'Download fix', 'Satellite obtains the selected security fix and required dependencies.'];
     if (step.kind === 'cv-build') return ['content', 'AAP ORCHESTRATES', 'Update the Content View', 'The baseline plus the selected fix prepares the next minor CV. It is not available to hosts until publication.'];
-    if (step.scene === 4) return ['content', 'TARGETED CONTENT VIEW', 'Baseline + selected fix + dependencies', `CV ${state.testCV} is available to Test. Publishing content has not installed packages on either host.`];
-    if (approval) return ['approval', 'OPERATOR CHECKPOINT', 'Test passed. Approve production.', 'Prod stays on its current content and installed packages until the operator continues with the exact tested version.'];
+    if (step.scene === 4) return ['content', 'TARGETED CONTENT VIEW', 'Baseline + selected fix + dependencies', `CV ${state.testCV} is available to Test Server. Publishing content has not installed packages on either host.`];
+    if (approval) return ['approval', 'OPERATOR CHECKPOINT', 'Test Server passed. Approve production.', 'Prod Server stays on its current content and installed packages until the operator continues with the exact tested version.'];
     if (step.kind === 'verify-prod') return ['healthy', 'TARGETED FIX VERIFIED', 'Both hosts have the selected fix', 'The urgent vulnerability is addressed. Broader routine updates will follow at the maintenance window.'];
     if (step.kind === 'time-passes') return ['maintenance', 'TIME PASSES', 'The next patch window approaches', 'The urgent fix stays installed while new security fixes, bug fixes and enhancements accumulate.'];
     if (step.scene === 6) return ['maintenance', 'REGULAR PATCH WINDOW', 'New updates pour in', `Satellite prepares broader content through ${state.scenario.cutoff}, retaining the already-applied security fix.`];
     if (step.kind === 'complete') return ['healthy', 'BASELINE VERIFIED', 'All systems up to date', `Both hosts are verified on CV ${state.testCV}. ${step.cycle === 0 ? 'The next run starts healthy before a new CVE is announced.' : 'Both fixed examples have completed their targeted and regular maintenance cycles.'}`];
-    return ['info', step.scene === 5 ? 'TARGETED ROLLOUT' : 'BROADER ROLLOUT', step.title, 'Check the selected Test and Prod hosts, apply only the required package changes, and verify the result.'];
+    return ['info', step.scene === 5 ? 'TARGETED ROLLOUT' : 'BROADER ROLLOUT', step.title, 'Check the selected Test Server and Prod Server hosts, apply only the required package changes, and verify the result.'];
   }
 
   function renderEvent(step, state, approval) {
@@ -72,6 +104,7 @@
 
   function renderDelivery(state) {
     byId('redhat-supply').dataset.delivery = state.delivery;
+    byId('supply-transfer').hidden = state.delivery === 'none';
     const labels = state.delivery === 'targeted'
       ? ['Selected security fix', 'Required dependencies']
       : state.delivery === 'bulk'
@@ -79,7 +112,7 @@
         : [];
     byId('delivery-label').textContent = state.delivery === 'targeted'
       ? 'Download fix'
-      : state.delivery === 'bulk' ? 'Download updates' : 'Red Hat content';
+      : state.delivery === 'bulk' ? 'Download updates' : '';
     byId('package-stream').replaceChildren(...labels.map((label, position) => {
       const kind = position === 0 ? 'selected-fix' : state.delivery === 'targeted' ? 'dependency' : 'routine-update';
       return element('span', `content-parcel ${kind}`, label);
@@ -121,27 +154,29 @@
     byId('phase-label').textContent = step.phase;
     byId('phase-badge').textContent = approval ? 'Approval required' : step.phase;
     byId('job-label').textContent = state.job;
-    byId('binding-test').textContent = `CV ${state.testCV}`;
-    byId('binding-prod').textContent = `CV ${state.prodCV}`;
+    renderCV('binding-test', state.testCV);
+    renderCV('binding-prod', state.prodCV);
     byId('api-label').textContent = step.kind === 'trigger-sync'
       ? 'Trigger software repository update'
       : step.kind === 'cv-build' ? 'Trigger Content View update'
         : step.kind === 'minor' ? 'Trigger publishing updated Content View'
-          : step.scene === 2 ? 'Query: fix available?' : 'HTTPS API';
+          : step.scene === 2 ? 'Query: fix available?' : '';
+    byId('flow-resolve').hidden = !byId('api-label').textContent;
+    byId('flow-resolve').setAttribute('aria-label', byId('api-label').textContent);
     byId('cv-update').hidden = step.scene !== 4 && step.scene !== 5;
     byId('cv-update').textContent = `CV ${step.cycle + 1}.0 + fix == CV ${step.cycle + 1}.1`;
     byId('cv-availability').hidden = byId('cv-update').hidden;
     byId('cv-availability').textContent = step.kind === 'cv-build'
       ? 'Prepared in Satellite · not published yet'
-      : `CV ${state.testCV} available to ${state.prodCV === state.testCV ? 'Test and Prod' : 'Test'} hosts`;
+      : `CV ${state.testCV} available to ${state.prodCV === state.testCV ? 'Test Server and Prod Server' : 'Test Server'}`;
     byId('test-available').classList.toggle('is-new-content', step.kind === 'minor');
-    const affected = [['Test node', state.test], ['Production node', state.prod]]
+    const affected = [['Test Server', state.test], ['Prod Server', state.prod]]
       .filter(([, host]) => state.announced.some(cve => !host.fixed.includes(cve)))
       .map(([name]) => name);
-    byId('target-scope').textContent = affected.length ? `Affected in selected scope: ${affected.join(' · ')}` : 'Selected scope: Test node · Production node';
+    byId('target-scope').textContent = affected.length ? `Affected in selected scope: ${affected.join(' · ')}` : 'Selected scope: Test Server · Prod Server';
     byId('previous').disabled = index === 0;
     byId('next').disabled = index === story.steps.length - 1;
-    byId('next').textContent = approval ? 'Approve Prod →' : index === story.steps.length - 1 ? 'Complete ✓' : 'Next →';
+    byId('next').textContent = approval ? 'Approve Prod Server →' : index === story.steps.length - 1 ? 'Complete ✓' : 'Next →';
     byId('next').classList.toggle('approval', approval);
     byId('motion').textContent = motion ? 'Motion on' : 'Motion off';
     byId('motion').setAttribute('aria-pressed', String(motion));
@@ -155,17 +190,15 @@
     // The DNF client requests packages; Satellite returns the selected content.
     for (const environment of ['test', 'prod']) {
       const route = byId(`flow-content-${environment}`);
-      const requesting = step.route === `request-${environment}`;
+      const requesting = step.kind === `patch-${environment}`;
       route.classList.toggle('is-requesting', requesting);
       if (requesting || (step.route === `execute-${environment}` && step.kind !== `deploy-${environment}`)) route.classList.add('is-active');
     }
     byId('execution-label').textContent = step.kind.startsWith('deploy-')
       ? `AAP deploys fix · ${state.scenario.cve}` : 'AAP executes host automation';
-    const environment = step.kind.endsWith('-prod') ? 'Prod' : 'Test';
-    byId('host-content-label').textContent = step.kind.startsWith('request-')
-      ? `${environment} requests fix from Satellite`
-      : step.kind === 'patch-test' || step.kind === 'patch-prod'
-        ? `Satellite returns fix packages to ${environment}` : 'Hosts pull Satellite content';
+    const environment = step.kind.endsWith('-prod') ? 'Prod Server' : 'Test Server';
+    byId('host-content-label').textContent = step.kind === 'patch-test' || step.kind === 'patch-prod'
+      ? `${environment} pulls the selected fix from Satellite` : 'Hosts pull Satellite content';
     byId('host-routes').setAttribute('aria-label', `${byId('execution-label').textContent}; ${byId('host-content-label').textContent}`);
     byId('test-host').classList.toggle('is-active', step.route === 'execute-test' || step.route === 'content-test');
     byId('prod-host').classList.toggle('is-active', step.route === 'execute-prod' || step.route === 'content-prod');

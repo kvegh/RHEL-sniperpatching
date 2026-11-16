@@ -1,24 +1,27 @@
 # RHEL-sniperpatching
 
-**Version: 0.18.1.**
+**Version: 0.19.0.**
 
 [Open the interactive RHEL patching mockup](https://kvegh.github.io/RHEL-sniperpatching/)
 to follow two fixed CVE/RHSA cycles through seven explanatory scenes: green
-baseline, CVE alert, Red Hat fix content, targeted CV, controlled Test/Prod
-rollout, the next maintenance window and broader Test/Prod updates. Rollout
+baseline, CVE alert, Red Hat fix content, targeted CV, controlled Test Server/Prod Server
+rollout, the next maintenance window and broader Test Server/Prod Server updates. Rollout
 scenes expand into verification, reboot where needed, operator approval and
 exact-version production promotion. Future CVEs stay hidden until announced;
 prior fixes remain verified while routine updates arrive. A compact status box
 shares a row with Red Hat software repositories, aligned with the workflow
 panel’s top edge. The architecture,
-Content View versions and installed host state stay visible, with the selected
+Content View versions (fixed repository snapshots) and installed host state stay visible, with the selected
 fix contrasted against the later bulk content flow. This browser-only mockup
 makes AAP's orchestration explicit: query, repository update, CV composition,
 publication, then CVE-scoped deployment. Hosts request packages from Satellite;
 Satellite returns the fix. Smaller platform cards sit centered in equal halves,
 with a larger Red Hat source and one continuous download arrow. Server cards
 are more compact; the long API arrow and other connectors use finer open heads
-and smoother flow animations. The page uses
+and smoother flow animations. The generic protocol connector is hidden; named
+AAP actions retain their arrows with clearer heads and a larger AAP card.
+Changing CV readouts roll like mechanical counters; the simplified walkthrough
+uses Test Server and Prod Server names. The page uses
 the code's responsibilities and makes no infrastructure connections. See
 [controls, source mapping and deployed test scope](demo/README.md).
 

@@ -79,16 +79,20 @@ for (const cycle of [0, 1]) {
   });
 }
 
-test('kernel installation remains ineffective until the separate reboot stop', () => {
-  for (const [patch, reboot, host] of [['patch-test', 'reboot-test', 'test'], ['patch-prod', 'reboot-prod', 'prod']]) {
+test('kernel pull and apply includes required reboot before separate verification', () => {
+  assert.equal(story.steps.some(step => step.kind.startsWith('reboot-')), false);
+  for (const [patch, verify, host] of [['patch-test', 'verify-test', 'test'], ['patch-prod', 'verify-prod', 'prod']]) {
     const installed = story.stateAt(position(1, patch))[host];
-    assert.equal(installed.reboot, 'Required');
-    assert.equal(installed.fixed.includes(story.scenarios[1].cve), false);
-    const booted = story.stateAt(position(1, reboot))[host];
-    assert.equal(booted.reboot, 'Completed');
-    assert.equal(booted.fixed.includes(story.scenarios[1].cve), true);
-    assert.equal(booted.verification, 'Pending');
-    assert.equal(booted.fixed.includes(story.scenarios[0].cve), true);
+    assert.equal(installed.reboot, 'Completed');
+    assert.equal(installed.status, 'Fix installed');
+    assert.equal(installed.fixed.includes(story.scenarios[1].cve), true);
+    assert.equal(installed.verification, 'Pending');
+    assert.equal(installed.fixed.includes(story.scenarios[0].cve), true);
+    assert.equal(position(1, patch) + 1, position(1, verify));
+    const verified = story.stateAt(position(1, verify))[host];
+    assert.equal(verified.reboot, 'Completed');
+    assert.equal(verified.verification, 'Passed');
+    assert.equal(verified.status, 'Fix verified');
   }
 });
 
@@ -110,10 +114,14 @@ test('rewind, restart and repeated reads do not retain future or caller-mutated 
 test('every step has a unique deep link and a real code source with a prepared excerpt', () => {
   assert.equal(new Set(story.steps.map(step => step.id)).size, story.steps.length);
   assert.match(story.sourceRevision, /^[0-9a-f]{40}$/);
-  const allowedRoutes = new Set(['none', 'resolve', 'content-test', 'execute-test', 'promote-prod', 'execute-prod', 'request-test', 'request-prod', 'upstream']);
+  const allowedRoutes = new Set(['none', 'resolve', 'content-test', 'execute-test', 'promote-prod', 'execute-prod', 'upstream']);
   for (const step of story.steps) {
     assert.ok(allowedRoutes.has(step.route), step.id);
     assert.ok(step.summary && step.detail && step.code, step.id);
+    for (const prose of [step.title, step.summary, step.detail]) {
+      assert.doesNotMatch(prose, /\b(?:Test|Prod)\b(?! Server)/, step.id);
+      assert.doesNotMatch(prose, /Server Server/, step.id);
+    }
     assert.equal(fs.existsSync(path.join(__dirname, '../..', step.source)), true, step.source);
   }
   assert.match(story.scenarios[1].description, /local user/i);
@@ -129,7 +137,10 @@ test('invalid and out-of-range navigation inputs clamp to a valid story stop', (
 
 
 test('both fixed cycles follow all seven explanatory scenes in order', () => {
-  assert.equal(story.steps.length, 52);
+  assert.equal(story.steps.length, 42);
+  assert.equal(story.steps.some(step => step.kind === 'input'), false);
+  assert.equal(story.steps.some(step => step.kind === 'host-scope'), false);
+  assert.equal(story.steps.some(step => step.kind.startsWith('request-')), false);
   assert.deepEqual(story.scenes.map(scene => [scene.number, scene.title]), [
     [1, 'All systems up to date'], [2, 'CVE announced'],
     [3, 'Ensure fix content is available'], [4, 'Publish targeted CV'],
@@ -139,6 +150,8 @@ test('both fixed cycles follow all seven explanatory scenes in order', () => {
     const scenes = story.steps.filter(step => step.cycle === cycle).map(step => step.scene);
     assert.deepEqual([...new Set(scenes)], [1, 2, 3, 4, 5, 6, 7]);
     assert.deepEqual(scenes, [...scenes].sort((left, right) => left - right));
+    assert.equal(position(cycle, 'baseline') + 1, position(cycle, 'resolve'));
+    assert.equal(story.steps.filter(step => step.cycle === cycle && step.scene === 2).length, 1);
     assert.equal(position(cycle, 'resolve') + 1, position(cycle, 'trigger-sync'));
     assert.equal(position(cycle, 'trigger-sync') + 1, position(cycle, 'ensure-content'));
     assert.equal(position(cycle, 'ensure-content') + 1, position(cycle, 'cv-build'));
@@ -146,15 +159,13 @@ test('both fixed cycles follow all seven explanatory scenes in order', () => {
     assert.equal(story.steps[position(cycle, 'cv-build')].scene, 4);
     assert.equal(story.steps[position(cycle, 'trigger-sync')].scene, 3);
     assert.equal(story.steps[position(cycle, 'baseline')].scene, 1);
-    assert.equal(story.steps[position(cycle, 'host-scope')].scene, 5);
-    assert.equal(position(cycle, 'host-scope') + 1, position(cycle, 'deploy-test'));
-    assert.equal(position(cycle, 'deploy-test') + 1, position(cycle, 'request-test'));
-    assert.equal(position(cycle, 'request-test') + 1, position(cycle, 'patch-test'));
+    assert.equal(story.steps[position(cycle, 'deploy-test')].scene, 5);
+    assert.equal(position(cycle, 'minor') + 1, position(cycle, 'deploy-test'));
+    assert.equal(position(cycle, 'deploy-test') + 1, position(cycle, 'patch-test'));
     assert.ok(position(cycle, 'verify-test') < position(cycle, 'approve-targeted'));
     assert.ok(position(cycle, 'approve-targeted') < position(cycle, 'promote-targeted'));
     assert.equal(position(cycle, 'promote-targeted') + 1, position(cycle, 'deploy-prod'));
-    assert.equal(position(cycle, 'deploy-prod') + 1, position(cycle, 'request-prod'));
-    assert.equal(position(cycle, 'request-prod') + 1, position(cycle, 'patch-prod'));
+    assert.equal(position(cycle, 'deploy-prod') + 1, position(cycle, 'patch-prod'));
     assert.equal(story.steps[position(cycle, 'time-passes')].scene, 6);
   }
 });
@@ -169,10 +180,12 @@ test('every cycle starts green and reveals its CVE only when the announcement ar
       assert.equal(host.verification, 'Passed');
       assert.deepEqual(host.fixed, prior);
     }
-    const alert = story.stateAt(position(cycle, 'input'));
+    const alert = story.stateAt(position(cycle, 'resolve'));
     assert.deepEqual(alert.announced, story.scenarios.slice(0, cycle + 1).map(scenario => scenario.cve));
     assert.equal(alert.test.health, 'affected');
     assert.equal(alert.prod.health, 'affected');
+    assert.equal(alert.test.verification, 'Pending');
+    assert.equal(alert.prod.verification, 'Pending');
     assert.equal(alert.test.fixed.includes(story.scenarios[cycle].cve), false);
   }
   assert.equal(story.steps[position(0, 'baseline')].id, 'baseline');
@@ -214,18 +227,34 @@ test('targeted and bulk content deliveries occur only at their explanatory stops
         assert.deepEqual(state[key], before[key], `CV composition must not change ${key}`);
       }
     }
-    if (['deploy-test', 'request-test', 'deploy-prod', 'request-prod'].includes(step.kind)) {
+    if (['deploy-test', 'deploy-prod'].includes(step.kind)) {
       const target = step.kind.endsWith('test') ? 'test' : 'prod';
       assert.equal(step.scene, 5);
-      assert.equal(step.route, step.kind.startsWith('request-') ? `request-${target}` : `execute-${target}`);
+      assert.equal(step.route, `execute-${target}`);
       assert.ok(step.title.includes(story.scenarios[step.cycle].cve));
       assert.ok(state.job.includes(story.scenarios[step.cycle].cve));
       assert.match(step.detail, /dependencies/i);
       assert.equal(step.source, 'playbooks/new/patch_hosts.yml');
       const before = story.stateAt(index - 1);
       for (const key of ['testCV', 'prodCV', 'versions', 'test', 'prod']) {
-        assert.deepEqual(state[key], before[key], `Deployment/request stop must not change ${key}`);
+        assert.deepEqual(state[key], before[key], `Deployment trigger must not change ${key}`);
       }
+    }
+    if (['patch-test', 'patch-prod'].includes(step.kind)) {
+      const target = step.kind.endsWith('test') ? 'test' : 'prod';
+      const other = target === 'test' ? 'prod' : 'test';
+      const before = story.stateAt(index - 1);
+      assert.equal(step.route, `execute-${target}`);
+      assert.match(step.title, /pulls and applies the selected fix/i);
+      assert.match(step.detail, /DNF transaction requests/i);
+      assert.match(step.detail, /Satellite returns/i);
+      assert.match(step.detail, /dependencies/i);
+      assert.notEqual(state[target].installedCV, before[target].installedCV);
+      assert.equal(state[target].installedCV, state[`${target}CV`]);
+      assert.equal(state[target].verification, 'Pending');
+      assert.deepEqual(state[other], before[other]);
+      assert.equal(state.testCV, before.testCV);
+      assert.equal(state.prodCV, before.prodCV);
     }
     if (step.kind === 'ensure-content') {
       assert.equal(step.route, 'upstream');
@@ -246,15 +275,14 @@ test('health follows announced risk, verification, available updates and complet
     assert.equal(story.stateAt(position(cycle, 'time-passes')).maintenance, true);
   }
   assert.equal(story.stateAt(position(0, 'patch-test')).test.health, 'verifying');
-  assert.equal(story.stateAt(position(1, 'patch-test')).test.health, 'affected');
-  assert.equal(story.stateAt(position(1, 'reboot-test')).test.health, 'verifying');
+  assert.equal(story.stateAt(position(1, 'patch-test')).test.health, 'verifying');
 });
 
-test('applicability explanation keeps the explicitly selected pair instead of discovering a fleet', () => {
+test('deployment explanation keeps the explicitly selected pair instead of discovering a fleet', () => {
   for (const cycle of [0, 1]) {
-    const scope = story.steps[position(cycle, 'host-scope')];
+    const scope = story.steps[position(cycle, 'deploy-test')];
     assert.match(scope.detail, /explicitly selected/i);
     assert.match(scope.detail, /does not discover or automatically select an entire fleet/i);
-    assert.equal(scope.source, 'playbooks/new/tasks/host_context.yml');
+    assert.equal(scope.source, 'playbooks/new/patch_hosts.yml');
   }
 });

@@ -92,7 +92,7 @@ test('all real Next handlers traverse both cycles and expose four approval check
     assert.equal(v.get('step-list').children.length, 7);
     if (step.kind.startsWith('approve-')) {
       approvals += 1;
-      assert.equal(text(v, 'next'), 'Approve Prod →');
+      assert.equal(text(v, 'next'), 'Approve Prod Server →');
       const currentHash = v.window.location.hash;
       v.document.dispatch('keydown', { key: 'ArrowRight', target: { tagName: 'BODY' }, preventDefault() {} });
       assert.equal(v.window.location.hash, currentHash, 'Approval needs its explicit action');
@@ -120,7 +120,7 @@ test('publication and promotion visibly separate available content from installe
   assert.equal(text(v, 'prod-installed'), 'CV 1.0');
 });
 
-test('kernel reboot and verification are separate visible steps and retain the Python fix', () => {
+test('kernel updates include reboot and retain the Python fix before verification', () => {
   const v = launch();
   v.get('cycle-1').click();
   assert.equal(v.window.location.hash, '#step=run-2-baseline');
@@ -128,12 +128,10 @@ test('kernel reboot and verification are separate visible steps and retain the P
   assert.equal(v.get('test-host').dataset.health, 'healthy');
   assert.doesNotMatch(text(v, 'test-fixes'), /CVE-2024-36883/);
   go(v, at(v, 1, 'patch-test'));
-  assert.equal(text(v, 'test-reboot'), 'Required');
-  assert.equal(text(v, 'test-verification'), 'Pending');
-  assert.equal((text(v, 'test-fixes').match(/Fixed/g) || []).length, 1);
-  v.get('next').click();
   assert.equal(text(v, 'test-reboot'), 'Completed');
   assert.equal(text(v, 'test-verification'), 'Pending');
+  assert.equal((text(v, 'test-fixes').match(/Fixed/g) || []).length, 1);
+  assert.equal(text(v, 'prod-installed'), 'CV 2.0');
   v.get('next').click();
   assert.equal(text(v, 'test-verification'), 'Passed');
 });
@@ -149,10 +147,15 @@ test('workflow buttons, deep links, motion controls and source details remain us
   firstButton.click();
   assert.equal(v.window.location.hash, '#step=run-2-baseline');
   v.get('step-list').children[1].children[0].click();
-  assert.equal(v.window.location.hash, '#step=run-2-input');
+  assert.equal(v.window.location.hash, '#step=run-2-resolve');
   assert.match(v.get('source-link').href, /^https:\/\/github\.com\/kvegh\/RHEL-sniperpatching\/blob\/[a-f0-9]{40}\/playbooks\/new\//);
-  assert.ok(text(v, 'source-code').includes('sniper_patch_id'));
+  assert.ok(text(v, 'source-code').includes('redhat.satellite.resource_info'));
   assert.match(text(v, 'scenario-description'), /local user/i);
+  const legacy = launch('#step=run-2-input');
+  assert.equal(text(legacy, 'api-label'), 'Query: fix available?');
+  assert.equal(text(legacy, 'event-kicker'), 'CVE ANNOUNCED');
+  const legacyScope = launch('#step=run-2-host-scope');
+  assert.match(text(legacyScope, 'execution-label'), /AAP deploys fix/);
   v.media.dispatch('change', { matches: true });
   assert.equal(v.get('walkthrough').dataset.motion, 'off');
 });
@@ -166,11 +169,13 @@ test('an unknown deep link returns to a safe baseline', () => {
 
 test('CVE alerts change known host risk without revealing the next story early', () => {
   const v = launch();
-  assert.equal(text(v, 'api-label'), 'HTTPS API');
+  assert.equal(text(v, 'api-label'), '');
+  assert.equal(v.get('flow-resolve').hidden, true);
   assert.equal(v.get('story-event').dataset.tone, 'healthy');
-  go(v, at(v, 0, 'input'));
+  go(v, at(v, 0, 'resolve'));
   assert.equal(v.get('story-event').dataset.tone, 'alert');
   assert.equal(text(v, 'api-label'), 'Query: fix available?');
+  assert.equal(v.get('flow-resolve').hidden, false);
   assert.match(v.get('flow-resolve').className, /is-active/);
   assert.equal(v.get('test-host').dataset.health, 'affected');
   assert.equal(v.get('prod-host').dataset.health, 'affected');
@@ -179,16 +184,17 @@ test('CVE alerts change known host risk without revealing the next story early',
   assert.match(text(v, 'event-title'), /Python malicious package download/);
   assert.match(text(v, 'test-fixes'), /CVE-2024-6345/);
   assert.doesNotMatch(text(v, 'test-fixes'), /CVE-2024-36883/);
-  go(v, at(v, 0, 'host-scope'));
-  assert.match(text(v, 'target-scope'), /Test node.*Production node/);
-  assert.equal(text(v, 'api-label'), 'HTTPS API');
+  go(v, at(v, 0, 'deploy-test'));
+  assert.match(text(v, 'target-scope'), /Test Server.*Prod Server/);
+  assert.equal(text(v, 'api-label'), '');
+  assert.equal(v.get('flow-resolve').hidden, true);
   assert.equal(text(v, 'cv-update'), 'CV 1.0 + fix == CV 1.1');
   assert.equal(v.get('cv-update').hidden, false);
   go(v, at(v, 0, 'complete'));
   assert.equal(v.get('test-host').dataset.health, 'healthy');
   assert.equal(v.get('story-event').dataset.tone, 'healthy');
   assert.doesNotMatch(text(v, 'prod-fixes'), /CVE-2024-36883/);
-  go(v, at(v, 1, 'input'));
+  go(v, at(v, 1, 'resolve'));
   assert.match(text(v, 'prod-fixes'), /CVE-2024-36883/);
   assert.equal(text(v, 'api-label'), 'Query: fix available?');
   assert.equal(v.get('cv-update').hidden, true);
@@ -200,9 +206,12 @@ test('CVE alerts change known host risk without revealing the next story early',
 
 test('Red Hat supply distinguishes the single-fix request from the later bulk update', () => {
   const v = launch();
+  assert.equal(text(v, 'delivery-label'), '');
+  assert.equal(v.get('supply-transfer').hidden, true);
   go(v, at(v, 0, 'ensure-content'));
   assert.equal(v.get('redhat-supply').dataset.delivery, 'targeted');
   assert.equal(text(v, 'delivery-label'), 'Download fix');
+  assert.equal(v.get('supply-transfer').hidden, false);
   assert.equal(v.get('package-stream').children.length, 2);
   assert.match(text(v, 'package-stream'), /Selected security fix.*Required dependencies/);
   go(v, at(v, 0, 'time-passes'));
@@ -212,6 +221,7 @@ test('Red Hat supply distinguishes the single-fix request from the later bulk up
   go(v, at(v, 0, 'full-publish'));
   assert.equal(v.get('redhat-supply').dataset.delivery, 'bulk');
   assert.equal(text(v, 'delivery-label'), 'Download updates');
+  assert.equal(v.get('supply-transfer').hidden, false);
   assert.ok(v.get('package-stream').children.length >= 8);
   assert.match(text(v, 'package-stream'), /Earlier fix ✓/);
   assert.equal(text(v, 'test-installed'), 'CV 1.1');
@@ -220,6 +230,8 @@ test('Red Hat supply distinguishes the single-fix request from the later bulk up
   v.get('previous').click();
   assert.equal(v.get('redhat-supply').dataset.delivery, 'none');
   assert.equal(v.get('package-stream').children.length, 0);
+  assert.equal(text(v, 'delivery-label'), '');
+  assert.equal(v.get('supply-transfer').hidden, true);
 });
 
 test('seven scene buttons open their first action within each fixed cycle', () => {
@@ -247,7 +259,7 @@ test('the architecture skip link preserves the current story state', () => {
   assert.equal(text(v, 'step-title'), title);
   assert.equal(text(v, 'test-available'), 'CV 1.1');
   v.get('next').click();
-  assert.equal(v.window.location.hash, '#step=run-1-host-scope');
+  assert.equal(v.window.location.hash, '#step=run-1-deploy-test');
 });
 
 
@@ -273,8 +285,9 @@ test('AAP orchestrates query, repository update, CV update and publication befor
     assert.equal(text(v, 'test-available'), baseline);
     v.get('next').click();
     assert.equal(text(v, 'api-label'), 'Trigger publishing updated Content View');
+    assert.equal(v.get('flow-resolve').hidden, false);
     assert.match(v.get('flow-resolve').className, /is-active/);
-    assert.equal(text(v, 'cv-availability'), `CV ${cycle + 1}.1 available to Test hosts`);
+    assert.equal(text(v, 'cv-availability'), `CV ${cycle + 1}.1 available to Test Server`);
     assert.equal(text(v, 'test-available'), `CV ${cycle + 1}.1`);
     assert.match(v.get('test-available').className, /is-new-content/);
     assert.equal(text(v, 'test-installed'), installed);
@@ -286,7 +299,7 @@ test('AAP orchestrates query, repository update, CV update and publication befor
 });
 
 
-test('AAP launches a CVE-scoped job before clients request and receive the fix', () => {
+test('AAP launches a CVE-scoped job before clients pull and apply the fix', () => {
   const v = launch();
   for (const cycle of [0, 1]) {
     for (const environment of ['test', 'prod']) {
@@ -296,15 +309,40 @@ test('AAP launches a CVE-scoped job before clients request and receive the fix',
       assert.match(v.get(`flow-execute-${environment}`).className, /is-active/);
       assert.doesNotMatch(v.get(`flow-content-${environment}`).className, /is-active/);
       v.get('next').click();
-      assert.equal(v.window.location.hash, `#step=run-${cycle + 1}-request-${environment}`);
+      assert.equal(v.window.location.hash, `#step=run-${cycle + 1}-patch-${environment}`);
       assert.match(v.get(`flow-content-${environment}`).className, /is-active/);
       assert.match(v.get(`flow-content-${environment}`).className, /is-requesting/);
-      assert.match(text(v, 'host-content-label'), /requests fix from Satellite/);
-      assert.equal(text(v, `${environment}-installed`), installed);
-      v.get('next').click();
-      assert.match(text(v, 'host-content-label'), /Satellite returns fix packages/);
-      assert.doesNotMatch(v.get(`flow-content-${environment}`).className, /is-requesting/);
+      assert.match(text(v, 'host-content-label'), /pulls the selected fix from Satellite/);
+      assert.notEqual(text(v, `${environment}-installed`), installed);
       assert.equal(text(v, `${environment}-installed`), `CV ${cycle + 1}.1`);
+      v.get('next').click();
+      assert.doesNotMatch(v.get(`flow-content-${environment}`).className, /is-requesting/);
     }
+  }
+});
+
+test('every displayed CV change rolls the previous value out and respects motion off', () => {
+  const v = launch();
+  const ids = ['binding-test', 'binding-prod', 'test-available', 'test-installed', 'prod-available', 'prod-installed'];
+  const changes = new Map(ids.map(id => [id, 0]));
+  for (const step of v.story.steps) {
+    const previous = new Map(ids.map(id => [id, text(v, id)]));
+    go(v, step);
+    for (const id of ids) {
+      const current = text(v, id);
+      assert.equal(v.get(id).attributes['aria-label'], current);
+      if (current === previous.get(id)) continue;
+      changes.set(id, changes.get(id) + 1);
+      assert.equal(v.get(id).dataset.previous, previous.get(id));
+      assert.match(v.get(id).className, /is-rolling/);
+      assert.equal(v.get(id).children[0].attributes['aria-hidden'], 'true');
+    }
+  }
+  for (const count of changes.values()) assert.ok(count >= 4);
+  v.get('motion').click();
+  v.get('restart').click();
+  for (const id of ids) {
+    assert.equal(text(v, id), 'CV 1.0');
+    assert.doesNotMatch(v.get(id).className, /is-rolling/);
   }
 });

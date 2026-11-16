@@ -1510,3 +1510,65 @@ Independent source review confirmed the resized-gap geometry, open arrowheads,
 flow directions and motion-control coverage, finding no concrete issue in the
 inspected scope. Browser appearance, text wrapping and perceived animation
 quality remain unverified; no browser or dependency was installed.
+
+
+## 2026-11-16 19:35 UTC — Remove the generic connector and clarify arrowheads
+
+The user requested removing the HTTPS API text/arrow, clearer arrowheads and
+another 20% larger AAP card. Version 0.18.2 hides the connector whenever no named
+orchestration action applies, preserving the previously requested query,
+repository-update, CV-update and publication arrows. AAP stays centered with a
+refitted connector gap. Open arrowheads are larger and stronger while shafts
+remain thin, addressing the user's reported visibility problem. Existing native
+CSS/SVG and the same interaction checks suffice; no dependency or architecture
+change is needed. Implementation and publication evidence follow verification.
+Browser appearance remains unverified by the automated Node checks.
+
+
+Before publication, the user also removed the separate announcement and selected
+Test/Prod-pair check stops, requested a larger bold CVE ANNOUNCED alert and arrow
+labels, and removed the generic inactive Red Hat content connector. These
+refinements remain in 0.18.2. Announcement/risk transition now occurs at query;
+publication leads directly to deployment. Actual scoped-host checks remain in
+technical detail. The two stories now contain 48 actions; legacy input and
+host-scope links resolve to query and Test deployment respectively. Generic
+connectors are hidden, while named orchestration and real download/response
+arrows remain visible at their corresponding actions.
+
+
+## 2026-11-16 19:45 UTC — Add mechanical CV counters and streamline delivery
+
+Recorded after the user's further refinements: animate every current CV change
+like a mechanical counter, merge the separate package-return stop into the host
+pull-and-apply action, and use Test Server/Prod Server throughout the visible
+copy. All six current CV readouts retain their exact current values; a new value
+descends while the previous value exits below. Only changes animate; old visual
+values are hidden from assistive technology and motion preferences show the
+latest value immediately. Native CSS and the existing render functions suffice.
+
+The two stories now contain 44 actions. Earlier input, selected-pair and request
+links resolve to their replacement actions. The combined feature release is
+0.19.0, superseding the uncommitted/unpublished 0.18.2 draft described above;
+there was no separate 0.18.2 publication. Preserve historical source snippets
+and actual environment names; the server naming change affects presentation.
+No automation or infrastructure change is introduced. Implementation and live
+verification evidence follow after publication; actual browser animation
+appearance remains unverified by Node tests.
+
+
+The user then removed the kernel-installed/reboot-pending and fixed-kernel-running
+intermediate stops. Required kernel reboots are included in the pull-and-apply
+action; effective verification still follows. The final combined 0.19.0 story
+contains 42 actions, 21 per fixed run. Removed reboot links open the corresponding
+combined kernel update. This supersedes the earlier draft action counts without
+changing actual automation or discarding the implementation's reboot checks.
+
+
+The user also requested a plain-language explanation of CVs. Satellite's visible
+controls now define a Content View (CV) version as a predefined snapshot of
+selected software repositories, explaining the reusable tested snapshot without
+confusing the CV definition with its published version. During final source
+review, an equal-specificity mobile label rule was found to override counter
+text to 8px. Strengthening the two counter typography selectors preserves the
+surrounding CV font on narrow screens. This focused correction does not change
+states or animation timing; browser rendering remains unverified.

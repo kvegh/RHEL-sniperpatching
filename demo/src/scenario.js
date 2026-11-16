@@ -4,7 +4,7 @@
 (function (root) {
   'use strict';
 
-  const version = '0.18.1';
+  const version = '0.19.0';
   const sourceRevision = '2fe10cd27c874691780c72eb66105f87cd5c12fa';
   const source = name => `playbooks/new/${name}`;
   const scenes = [
@@ -17,10 +17,10 @@
     { number: 7, title: 'Apply broader updates' },
   ];
   const sceneByKind = {
-    baseline: 1, input: 2, resolve: 2, 'trigger-sync': 3, 'ensure-content': 3, 'cv-build': 4, minor: 4,
-    'host-scope': 5, 'deploy-test': 5, 'request-test': 5, 'patch-test': 5, 'reboot-test': 5, 'verify-test': 5,
-    'approve-targeted': 5, 'promote-targeted': 5, 'deploy-prod': 5, 'request-prod': 5, 'patch-prod': 5,
-    'reboot-prod': 5, 'verify-prod': 5, 'time-passes': 6, 'full-publish': 6,
+    baseline: 1, resolve: 2, 'trigger-sync': 3, 'ensure-content': 3, 'cv-build': 4, minor: 4,
+    'deploy-test': 5, 'patch-test': 5, 'verify-test': 5,
+    'approve-targeted': 5, 'promote-targeted': 5, 'deploy-prod': 5, 'patch-prod': 5,
+    'verify-prod': 5, 'time-passes': 6, 'full-publish': 6,
     'full-test': 7, 'approve-full': 7, 'full-promote': 7, 'full-prod': 7, complete: 7,
   };
   const scenarios = [
@@ -44,18 +44,14 @@
 
   const snippets = {
     baseline: 'sniper_baseline_end_date: "2024-04-30"\nsniper_prepare_content_only: true\n# Verify baseline content before direct Test/Prod registration.',
-    input: 'sniper_patch_id: "{cve}"\nsniper_environment: test\nsniper_patch_scope: targeted',
     resolve: 'redhat.satellite.resource_info:\n  resource: errata\n  params:\n    repository_id: "{{ item.0.id }}"\n    cve: "{{ item.1 }}"',
     triggerSync: '# Explanatory repository-update trigger; not a per-CVE runtime job.\nredhat.satellite.repository_sync:\n  repository: \"{{ sniper_repository_name }}\"\n# The full-publication stage explicitly syncs selected repositories.\n# Targeted updates consume already synchronized content.',
     ensureContent: '# Confirm the selected fix exists in synchronized Satellite content.\nredhat.satellite.resource_info:\n  resource: errata\n# Targeted patching reads already synchronized repositories; no new per-CVE sync job.',
-    hostScope: 'redhat.satellite.resource_info:\n  resource: hosts\n  search: name = "{{ sniper_host_name }}"\n# Match the selected CV/environment, inventory host and affected installed packages.',
     timePasses: 'sniper_update_end_date: "{cutoff}"\n# A later maintenance window is an explanatory story transition.\n# Launch the existing full-update stage separately.',
     cvBuild: '# Explanatory composition stop before publishing the updated CV.\nadd_content:\n  errata_ids: \"{{ sniper_missing_errata }}\"\nresolve_dependencies: true\n# Baseline + selected fix + dependencies; not yet available to Test.',
     minor: '# Condensed incremental-update body; no host patching here.\nadd_content:\n  errata_ids: "{{ sniper_missing_errata }}"\nresolve_dependencies: true\n# Validate additions, then promote the exact minor to Test.',
     deployScoped: 'sniper_patch_id: \"{cve}\"\nsniper_patch_scope: targeted\n# AAP launches the existing host job for the selected host.\n# The CVE resolves to advisory-scoped packages and dependencies.',
-    requestPackages: '# Explanatory request phase inside the existing host package transaction.\ndnf upgrade-minimal --advisory={advisory}\n# DNF requests matching packages and dependencies from Satellite.\n# Satellite responds to the request; it does not initiate an unsolicited push.',
     patch: '# Condensed native package transaction, constrained to the CV repositories.\ndnf upgrade-minimal --advisory={advisory}\n# Record changed RPMs and inspect needs-restarting.',
-    reboot: 'ansible.builtin.reboot:\n  reboot_timeout: "{{ sniper_reboot_timeout }}"\n  post_reboot_delay: 10\n# Triggered by OS, kernel, advisory or stale-process evidence.',
     verify: 'ansible.builtin.import_tasks: tasks/check_final.yml\n# Native installed-RPM and running-kernel proof.\n# Require no outstanding reboot; run configured smoke tests.',
     approve: '# Operator checkpoint between separately launched AAP stages.\n# Review Test evidence before launching the Prod operation.\n# No automatic approval node is added by the visualization.',
     promoteMinor: '# The Prod invocation reuses Test\'s exact minor.\nredhat.satellite.content_view_version:\n  version: "{{ sniper_new_version.version }}"\n  lifecycle_environments: "{{ [sniper_environment_name] }}"\n  force_promote: false',
@@ -84,16 +80,13 @@
     };
 
     add('baseline', 'All systems up to date',
-      cycle === 0 ? 'Test and Prod start on the same verified baseline.' : 'The previous cycle is complete; both environments are up to date.',
+      cycle === 0 ? 'Test Server and Prod Server start on the same verified baseline.' : 'The previous cycle is complete; both environments are up to date.',
       cycle === 0
         ? 'Both illustrative RHEL clients start on CV 1.0 with completed checks. No new CVE has been announced in the story. Satellite controls available content; installed packages are shown separately.'
         : 'Both environments retain CV 2.0 and the verified Python fix from the previous cycle. No next vulnerability has been announced yet; the completed state carries forward without resetting packages.',
       cycle === 0 ? 'prepare_demo.yml' : 'check_patch.yml', cycle === 0 ? 'baseline' : 'check', 'none', 'Baseline');
-    add('input', 'A new CVE is announced', `${scenario.title}: AAP receives ${scenario.cve}.`,
-      `${scenario.description} The example input is fixed for this story. The actual survey accepts a CVE list or one explicit RHSA.`,
-      'tasks/resolve.yml', 'input', 'none');
-    add('resolve', 'Find the applicable security advisory', `AAP asks Satellite to resolve ${scenario.cve}.`,
-      `Satellite supplies ${scenario.advisory} and package metadata from the configured repositories. A CVE can resolve to more than one advisory; this prepared example follows its cataloged RHEL 9.4 advisory.`,
+    add('resolve', 'Find the applicable security advisory', `AAP asks Satellite whether a fix for ${scenario.cve} is available.`,
+      `${scenario.description} The alert first appears at this query action. The example input is fixed; the actual survey accepts a CVE list or one explicit RHSA. Satellite supplies ${scenario.advisory} and package metadata from the configured repositories. A CVE can resolve to more than one advisory; this prepared example follows its cataloged RHEL 9.4 advisory.`,
       'tasks/resolve.yml', 'resolve', 'resolve');
     add('trigger-sync', 'Trigger software repository update', 'AAP instructs Satellite to update its Red Hat software repositories.',
       'This explicit trigger is an explanatory mockup action. The full-publication playbook explicitly synchronizes selected repositories; the targeted playbook consumes already synchronized content and does not launch a per-CVE synchronization job. No automation is changed by this presentation stop.',
@@ -102,70 +95,55 @@
       'The incoming content flow explains Red Hat content availability. The targeted playbook reads already synchronized Satellite repositories and validates advisory/package metadata; it does not launch a new per-CVE repository synchronization job.',
       'create_minor_update.yml', 'ensureContent', 'upstream');
     add('cv-build', 'Trigger Content View update', `AAP instructs Satellite to prepare baseline content plus the selected fix for CV ${minor}.`,
-      `This explanatory composition stop shows the selected advisory and dependencies being added to the existing baseline. It does not publish CV ${minor}, change Test or Prod content availability, or install any packages; publication is the next separately displayed action.`,
+      `This explanatory composition stop shows the selected advisory and dependencies being added to the existing baseline. It does not publish CV ${minor}, change Test Server or Prod Server content availability, or install any packages; publication is the next separately displayed action.`,
       'create_minor_update.yml', 'cvBuild', 'resolve');
-    add('minor', 'Trigger publishing updated Content View', `AAP instructs Satellite to publish CV ${minor} and make it available to Test.`,
-      `The incremental update adds the selected advisory and dependencies, preserving baseline content. CV ${minor} is available to Test; the host has not installed it, and Prod still serves its previous version.`,
+    add('minor', 'Trigger publishing updated Content View', `AAP instructs Satellite to publish CV ${minor} and make it available to Test Server.`,
+      `The incremental update adds the selected advisory and dependencies, preserving baseline content. CV ${minor} is available to Test Server; the host has not installed it, and Prod Server still serves its previous version.`,
       'create_minor_update.yml', 'minor', 'content-test');
-    add('host-scope', 'Check the selected Test and Prod pair', 'AAP checks applicability for the explicitly selected hosts.',
-      'This mockup groups the Test/Prod applicability checks. Each real host job queries its explicitly selected existing Satellite host, checks the CV/lifecycle binding and inventory/consumer identity, then verifies affected installed packages. It does not discover or automatically select an entire fleet.',
-      'tasks/host_context.yml', 'hostScope', 'resolve');
-    add('deploy-test', `Deploy ${scenario.cve} to Test`, `AAP triggers the CVE-scoped deployment on the selected Test host.`,
-      `AAP launches the existing targeted host job with ${scenario.cve}. It resolves to ${scenario.advisory}, selecting the advisory packages and required dependencies from Test's CV repositories. This explanatory launch stop does not install packages.`,
+    add('deploy-test', `Deploy ${scenario.cve} to Test Server`, `AAP triggers the CVE-scoped deployment on the selected Test Server.`,
+      `AAP launches the existing targeted host job with ${scenario.cve}. It resolves to ${scenario.advisory}, selecting the advisory packages and required dependencies from Test Server's CV repositories. The existing job checks its explicitly selected Satellite host, CV/lifecycle binding and inventory/consumer identity; it does not discover or automatically select an entire fleet. This explanatory launch stop does not install packages.`,
       'patch_hosts.yml', 'deployScoped', 'execute-test');
-    add('request-test', `Test requests fix for ${scenario.cve}`, 'The Test host requests the matching fix packages from Satellite.',
-      `The managed host runs the advisory-scoped DNF transaction against Test's CV repositories. It requests ${scenario.advisory} packages and required dependencies; Satellite returns requested content rather than initiating an unsolicited push. Package installation is shown at the next stop.`,
-      'patch_hosts.yml', 'requestPackages', 'request-test');
-    add('patch-test', 'Apply the selected fix to Test', `AAP runs the targeted package update on Test.`,
-      `Satellite returns the requested advisory packages and dependencies. The host job installs them from Test's CV repositories and records changed packages. ${cycle === 1 ? 'The fixed kernel is installed, but its running-kernel proof still requires a reboot.' : 'The illustrative Python update needs no reboot; the real job checks the OS and running processes.'}`,
+    add('patch-test', 'Test Server pulls and applies the selected fix', `Test Server pulls ${scenario.advisory} packages from Satellite and applies the fix.`,
+      `Under AAP control, Test Server's DNF transaction requests ${scenario.advisory} packages and required dependencies from its CV repositories. Satellite returns that requested content rather than initiating an unsolicited push; the host installs it and records changed packages. ${cycle === 1 ? 'This grouped kernel update includes the required reboot. The next verification action confirms the effective running kernel and service checks.' : 'The illustrative Python update needs no reboot; the real job checks the OS and running processes.'}`,
       'patch_hosts.yml', 'patch', 'execute-test');
-    if (cycle === 1) add('reboot-test', 'Boot Test into the fixed kernel', 'AAP reboots Test before declaring the fix effective.',
-      'A newly installed kernel is not the running kernel until boot. The actual job checks the OS reboot signal, kernel proof, advisory hints, changed packages and stale processes.',
-      'patch_hosts.yml', 'reboot', 'execute-test');
-    add('verify-test', 'Verify Test before proceeding', 'Confirm the effective fix, reboot state and service checks.',
+    add('verify-test', 'Verify Test Server before proceeding', 'Confirm the effective fix, reboot state and service checks.',
       'The existing final checks use native RPM comparisons, running-kernel proof where relevant, no-pending-reboot verification and configured smoke tests. This stop represents successful simulated evidence.',
       'tasks/check_final.yml', 'verify', 'execute-test');
-    add('approve-targeted', 'Approve the targeted Prod rollout', 'Test passed. Prod stays unchanged while the operator reviews.',
-      `Review the Test result before continuing. The next action promotes the same tested CV ${minor}; it does not create another production-specific minor. Approval here models an operator checkpoint between the repository's separate AAP launches.`,
+    add('approve-targeted', 'Approve the targeted Prod Server rollout', 'Test Server passed. Prod Server stays unchanged while the operator reviews.',
+      `Review the Test Server result before continuing. The next action promotes the same tested CV ${minor}; it does not create another production-specific minor. Approval here models an operator checkpoint between the repository's separate AAP launches.`,
       'create_minor_update.yml', 'approve', 'none');
-    add('promote-targeted', `Promote CV ${minor} to Prod`, 'Satellite makes the exact tested minor available to Prod.',
-      'The production minor-update invocation reads the version already serving Test and reuses it through the normal lifecycle path. Promotion changes available content, not installed packages.',
+    add('promote-targeted', `Promote CV ${minor} to Prod Server`, 'Satellite makes the exact tested minor available to Prod Server.',
+      'The production minor-update invocation reads the version already serving Test Server and reuses it through the normal lifecycle path. Promotion changes available content, not installed packages.',
       'create_minor_update.yml', 'promoteMinor', 'promote-prod');
-    add('deploy-prod', `Deploy ${scenario.cve} to Prod`, `AAP triggers the same CVE-scoped deployment after approval and exact-version promotion.`,
-      `AAP launches the existing targeted host job on the selected production host with ${scenario.cve}. It selects ${scenario.advisory} packages and required dependencies from Prod's exact tested CV. This explanatory launch stop does not install packages.`,
+    add('deploy-prod', `Deploy ${scenario.cve} to Prod Server`, `AAP triggers the same CVE-scoped deployment after approval and exact-version promotion.`,
+      `AAP launches the existing targeted host job on the selected Prod Server with ${scenario.cve}. It selects ${scenario.advisory} packages and required dependencies from Prod Server's exact tested CV. This explanatory launch stop does not install packages.`,
       'patch_hosts.yml', 'deployScoped', 'execute-prod');
-    add('request-prod', `Prod requests fix for ${scenario.cve}`, 'The production host requests the matching fix packages from Satellite.',
-      `The managed host requests ${scenario.advisory} packages and required dependencies from Prod's promoted CV repositories through DNF. Satellite returns the requested content; this explanatory request stop does not install it or change the CV binding.`,
-      'patch_hosts.yml', 'requestPackages', 'request-prod');
-    add('patch-prod', 'Apply the selected fix to Prod', 'AAP runs the same targeted update against the production host.',
-      `Satellite returns the requested packages and dependencies from Prod's newly promoted CV; the existing host-patching job installs them. ${cycle === 1 ? 'Its fixed kernel is installed first; reboot and running-kernel verification follow.' : 'The illustrative Python update needs no reboot; the real job checks before deciding.'}`,
+    add('patch-prod', 'Prod Server pulls and applies the selected fix', `Prod Server pulls ${scenario.advisory} packages from Satellite and applies the same fix.`,
+      `Under AAP control, Prod Server's DNF transaction requests ${scenario.advisory} packages and required dependencies from its exact tested CV. Satellite returns the requested content; the host installs it rather than receiving an unsolicited push. ${cycle === 1 ? 'This grouped kernel update includes the required reboot while retaining the earlier Python fix. The next action verifies the running kernel and services.' : 'The illustrative Python update needs no reboot; the real job checks before deciding.'}`,
       'patch_hosts.yml', 'patch', 'execute-prod');
-    if (cycle === 1) add('reboot-prod', 'Boot Prod into the fixed kernel', 'AAP reboots Prod using the normal host-patching logic.',
-      'The earlier Python fix stays installed. Reboot activates the selected kernel update before final proof and service checks.',
-      'patch_hosts.yml', 'reboot', 'execute-prod');
-    add('verify-prod', 'Verify the targeted fix in Prod', 'Both hosts now have the selected fix verified.',
+    add('verify-prod', 'Verify the targeted fix in Prod Server', 'Both hosts now have the selected fix verified.',
       'Installed and effective package proof, no pending reboot and smoke checks complete the targeted phase. Broader repository updates remain a later, separate operation.',
       'tasks/check_final.yml', 'verify', 'execute-prod');
     add('time-passes', 'A routine patch window arrives', 'Time passes after the targeted fix; broader maintenance is now due.',
       `The urgent security fix is already verified on both hosts. The later maintenance window uses the fixed content cutoff ${scenario.cutoff} to prepare the broader update. This transition explains elapsed time; it creates no runtime scheduler or automatic launch.`,
       'publish_full_update.yml', 'timePasses', 'none', 'Routine patch window');
     add('full-publish', `Publish the broader CV ${full}`, `Satellite includes all configured content through ${scenario.cutoff}.`,
-      `The later maintenance update includes security, bug-fix and enhancement advisories through the explicit cutoff and keeps earlier fixes. ${cycle === 0 ? 'This cutoff precedes the second story\'s September 11 kernel fix, leaving that example outstanding.' : 'Both selected security fixes are retained.'} Only Test receives the new major CV at this stop.`,
+      `The later maintenance update includes security, bug-fix and enhancement advisories through the explicit cutoff and keeps earlier fixes. ${cycle === 0 ? 'This cutoff precedes the second story\'s September 11 kernel fix, leaving that example outstanding.' : 'Both selected security fixes are retained.'} Only Test Server receives the new major CV at this stop.`,
       'publish_full_update.yml', 'fullPublish', 'content-test', 'Broader update');
-    add('full-test', 'Fully update and verify Test', `AAP updates Test from CV ${full}.`,
+    add('full-test', 'Fully update and verify Test Server', `AAP updates Test Server from CV ${full}.`,
       'Full scope updates all applicable packages offered by the selected CV repositories. The grouped operation includes required reboot handling, fix/service proof and a fresh check that no updates remain. Earlier security fixes remain installed.',
       'patch_hosts.yml', 'fullPatch', 'execute-test', 'Broader update');
-    add('approve-full', 'Approve the broader Prod rollout', 'The full Test update passed. Review before changing Prod.',
-      `The operator chooses to continue with exact Test version ${full}. Prod still serves the targeted minor and its installed state is unchanged at this checkpoint.`,
+    add('approve-full', 'Approve the broader Prod Server rollout', 'The full Test Server update passed. Review before changing Prod Server.',
+      `The operator chooses to continue with exact Test Server version ${full}. Prod Server still serves the targeted minor and its installed state is unchanged at this checkpoint.`,
       'promote_content_view.yml', 'approve', 'none', 'Broader update');
-    add('full-promote', `Promote exact CV ${full} to Prod`, 'Satellite serves the tested major CV to Prod.',
-      'The promotion playbook requires explicit exact version text, matches it against the Test version, checks the lifecycle path and reads back the production binding. Host installation remains a separate job.',
+    add('full-promote', `Promote exact CV ${full} to Prod Server`, 'Satellite serves the tested major CV to Prod Server.',
+      'The promotion playbook requires explicit exact version text, matches it against the Test Server version, checks the lifecycle path and reads back the production binding. Host installation remains a separate job.',
       'promote_content_view.yml', 'promoteFull', 'promote-prod', 'Broader update');
-    add('full-prod', 'Fully update and verify Prod', `AAP updates Prod from CV ${full}.`,
+    add('full-prod', 'Fully update and verify Prod Server', `AAP updates Prod Server from CV ${full}.`,
       'The full host job installs the remaining applicable repository updates, handles reboot needs and verifies the fix, services and no pending updates. Both hosts finish on the same available and installed illustrative CV.',
       'patch_hosts.yml', 'fullPatch', 'execute-prod', 'Broader update');
     add('complete', cycle === 0 ? 'Cycle complete: systems up to date' : 'Two cycles. One repeatable process.',
-      cycle === 0 ? 'The Python fix is retained and both hosts are ready for normal operation.' : 'Both selected fixes and the broader updates are complete on Test and Prod.',
+      cycle === 0 ? 'The Python fix is retained and both hosts are ready for normal operation.' : 'Both selected fixes and the broader updates are complete on Test Server and Prod Server.',
       'The independent read-only check can verify the selected fix and host state again. CV numbers and outcomes here are illustrative; the actual jobs return their own version and evidence.',
       'check_patch.yml', 'check', 'none', 'Cycle complete');
   });
@@ -180,11 +158,11 @@
 
   function installTarget(host, scenario, cycle, minor) {
     host.installedCV = minor;
-    host.status = cycle === 1 ? 'Kernel installed; reboot pending' : 'Package fix installed';
+    host.status = 'Fix installed';
     host.verification = 'Pending';
-    host.reboot = cycle === 1 ? 'Required' : 'Not required';
-    // Kernel package installation alone is not proof that the running kernel is fixed.
-    if (cycle === 0) markFixed(host, scenario.cve);
+    host.reboot = cycle === 1 ? 'Completed' : 'Not required';
+    // The grouped kernel update includes reboot; the next action verifies its effective result.
+    markFixed(host, scenario.cve);
   }
 
   function verifyTarget(host, scenario) {
@@ -217,7 +195,7 @@
       const minor = step.cycle === 0 ? '1.1' : '2.1';
       const full = step.cycle === 0 ? '2.0' : '3.0';
       switch (step.kind) {
-        case 'input':
+        case 'resolve':
           state.announced.push(scenario.cve);
           state.test.status = 'Selected fix needed';
           state.prod.status = 'Selected fix needed';
@@ -230,14 +208,6 @@
           break;
         case 'patch-test': installTarget(state.test, scenario, step.cycle, minor); break;
         case 'patch-prod': installTarget(state.prod, scenario, step.cycle, minor); break;
-        case 'reboot-test':
-        case 'reboot-prod': {
-          const host = step.kind === 'reboot-test' ? state.test : state.prod;
-          host.reboot = 'Completed';
-          host.status = 'Fixed kernel running';
-          markFixed(host, scenario.cve);
-          break;
-        }
         case 'verify-test': verifyTarget(state.test, scenario); break;
         case 'verify-prod': verifyTarget(state.prod, scenario); break;
         case 'promote-targeted': state.prodCV = minor; break;
