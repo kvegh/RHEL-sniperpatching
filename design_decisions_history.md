@@ -1,5 +1,38 @@
 # Design decisions history
 
+## 2026-11-16 — Wire the approved native checkpoint workflow and bounded handoff
+
+Implementation: 339009520fd20b7eb431f719ca25764d0755d37e, version0.16.0.
+The user selected the native three-job AAP workflow. Use success-only
+installation, cold checkpoint and original-guest verification nodes, each with
+its saved existing credentials. Keep content synchronization separately
+operator-launched; the existing shared CaC importer owns all definitions.
+
+Native ancestor artifacts connect the three jobs. The final verification exports
+one JSON string containing only completion, checkpoint, original VM and public CA.
+The foundation's one required native textarea survey accepts that declared key
+while arbitrary-variable prompting stays disabled. Parse it strictly as data,
+reject unexpected fields/types, missing/failed proof and wrong VM/CA, then check
+native cold metadata and API readiness before writes. Remove the stale saved
+foundation CA. This is an operator-mediated copy of the actual successful final
+artifact, without authenticated originating-job provenance or a new service.
+
+The selected Core2.20.10 EE passed35 focused tests in166.904s, including an actual
+final-job serialized export into the separately launched foundation fixture.
+Earlier11related CA/installer tests remain valid;20existing frontend tests passed
+after only the displayed version was synchronized. The public main0.15.3
+presentation changes were preserved while rebasing unpublished work. Bounded
+review found no concrete defect in this source or the exact encrypted candidate:
+16JTs, one3-node workflow, saved credentials unchanged,13unrelated JTs unchanged,
+no workload/schedule definitions and no static success/CA override. Fresh live
+workflow execution, survey transport and cold capture remain unverified; no
+formal acceptance or current-VM snapshot is claimed.
+
+The independent approved case-two archive was published first at private
+1bbec39a1ed632b02d793e17d42889ef3d7857e0:14encrypted receipts plus README0.14.13,
+with canonical configuration unchanged. No later-cycle evidence was added.
+
+
 ## 2026-11-16 — Guard a future NEW Satellite cold installation checkpoint
 
 Implementation: 3931027601c3ad4492d9a4c5e6094bde4f4380fd, working version
