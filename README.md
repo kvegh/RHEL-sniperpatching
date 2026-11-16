@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Version: 0.19.0.**
+**Version: 0.19.1.**
 
 [Open the interactive RHEL patching mockup](https://kvegh.github.io/RHEL-sniperpatching/)
 to follow two fixed CVE/RHSA cycles through seven explanatory scenes: green
@@ -10,7 +10,8 @@ scenes expand into verification, reboot where needed, operator approval and
 exact-version production promotion. Future CVEs stay hidden until announced;
 prior fixes remain verified while routine updates arrive. A compact status box
 shares a row with Red Hat software repositories, aligned with the workflow
-panel’s top edge. The architecture,
+panel’s top edge. The upstream gap is halved; Red Hat sits closer to the
+status box and its download route exits right into Satellite’s top. The architecture,
 Content View versions (fixed repository snapshots) and installed host state stay visible, with the selected
 fix contrasted against the later bulk content flow. This browser-only mockup
 makes AAP's orchestration explicit: query, repository update, CV composition,

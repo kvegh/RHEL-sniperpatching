@@ -279,6 +279,7 @@ h1 {
   margin-top:17px;
 }
 .architecture {
+  position:relative;
   min-width:0;
 }
 /* The upstream lane illustrates content arriving at Satellite, not an AAP download. */
@@ -385,15 +386,17 @@ h1 {
 .story-event[data-tone=approval] .event-mark:before {
   content:'?';
 }
-/* Matching half-width columns keep this single arrow attached to Satellite. */
+/* Keep a small content-arrival reserve while the overlay connects the actual card edges. */
 .redhat-supply {
   display:grid;
   grid-template-columns:minmax(0,1fr);
-  grid-template-rows:auto minmax(90px,1fr);
+  grid-template-rows:auto minmax(45px,1fr);
   justify-items:center;
   min-width:0;
 }
 .redhat-source {
+  justify-self:start;
+  margin-left:calc((100% - min(100%,286px)) / 4 - 10px);
   width:min(100%,286px);
   display:flex;
   align-items:center;
@@ -430,44 +433,47 @@ h1 {
 }
 .supply-transfer {
   position:relative;
+  z-index:2;
   width:100%;
   min-width:0;
-  min-height:90px;
+  min-height:45px;
 }
 .delivery-label {
   position:absolute;
   right:0;
-  top:22px;
+  top:11px;
   width:calc(50% - 12px);
   color:var(--muted);
   font-size:13px;
   font-weight:700;
   line-height:1.5;
 }
-.supply-track {
+.upstream-route {
   position:absolute;
   inset:0;
+  width:100%;
+  height:100%;
+  pointer-events:none;
+  overflow:visible;
+  display:none;
+  z-index:1;
 }
-.supply-track:before {
-  content:'';
-  position:absolute;
-  left:calc(50% - 1px);
-  top:0;
-  bottom:4px;
-  width:1.5px;
-  border-radius:2px;
-  background:#a9bacb;
+.upstream-route.is-visible {
+  display:block;
 }
-.supply-direction {
-  position:absolute;
-  left:50%;
-  bottom:3px;
-  width:10px;
-  height:10px;
-  border-right:2px solid #8ca2b8;
-  border-bottom:2px solid #8ca2b8;
-  border-radius:1px;
-  transform:translateX(-50%) rotate(45deg);
+.upstream-path {
+  fill:none;
+  stroke:var(--purple);
+  stroke-width:1.5;
+  vector-effect:non-scaling-stroke;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-dasharray:5 7;
+  marker-end:url(#arrow-upstream);
+  animation:flow 1.8s linear 2;
+}
+#arrow-upstream {
+  color:var(--purple);
 }
 .package-stream {
   position:relative;
@@ -514,16 +520,6 @@ h1 {
   color:var(--purple);
   font-weight:700;
 }
-.redhat-supply[data-delivery=targeted] .supply-track:before,
-.redhat-supply[data-delivery=bulk] .supply-track:before {
-  background:repeating-linear-gradient(to bottom,var(--purple) 0 5px,transparent 5px 12px);
-  background-size:100% 24px;
-  animation:content-download 1.8s linear 2;
-}
-.redhat-supply[data-delivery=targeted] .supply-direction,
-.redhat-supply[data-delivery=bulk] .supply-direction {
-  border-color:var(--purple);
-}
 /* Each arrival runs once after a presenter action; the rest state remains readable. */
 .redhat-supply[data-delivery=targeted] .content-parcel,
 .redhat-supply[data-delivery=bulk] .content-parcel {
@@ -538,9 +534,6 @@ h1 {
 .package-stream .content-parcel:nth-child(8) { animation-delay:560ms; }
 .package-stream .content-parcel:nth-child(9) { animation-delay:640ms; }
 .package-stream .content-parcel:nth-child(10) { animation-delay:720ms; }
-@keyframes content-download {
-  to { background-position:0 24px; }
-}
 @keyframes parcel-arrival {
   from {
     opacity:0;
@@ -551,9 +544,12 @@ h1 {
     transform:translateY(0);
   }
 }
-[data-motion=off] .redhat-supply .content-parcel,
-[data-motion=off] .redhat-supply .supply-track:before {
+[data-motion=off] .redhat-supply .content-parcel {
   animation:none;
+}
+[data-motion=off] .upstream-path {
+  animation:none;
+  stroke-dasharray:none;
 }
 .target-scope {
   margin-top:10px;
@@ -1525,6 +1521,11 @@ strong.cv-counter > span.cv-counter-previous {
   .redhat-supply {
     width:calc(50% - 16px);
     justify-self:end;
+  }
+  .redhat-source {
+    /* Leave room for a rightward exit before the download arrow bends down. */
+    margin-left:-24px;
+    justify-self:start;
   }
 }
 @media(max-width:540px) {

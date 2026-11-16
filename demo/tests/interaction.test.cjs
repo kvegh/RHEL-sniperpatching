@@ -34,6 +34,7 @@ class Element {
   setAttribute(name, value) { this.attributes[name] = String(value); }
   addEventListener(name, handler) { (this.listeners[name] ||= []).push(handler); }
   dispatch(name, event = {}) { for (const handler of this.listeners[name] || []) handler(event); }
+  getBoundingClientRect() { return this.bounds || { left: 0, top: 0, right: 0, bottom: 0, width: 0, height: 0 }; }
   click() { if (!this.disabled) this.dispatch('click'); }
 }
 function launch(hash = '', reduce = false) {
@@ -345,4 +346,36 @@ test('every displayed CV change rolls the previous value out and respects motion
     assert.equal(text(v, id), 'CV 1.0');
     assert.doesNotMatch(v.get(id).className, /is-rolling/);
   }
+});
+
+
+test('the upstream connector exits Red Hat right and reaches Satellite top after resizing', () => {
+  const v = launch();
+  assert.equal(text(v, 'host-content-label'), 'Satellite provides updates');
+  v.get('architecture').bounds = { left: 100, top: 50, width: 800, height: 1000 };
+  v.get('redhat-source').bounds = { left: 550, top: 60, right: 750, bottom: 160, width: 200, height: 100 };
+  v.get('satellite-platform').bounds = { left: 600, top: 240, width: 200, height: 220 };
+  go(v, at(v, 0, 'ensure-content'));
+  assert.match(v.get('upstream-route').className, /is-visible/);
+  const route = /^M ([\d.]+) ([\d.]+) H ([\d.]+) V ([\d.]+) H ([\d.]+) V ([\d.]+)$/.exec(v.get('upstream-path').attributes.d);
+  assert.ok(route);
+  const [startX, startY, bendX, bendY, endX, endY] = route.slice(1).map(Number);
+  assert.deepEqual([startX, startY], [650, 60]);
+  assert.deepEqual([endX, endY], [600, 190]);
+  assert.ok(bendX > startX && bendX < 800);
+  assert.ok(bendY > 110 && bendY < endY);
+  v.get('satellite-platform').bounds = { left: 620, top: 250, width: 200, height: 220 };
+  v.window.dispatch('resize');
+  assert.match(v.get('upstream-path').attributes.d, /H 620 V 200$/);
+  v.get('architecture').bounds = { left: 0, top: 0, width: 288, height: 1000 };
+  v.get('redhat-source').bounds = { left: 136, top: 120, right: 264, bottom: 220, width: 128, height: 100 };
+  v.get('satellite-platform').bounds = { left: 160, top: 265, width: 128, height: 220 };
+  v.window.dispatch('resize');
+  const narrow = /^M ([\d.]+) ([\d.]+) H ([\d.]+) V ([\d.]+) H ([\d.]+) V ([\d.]+)$/.exec(v.get('upstream-path').attributes.d);
+  assert.ok(narrow);
+  assert.equal(Number(narrow[1]), 264);
+  assert.ok(Number(narrow[3]) > 264 && Number(narrow[3]) < 288);
+  assert.deepEqual(narrow.slice(5).map(Number), [224, 265]);
+  go(v, v.story.steps[0]);
+  assert.doesNotMatch(v.get('upstream-route').className, /is-visible/);
 });

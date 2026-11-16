@@ -102,9 +102,25 @@
     byId('event-detail').textContent = detail;
   }
 
+  function updateUpstreamRoute() {
+    const surface = byId('architecture').getBoundingClientRect();
+    if (!surface.width || !surface.height) return;
+    const source = byId('redhat-source').getBoundingClientRect();
+    const satellite = byId('satellite-platform').getBoundingClientRect();
+    const startX = source.right - surface.left;
+    const startY = source.top + source.height / 2 - surface.top;
+    const endX = satellite.left + satellite.width / 2 - surface.left;
+    const endY = satellite.top - surface.top;
+    const bendX = Math.min(surface.width - 3, Math.max(startX + 18, endX + 18));
+    const bendY = (source.bottom - surface.top + endY) / 2;
+    byId('upstream-route').setAttribute('viewBox', `0 0 ${surface.width} ${surface.height}`);
+    byId('upstream-path').setAttribute('d', `M ${startX} ${startY} H ${bendX} V ${bendY} H ${endX} V ${endY}`);
+  }
+
   function renderDelivery(state) {
     byId('redhat-supply').dataset.delivery = state.delivery;
     byId('supply-transfer').hidden = state.delivery === 'none';
+    byId('upstream-route').classList.toggle('is-visible', state.delivery !== 'none');
     const labels = state.delivery === 'targeted'
       ? ['Selected security fix', 'Required dependencies']
       : state.delivery === 'bulk'
@@ -198,7 +214,7 @@
       ? `AAP deploys fix · ${state.scenario.cve}` : 'AAP executes host automation';
     const environment = step.kind.endsWith('-prod') ? 'Prod Server' : 'Test Server';
     byId('host-content-label').textContent = step.kind === 'patch-test' || step.kind === 'patch-prod'
-      ? `${environment} pulls the selected fix from Satellite` : 'Hosts pull Satellite content';
+      ? `${environment} pulls the selected fix from Satellite` : 'Satellite provides updates';
     byId('host-routes').setAttribute('aria-label', `${byId('execution-label').textContent}; ${byId('host-content-label').textContent}`);
     byId('test-host').classList.toggle('is-active', step.route === 'execute-test' || step.route === 'content-test');
     byId('prod-host').classList.toggle('is-active', step.route === 'execute-prod' || step.route === 'content-prod');
@@ -220,6 +236,7 @@
     source.href = `https://github.com/kvegh/RHEL-sniperpatching/blob/${story.sourceRevision}/${step.source}`;
     source.textContent = `${step.source} ↗`;
     byId('version-label').textContent = `Version ${story.version}`;
+    updateUpstreamRoute();
   }
 
   function navigate(nextIndex) {
@@ -245,6 +262,12 @@
     index = indexFromHash();
     render();
   });
+  window.addEventListener('resize', updateUpstreamRoute);
+  if (typeof window.ResizeObserver === 'function') {
+    // Follow wrapping and card-size changes as well as viewport resizes.
+    const observer = new window.ResizeObserver(updateUpstreamRoute);
+    for (const id of ['architecture', 'redhat-source', 'satellite-platform']) observer.observe(byId(id));
+  }
   reducedMotion.addEventListener('change', event => { motion = !event.matches; render(); });
   index = indexFromHash();
   render();

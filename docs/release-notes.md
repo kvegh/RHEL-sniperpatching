@@ -1,5 +1,13 @@
 # Release notes
 
+## 0.19.1 — Tighten upstream spacing and reroute downloads
+
+Halve the reserved upstream gap to 45px and move Red Hat left by half its gap to
+the status box. Route one responsive download arrow out of Red Hat's right side
+into Satellite's top. Update the caption to Satellite provides updates. Native
+SVG/bounds observation preserves endpoints as the layout changes; all existing
+story and CV state behavior remains unchanged.
+
 ## 0.19.0 — Animate CV changes and simplify the walkthrough
 
 Hide the generic HTTPS API label and arrow, retaining the named query,

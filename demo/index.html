@@ -28,6 +28,7 @@
       <p class="story-footnote">Two fixed examples. Seven scenes per run. Rollouts unfold through Test Server, approval and Prod Server.</p>
     </aside>
     <main id="architecture" class="architecture" tabindex="-1">
+      <svg id="upstream-route" class="upstream-route" aria-hidden="true" preserveAspectRatio="none"><defs><marker id="arrow-upstream" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="11" markerHeight="11" markerUnits="userSpaceOnUse" orient="auto"><path d="M2 1 L8 5 L2 9" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/></marker></defs><path id="upstream-path" class="upstream-path"/></svg>
       <div class="story-source-row">
         <section id="story-event" class="story-event" data-tone="healthy" role="status" aria-live="polite" aria-atomic="true">
           <div class="event-mark" aria-hidden="true"></div>
@@ -38,13 +39,12 @@
           </div>
         </section>
         <section id="redhat-supply" class="redhat-supply" data-delivery="none" aria-label="Red Hat software content delivered to Satellite">
-          <div class="redhat-source">
+          <div id="redhat-source" class="redhat-source">
             <span class="redhat-mark" aria-hidden="true">RH</span>
             <div><p class="source-name">Red Hat</p><p class="source-description">Software repositories</p></div>
           </div>
           <div id="supply-transfer" class="supply-transfer" hidden>
             <p id="delivery-label" class="delivery-label"></p>
-            <div class="supply-track" aria-hidden="true"><span class="supply-direction"></span></div>
             <div id="package-stream" class="package-stream" aria-hidden="true"></div>
           </div>
         </section>
@@ -52,10 +52,10 @@
       <div class="control-row">
         <section class="platform aap" aria-labelledby="aap-title"><header class="platform-header"><span class="product-symbol">A</span><div><p>ORCHESTRATION</p><h3 id="aap-title">Ansible Automation Platform</h3></div></header><div class="platform-body"><p class="body-label">CURRENT ACTION</p><p id="job-label" class="job-label"></p><p id="target-scope" class="target-scope"></p></div><footer>Runs the playbooks and verifies the hosts</footer></section>
         <div id="flow-resolve" class="api-connection" aria-label="AAP orchestration action" hidden><span id="api-label"></span><div class="api-arrow" aria-hidden="true"></div></div>
-        <section class="platform satellite" aria-labelledby="satellite-title"><header class="platform-header"><span class="product-symbol">S</span><div><p>CONTENT MANAGEMENT</p><h3 id="satellite-title">Red Hat Satellite</h3></div></header><div class="platform-body"><p class="body-label">CONTENT VIEW LIFECYCLE</p><p class="cv-definition">A Content View (CV) version is a predefined snapshot of selected software repositories.</p><p id="cv-update" class="cv-update" hidden></p><p id="cv-availability" class="cv-availability" aria-live="polite" hidden></p><div class="bindings"><div><span>TEST SERVER</span><strong id="binding-test">CV 1.0</strong></div><span class="promotion-arrow" aria-hidden="true">→</span><div><span>PROD SERVER</span><strong id="binding-prod">CV 1.0</strong></div></div></div><footer>Publishes content and promotes exact versions</footer></section>
+        <section id="satellite-platform" class="platform satellite" aria-labelledby="satellite-title"><header class="platform-header"><span class="product-symbol">S</span><div><p>CONTENT MANAGEMENT</p><h3 id="satellite-title">Red Hat Satellite</h3></div></header><div class="platform-body"><p class="body-label">CONTENT VIEW LIFECYCLE</p><p class="cv-definition">A Content View (CV) version is a predefined snapshot of selected software repositories.</p><p id="cv-update" class="cv-update" hidden></p><p id="cv-availability" class="cv-availability" aria-live="polite" hidden></p><div class="bindings"><div><span>TEST SERVER</span><strong id="binding-test">CV 1.0</strong></div><span class="promotion-arrow" aria-hidden="true">→</span><div><span>PROD SERVER</span><strong id="binding-prod">CV 1.0</strong></div></div></div><footer>Publishes content and promotes exact versions</footer></section>
       </div>
       <div id="host-routes" class="routes" role="img" aria-label="AAP executes host automation; hosts obtain package content from Satellite">
-        <div class="route-label execution-label"><i></i><span id="execution-label">AAP executes host automation</span></div><div class="route-label content-label"><i></i><span id="host-content-label">Hosts pull Satellite content</span></div>
+        <div class="route-label execution-label"><i></i><span id="execution-label">AAP executes host automation</span></div><div class="route-label content-label"><i></i><span id="host-content-label">Satellite provides updates</span></div>
         <svg viewBox="0 0 800 100" preserveAspectRatio="none" aria-hidden="true"><defs><marker id="arrow-execution" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="11" markerHeight="11" markerUnits="userSpaceOnUse" orient="auto"><path d="M2 1 L8 5 L2 9" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/></marker><marker id="arrow-content" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="11" markerHeight="11" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M2 1 L8 5 L2 9" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/></marker></defs><path id="flow-execute-test" class="execution-route" d="M160 0 V95"/><path id="flow-execute-prod" class="execution-route" d="M175 0 V25 H625 V95"/><path id="flow-content-test" class="content-route" d="M640 0 V70 H190 V95"/><path id="flow-content-prod" class="content-route" d="M655 0 V95"/></svg>
       </div>
       <div class="environments">

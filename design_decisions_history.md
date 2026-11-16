@@ -1585,3 +1585,32 @@ was updated for the removed action; the mobile counter inheritance finding was
 fixed and confirmed in source review. Actual browser appearance, text wrapping
 and animation perception remain unverified. No browser tooling was installed;
 no AAP/Satellite/client runtime or infrastructure was changed.
+
+
+## 2026-11-16 20:13 UTC — Tighten upstream spacing and reroute downloads
+
+Recorded while implementing the user's requests to halve the upper gap, shift
+Red Hat left by half the horizontal gap, route its arrow from the right side
+into Satellite's top, and rename the generic host caption Satellite provides
+updates. Version 0.19.1 reduces the reserved upstream minimum from 90px to45px;
+content can still use the room needed for readable labels. The source moves
+within the existing wide-screen grid, with a mobile reset.
+
+A single native SVG path uses rendered source/right and destination/top bounds,
+with a viewport/ResizeObserver update, to remain connected after text wrapping
+and resizing. This small renderer addition replaces the fixed CSS shaft; it adds
+no dependency or architectural component. A focused interaction check verifies
+both endpoints, an outward elbow, resize updates and inactive visibility. An
+initial test expectation used a20px elbow although the implementation used18px;
+the corrected assertion checks the requested geometry rather than that incidental
+waypoint. All original story/model behavior is preserved. Implementation and
+publication evidence follow verification; actual browser appearance remains
+unverified by the Node DOM checks.
+
+
+Final source review identified a narrow-screen edge case: a full-width Red Hat
+source could end at the canvas edge, so the bounded elbow would turn left into
+it. A 24px mobile source gutter now preserves the requested rightward exit.
+The geometry regression includes that narrow layout in addition to the desktop
+and resize cases. This fixes the concrete reviewed edge case; browser rendering
+remains unverified.
