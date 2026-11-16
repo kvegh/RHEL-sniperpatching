@@ -33,6 +33,8 @@ for (const cycle of [0, 1]) {
     const after = story.stateAt(index);
     assert.notEqual(after.testCV, before.testCV);
     assert.equal(after.prodCV, before.prodCV);
+    assert.equal(story.steps[index].title, 'Trigger publishing updated Content View');
+    assert.equal(after.job, 'Trigger publishing updated Content View');
     assert.deepEqual(after.test, before.test);
     assert.deepEqual(after.prod, before.prod);
   });
@@ -108,7 +110,7 @@ test('rewind, restart and repeated reads do not retain future or caller-mutated 
 test('every step has a unique deep link and a real code source with a prepared excerpt', () => {
   assert.equal(new Set(story.steps.map(step => step.id)).size, story.steps.length);
   assert.match(story.sourceRevision, /^[0-9a-f]{40}$/);
-  const allowedRoutes = new Set(['none', 'resolve', 'content-test', 'execute-test', 'promote-prod', 'execute-prod', 'upstream']);
+  const allowedRoutes = new Set(['none', 'resolve', 'content-test', 'execute-test', 'promote-prod', 'execute-prod', 'request-test', 'request-prod', 'upstream']);
   for (const step of story.steps) {
     assert.ok(allowedRoutes.has(step.route), step.id);
     assert.ok(step.summary && step.detail && step.code, step.id);
@@ -127,6 +129,7 @@ test('invalid and out-of-range navigation inputs clamp to a valid story stop', (
 
 
 test('both fixed cycles follow all seven explanatory scenes in order', () => {
+  assert.equal(story.steps.length, 52);
   assert.deepEqual(story.scenes.map(scene => [scene.number, scene.title]), [
     [1, 'All systems up to date'], [2, 'CVE announced'],
     [3, 'Ensure fix content is available'], [4, 'Publish targeted CV'],
@@ -136,8 +139,22 @@ test('both fixed cycles follow all seven explanatory scenes in order', () => {
     const scenes = story.steps.filter(step => step.cycle === cycle).map(step => step.scene);
     assert.deepEqual([...new Set(scenes)], [1, 2, 3, 4, 5, 6, 7]);
     assert.deepEqual(scenes, [...scenes].sort((left, right) => left - right));
+    assert.equal(position(cycle, 'resolve') + 1, position(cycle, 'trigger-sync'));
+    assert.equal(position(cycle, 'trigger-sync') + 1, position(cycle, 'ensure-content'));
+    assert.equal(position(cycle, 'ensure-content') + 1, position(cycle, 'cv-build'));
+    assert.equal(position(cycle, 'cv-build') + 1, position(cycle, 'minor'));
+    assert.equal(story.steps[position(cycle, 'cv-build')].scene, 4);
+    assert.equal(story.steps[position(cycle, 'trigger-sync')].scene, 3);
     assert.equal(story.steps[position(cycle, 'baseline')].scene, 1);
     assert.equal(story.steps[position(cycle, 'host-scope')].scene, 5);
+    assert.equal(position(cycle, 'host-scope') + 1, position(cycle, 'deploy-test'));
+    assert.equal(position(cycle, 'deploy-test') + 1, position(cycle, 'request-test'));
+    assert.equal(position(cycle, 'request-test') + 1, position(cycle, 'patch-test'));
+    assert.ok(position(cycle, 'verify-test') < position(cycle, 'approve-targeted'));
+    assert.ok(position(cycle, 'approve-targeted') < position(cycle, 'promote-targeted'));
+    assert.equal(position(cycle, 'promote-targeted') + 1, position(cycle, 'deploy-prod'));
+    assert.equal(position(cycle, 'deploy-prod') + 1, position(cycle, 'request-prod'));
+    assert.equal(position(cycle, 'request-prod') + 1, position(cycle, 'patch-prod'));
     assert.equal(story.steps[position(cycle, 'time-passes')].scene, 6);
   }
 });
@@ -175,6 +192,41 @@ test('targeted and bulk content deliveries occur only at their explanatory stops
       : step.kind === 'full-publish' ? 'bulk' : 'none';
     assert.equal(state.delivery, expected, step.id);
     assert.equal(state.maintenance, step.scene === 6, step.id);
+    if (step.kind === 'trigger-sync') {
+      assert.equal(step.route, 'resolve');
+      assert.equal(step.title, 'Trigger software repository update');
+      assert.match(step.detail, /explanatory mockup/i);
+      assert.match(step.detail, /full-publication.*explicitly synchronizes/i);
+      assert.match(step.detail, /does not launch a per-CVE/i);
+      assert.equal(state.job, 'Trigger software repository update');
+      const before = story.stateAt(index - 1);
+      for (const key of ['testCV', 'prodCV', 'versions', 'test', 'prod']) {
+        assert.deepEqual(state[key], before[key], `Repository trigger must not change ${key}`);
+      }
+    }
+    if (step.kind === 'cv-build') {
+      assert.equal(step.route, 'resolve');
+      assert.equal(step.title, 'Trigger Content View update');
+      assert.equal(state.job, 'Trigger Content View update');
+      assert.match(step.detail, /does not publish/i);
+      const before = story.stateAt(index - 1);
+      for (const key of ['testCV', 'prodCV', 'versions', 'test', 'prod']) {
+        assert.deepEqual(state[key], before[key], `CV composition must not change ${key}`);
+      }
+    }
+    if (['deploy-test', 'request-test', 'deploy-prod', 'request-prod'].includes(step.kind)) {
+      const target = step.kind.endsWith('test') ? 'test' : 'prod';
+      assert.equal(step.scene, 5);
+      assert.equal(step.route, step.kind.startsWith('request-') ? `request-${target}` : `execute-${target}`);
+      assert.ok(step.title.includes(story.scenarios[step.cycle].cve));
+      assert.ok(state.job.includes(story.scenarios[step.cycle].cve));
+      assert.match(step.detail, /dependencies/i);
+      assert.equal(step.source, 'playbooks/new/patch_hosts.yml');
+      const before = story.stateAt(index - 1);
+      for (const key of ['testCV', 'prodCV', 'versions', 'test', 'prod']) {
+        assert.deepEqual(state[key], before[key], `Deployment/request stop must not change ${key}`);
+      }
+    }
     if (step.kind === 'ensure-content') {
       assert.equal(step.route, 'upstream');
       assert.match(step.detail, /already synchronized/i);

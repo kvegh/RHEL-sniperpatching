@@ -2,7 +2,7 @@
 
 [Open the visualization](https://kvegh.github.io/RHEL-sniperpatching/).
 
-Version **0.17.2**. This browser-only explanation is for security staff, Linux
+Version **0.18.0**. This browser-only explanation is for security staff, Linux
 administrators and AAP administrators. It follows the checked-in NEW architecture
 while grouping tasks and shortening operations for presentation. It is an
 explanatory mockup: statuses, CV numbers and outcomes are illustrative. No host,
@@ -24,21 +24,37 @@ automatic approval node. Scene links are educational navigation, not access cont
 | --- | --- |
 | 1. All systems up to date | Test and Prod meet the same defined baseline, with green checks. No future CVE appears. |
 | 2. CVE announced | A named alert reaches AAP; Satellite resolves its security advisory. Only announced issues affect host status. |
-| 3. Ensure fix content is available | A small selected-fix/dependency flow arrives from Red Hat content to Satellite. |
-| 4. Publish targeted CV | Add the selected fix and required dependencies to the baseline minor; Test availability changes before installation. |
-| 5. Apply selected fix | Check the selected pair, patch/reboot/verify Test, approve, promote the exact minor, then patch/reboot/verify Prod. |
+| 3. Ensure fix content is available | AAP triggers the repository update, then one connected Download fix arrow delivers the selected fix/dependencies to Satellite. |
+| 4. Publish targeted CV | AAP triggers CV composition and the baseline + fix equation appears. A separate publication action makes the minor available to Test without installing it. |
+| 5. Apply selected fix | AAP launches CVE-scoped deployment; the host requests packages and Satellite responds. Test installs/reboots/verifies first, then approval and exact promotion precede the same Prod exchange. |
 | 6. Routine patch window | Time passes; many security, bug-fix and enhancement updates arrive, retaining the already-applied fix in a broader CV. |
 | 7. Apply broader updates | Fully update and verify Test, approve, promote its exact major, update/verify Prod and finish green. |
 
 The compact status box sits beside the Red Hat software repositories on wider
 screens, aligned with the workflow panel’s top edge and saving vertical space.
-The secondary phase badge sits in the footer. The two panels stack on screens up to 640px.
+The secondary phase badge sits in the footer. AAP and Satellite are centered
+in equal halves, at least 40% narrower on desktop with tighter spacing. The Red
+Hat box, icon and text are enlarged by about 30%. Narrow screens retain readable
+platform widths; the Red Hat source stays above Satellite with one continuous
+arrow. The top status/source panels stack on screens up to 640px.
 The Red Hat source lane delivers content to Satellite. One selected fix and its
 dependencies are visually distinct from the later batch of maintenance updates.
 Arrival animations are finite and respect **Motion off** and reduced-motion
 preferences. The page makes no actual download or API request.
 
-The content-availability scene explains the content prerequisite: the targeted
+The explicit AAP arrow labels are **Query: fix available?**, **Trigger software
+repository update**, **Trigger Content View update**, and **Trigger publishing
+updated Content View**. The equation **CV 1.0 + fix == CV 1.1** appears at CV
+composition; only the next publication action highlights Test's newly available
+CV. Installed packages and Prod availability stay unchanged at publication.
+The second cycle uses the corresponding 2.0/2.1 equation. Deployment and client
+request actions do not install anything; the following package response/install
+action does. Reverse arrows show the host's DNF request to Satellite, followed
+by Satellite's response with the selected advisory packages and dependencies.
+
+These composition/publication actions and the repository trigger are explanatory
+presentation stops rather than additional implemented AAP jobs or separate API
+calls. The content-availability scene explains the content prerequisite: the targeted
 playbook reads already synchronized repositories and does not launch a per-CVE
 synchronization job. The full-publication playbook explicitly synchronizes the
 selected repositories. Applicability checks apply to the configured Test/Prod
@@ -65,7 +81,7 @@ identifies a local-user Linux networking flaw. The second run retains the first
 run's fixed packages and starts from its completed baseline. The illustrative
 CV sequence is 1.0 → 1.1 → 2.0 → 2.1 → 3.0; actual jobs return their own versions.
 Grouped full-update actions include any required reboot and independent final
-checks. Forty presenter-controlled actions unfold within the seven scenes per
+checks. Fifty-two presenter-controlled actions unfold within the seven scenes per
 run; there is no autoplay or artificial waiting period.
 
 **Technical detail** shows condensed code and a source-pinned repository link.

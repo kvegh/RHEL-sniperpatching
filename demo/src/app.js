@@ -50,7 +50,9 @@
   function eventContent(step, state, approval) {
     if (step.scene === 1) return ['healthy', 'BASELINE VERIFIED', 'All systems up to date', `Test and Prod verified on baseline CV ${state.testCV}.`];
     if (step.scene === 2) return ['alert', 'NEW SECURITY ALERT', state.scenario.title, `${state.scenario.cve} is announced and named to AAP. Only this newly announced issue changes the hosts’ security status.`];
-    if (step.scene === 3) return ['content', 'RED HAT CONTENT', 'One fix, scoped content', 'AAP asks Satellite to ensure the required fix is available from synchronized Red Hat content.'];
+    if (step.kind === 'trigger-sync') return ['content', 'AAP ORCHESTRATES', 'Update the software repositories', 'AAP instructs Satellite to update its repository content before preparing the fix.'];
+    if (step.scene === 3) return ['content', 'RED HAT CONTENT', 'Download fix', 'Satellite obtains the selected security fix and required dependencies.'];
+    if (step.kind === 'cv-build') return ['content', 'AAP ORCHESTRATES', 'Update the Content View', 'The baseline plus the selected fix prepares the next minor CV. It is not available to hosts until publication.'];
     if (step.scene === 4) return ['content', 'TARGETED CONTENT VIEW', 'Baseline + selected fix + dependencies', `CV ${state.testCV} is available to Test. Publishing content has not installed packages on either host.`];
     if (approval) return ['approval', 'OPERATOR CHECKPOINT', 'Test passed. Approve production.', 'Prod stays on its current content and installed packages until the operator continues with the exact tested version.'];
     if (step.kind === 'verify-prod') return ['healthy', 'TARGETED FIX VERIFIED', 'Both hosts have the selected fix', 'The urgent vulnerability is addressed. Broader routine updates will follow at the maintenance window.'];
@@ -76,8 +78,8 @@
         ? ['Earlier fix ✓', 'Security updates', 'Bug fixes', 'Enhancements', 'Libraries', 'System tools', 'Drivers', 'Package updates', 'Maintenance fixes']
         : [];
     byId('delivery-label').textContent = state.delivery === 'targeted'
-      ? 'Ensure the selected fix is available'
-      : state.delivery === 'bulk' ? 'Regular maintenance content arrives' : 'Red Hat content → Satellite';
+      ? 'Download fix'
+      : state.delivery === 'bulk' ? 'Download updates' : 'Red Hat content';
     byId('package-stream').replaceChildren(...labels.map((label, position) => {
       const kind = position === 0 ? 'selected-fix' : state.delivery === 'targeted' ? 'dependency' : 'routine-update';
       return element('span', `content-parcel ${kind}`, label);
@@ -121,6 +123,18 @@
     byId('job-label').textContent = state.job;
     byId('binding-test').textContent = `CV ${state.testCV}`;
     byId('binding-prod').textContent = `CV ${state.prodCV}`;
+    byId('api-label').textContent = step.kind === 'trigger-sync'
+      ? 'Trigger software repository update'
+      : step.kind === 'cv-build' ? 'Trigger Content View update'
+        : step.kind === 'minor' ? 'Trigger publishing updated Content View'
+          : step.scene === 2 ? 'Query: fix available?' : 'HTTPS API';
+    byId('cv-update').hidden = step.scene !== 4 && step.scene !== 5;
+    byId('cv-update').textContent = `CV ${step.cycle + 1}.0 + fix == CV ${step.cycle + 1}.1`;
+    byId('cv-availability').hidden = byId('cv-update').hidden;
+    byId('cv-availability').textContent = step.kind === 'cv-build'
+      ? 'Prepared in Satellite · not published yet'
+      : `CV ${state.testCV} available to ${state.prodCV === state.testCV ? 'Test and Prod' : 'Test'} hosts`;
+    byId('test-available').classList.toggle('is-new-content', step.kind === 'minor');
     const affected = [['Test node', state.test], ['Production node', state.prod]]
       .filter(([, host]) => state.announced.some(cve => !host.fixed.includes(cve)))
       .map(([name]) => name);
@@ -137,9 +151,22 @@
     renderEvent(step, state, approval);
     renderDelivery(state);
     for (const route of routeNames) byId(`flow-${route}`).classList.toggle('is-active', step.route === route);
-    // Package bytes flow from Satellite; the host is the repository client.
-    if (step.route === 'execute-test') byId('flow-content-test').classList.add('is-active');
-    if (step.route === 'execute-prod') byId('flow-content-prod').classList.add('is-active');
+    if (step.scene === 2 || step.kind === 'trigger-sync' || step.kind === 'cv-build' || step.kind === 'minor') byId('flow-resolve').classList.add('is-active');
+    // The DNF client requests packages; Satellite returns the selected content.
+    for (const environment of ['test', 'prod']) {
+      const route = byId(`flow-content-${environment}`);
+      const requesting = step.route === `request-${environment}`;
+      route.classList.toggle('is-requesting', requesting);
+      if (requesting || (step.route === `execute-${environment}` && step.kind !== `deploy-${environment}`)) route.classList.add('is-active');
+    }
+    byId('execution-label').textContent = step.kind.startsWith('deploy-')
+      ? `AAP deploys fix · ${state.scenario.cve}` : 'AAP executes host automation';
+    const environment = step.kind.endsWith('-prod') ? 'Prod' : 'Test';
+    byId('host-content-label').textContent = step.kind.startsWith('request-')
+      ? `${environment} requests fix from Satellite`
+      : step.kind === 'patch-test' || step.kind === 'patch-prod'
+        ? `Satellite returns fix packages to ${environment}` : 'Hosts pull Satellite content';
+    byId('host-routes').setAttribute('aria-label', `${byId('execution-label').textContent}; ${byId('host-content-label').textContent}`);
     byId('test-host').classList.toggle('is-active', step.route === 'execute-test' || step.route === 'content-test');
     byId('prod-host').classList.toggle('is-active', step.route === 'execute-prod' || step.route === 'content-prod');
     document.querySelector('.satellite').classList.toggle('is-promoting', step.route === 'promote-prod');

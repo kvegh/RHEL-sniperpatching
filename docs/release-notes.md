@@ -1,5 +1,16 @@
 # Release notes
 
+## 0.18.0 — Make AAP orchestration explicit
+
+Show query, repository-update, CV-composition and publication triggers as distinct
+AAP actions. Time the baseline + fix equation to composition; highlight Test CV
+availability only after publication. Add explicit CVE-scoped deployment, client
+request and Satellite response actions for Test and approved Prod. Keep the
+52 actions inside seven scenes per run. Replace disconnected Red Hat markers
+with one continuous active Download fix arrow, center smaller platform cards and
+enlarge the Red Hat source. Technical detail retains the distinction between
+this explanatory mockup and existing automation; no runtime automation changes.
+
 ## 0.17.2 — Align the top panels
 
 Align the compact status and Red Hat repository boxes with the top of the

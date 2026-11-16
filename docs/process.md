@@ -31,6 +31,12 @@ Scenes 5 and 7 unfold through separate presenter-controlled rollout actions.
 Both hosts finish green before the next alert. Future CVEs stay hidden until
 announced; a previously fixed issue remains Fixed during broader maintenance.
 The Red Hat lane contrasts the selected fix/dependencies with bulk routine content.
+The mockup separates AAP's query, repository-update request, CV composition and
+publication into visible actions. Composition shows the baseline + fix equation;
+publication changes Test availability before installation. AAP then launches the
+CVE-scoped host job, the client requests packages and Satellite responds with the
+selected advisory content and dependencies. These are explanatory subdivisions
+of the existing automation, not newly deployed jobs or independent API calls.
 
 The targeted path uses already synchronized content. The broader publication
 explicitly synchronizes the selected repositories. The page explains these

@@ -5,7 +5,9 @@
 it does not run AAP jobs or establish live patching results. Seven scenes per
 run show healthy baseline → CVE alert → Red Hat fix content → targeted CV →
 controlled rollout → maintenance window → broader rollout. Verification, reboot
-and operator approval unfold within the rollout scenes.
+and operator approval unfold within the rollout scenes. Explicit AAP triggers
+lead through repository update, CV composition/publication and CVE-scoped
+deployment; hosts request the fix from Satellite before installation.
 
 Select the OLD or NEW directory explicitly in each AAP template:
 `playbooks/old/<stage>.yml` or `playbooks/new/<stage>.yml`. The OLD workshop

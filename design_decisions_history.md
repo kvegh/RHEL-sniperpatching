@@ -1446,3 +1446,28 @@ Implementation: `8895e950f025fda8dfc0e4a1ceae964c9f4fd289` (0.17.2).
 succeeded. All four public assets match source and all ten deployed
 HTML/script interaction checks pass. Local interaction, markup and whitespace
 checks passed. These checks preserve behavior but do not verify browser layout.
+
+
+## 2026-11-16 18:28 UTC — Make AAP orchestration explicit
+
+Recorded at this time after the user's successive requirements: center AAP and
+Satellite in their own halves at least 40% narrower, enlarge the Red Hat source
+by about 30%, and show AAP orchestrating the full sequence. Version 0.18.0 uses
+separate query, repository-update, CV-composition and publication actions. The
+baseline + fix equation appears during composition; Test availability changes
+only at publication, while installed packages and Prod remain unchanged.
+
+One continuous Red Hat-to-Satellite arrow says Download fix. AAP then launches
+the CVE-scoped job, the client requests packages and Satellite returns selected
+advisory packages/dependencies. The same sequence follows Test verification,
+operator approval and exact-version promotion for Prod. Two fixed runs retain
+seven scenes each and now contain 52 actions. Native HTML/CSS and existing
+browser APIs suffice; no dependency, service or automation change is introduced.
+
+These explicit triggers are explanatory subdivisions. The real targeted path
+consumes synchronized content; full publication explicitly synchronizes repos.
+CV composition/publication remain grouped by the checked-in implementation.
+Source-linked detail preserves these boundaries. The work was split into a
+scoped card-CSS stream and model stream, with root integrating labels, connected
+arrows, availability state and regressions. Implementation and live publication
+references follow after verification. Browser rendering remains unverified.

@@ -166,9 +166,12 @@ test('an unknown deep link returns to a safe baseline', () => {
 
 test('CVE alerts change known host risk without revealing the next story early', () => {
   const v = launch();
+  assert.equal(text(v, 'api-label'), 'HTTPS API');
   assert.equal(v.get('story-event').dataset.tone, 'healthy');
   go(v, at(v, 0, 'input'));
   assert.equal(v.get('story-event').dataset.tone, 'alert');
+  assert.equal(text(v, 'api-label'), 'Query: fix available?');
+  assert.match(v.get('flow-resolve').className, /is-active/);
   assert.equal(v.get('test-host').dataset.health, 'affected');
   assert.equal(v.get('prod-host').dataset.health, 'affected');
   assert.equal(text(v, 'test-verification'), 'Pending');
@@ -178,12 +181,20 @@ test('CVE alerts change known host risk without revealing the next story early',
   assert.doesNotMatch(text(v, 'test-fixes'), /CVE-2024-36883/);
   go(v, at(v, 0, 'host-scope'));
   assert.match(text(v, 'target-scope'), /Test node.*Production node/);
+  assert.equal(text(v, 'api-label'), 'HTTPS API');
+  assert.equal(text(v, 'cv-update'), 'CV 1.0 + fix == CV 1.1');
+  assert.equal(v.get('cv-update').hidden, false);
   go(v, at(v, 0, 'complete'));
   assert.equal(v.get('test-host').dataset.health, 'healthy');
   assert.equal(v.get('story-event').dataset.tone, 'healthy');
   assert.doesNotMatch(text(v, 'prod-fixes'), /CVE-2024-36883/);
   go(v, at(v, 1, 'input'));
   assert.match(text(v, 'prod-fixes'), /CVE-2024-36883/);
+  assert.equal(text(v, 'api-label'), 'Query: fix available?');
+  assert.equal(v.get('cv-update').hidden, true);
+  go(v, at(v, 1, 'minor'));
+  assert.equal(text(v, 'cv-update'), 'CV 2.0 + fix == CV 2.1');
+  assert.equal(v.get('cv-update').hidden, false);
   assert.match(text(v, 'prod-fixes'), /Python malicious package download.*Fixed/);
 });
 
@@ -191,6 +202,7 @@ test('Red Hat supply distinguishes the single-fix request from the later bulk up
   const v = launch();
   go(v, at(v, 0, 'ensure-content'));
   assert.equal(v.get('redhat-supply').dataset.delivery, 'targeted');
+  assert.equal(text(v, 'delivery-label'), 'Download fix');
   assert.equal(v.get('package-stream').children.length, 2);
   assert.match(text(v, 'package-stream'), /Selected security fix.*Required dependencies/);
   go(v, at(v, 0, 'time-passes'));
@@ -199,6 +211,7 @@ test('Red Hat supply distinguishes the single-fix request from the later bulk up
   assert.match(text(v, 'test-fixes'), /Fixed/);
   go(v, at(v, 0, 'full-publish'));
   assert.equal(v.get('redhat-supply').dataset.delivery, 'bulk');
+  assert.equal(text(v, 'delivery-label'), 'Download updates');
   assert.ok(v.get('package-stream').children.length >= 8);
   assert.match(text(v, 'package-stream'), /Earlier fix ✓/);
   assert.equal(text(v, 'test-installed'), 'CV 1.1');
@@ -235,4 +248,63 @@ test('the architecture skip link preserves the current story state', () => {
   assert.equal(text(v, 'test-available'), 'CV 1.1');
   v.get('next').click();
   assert.equal(v.window.location.hash, '#step=run-1-host-scope');
+});
+
+
+test('AAP orchestrates query, repository update, CV update and publication before host installation', () => {
+  const v = launch();
+  for (const cycle of [0, 1]) {
+    go(v, at(v, cycle, 'resolve'));
+    assert.equal(text(v, 'api-label'), 'Query: fix available?');
+    const baseline = text(v, 'test-available');
+    const installed = text(v, 'test-installed');
+    v.get('next').click();
+    assert.equal(v.window.location.hash, `#step=run-${cycle + 1}-trigger-sync`);
+    assert.equal(text(v, 'api-label'), 'Trigger software repository update');
+    assert.equal(v.get('cv-update').hidden, true);
+    v.get('next').click();
+    assert.equal(text(v, 'delivery-label'), 'Download fix');
+    assert.equal(v.get('redhat-supply').dataset.delivery, 'targeted');
+    v.get('next').click();
+    assert.equal(text(v, 'api-label'), 'Trigger Content View update');
+    assert.equal(text(v, 'cv-update'), `CV ${cycle + 1}.0 + fix == CV ${cycle + 1}.1`);
+    assert.equal(v.get('cv-update').hidden, false);
+    assert.match(text(v, 'cv-availability'), /not published yet/);
+    assert.equal(text(v, 'test-available'), baseline);
+    v.get('next').click();
+    assert.equal(text(v, 'api-label'), 'Trigger publishing updated Content View');
+    assert.match(v.get('flow-resolve').className, /is-active/);
+    assert.equal(text(v, 'cv-availability'), `CV ${cycle + 1}.1 available to Test hosts`);
+    assert.equal(text(v, 'test-available'), `CV ${cycle + 1}.1`);
+    assert.match(v.get('test-available').className, /is-new-content/);
+    assert.equal(text(v, 'test-installed'), installed);
+    assert.equal(text(v, 'prod-available'), baseline);
+    v.get('previous').click();
+    assert.equal(text(v, 'api-label'), 'Trigger Content View update');
+    assert.equal(text(v, 'test-available'), baseline);
+  }
+});
+
+
+test('AAP launches a CVE-scoped job before clients request and receive the fix', () => {
+  const v = launch();
+  for (const cycle of [0, 1]) {
+    for (const environment of ['test', 'prod']) {
+      go(v, at(v, cycle, `deploy-${environment}`));
+      const installed = text(v, `${environment}-installed`);
+      assert.match(text(v, 'job-label'), new RegExp(v.story.scenarios[cycle].cve));
+      assert.match(v.get(`flow-execute-${environment}`).className, /is-active/);
+      assert.doesNotMatch(v.get(`flow-content-${environment}`).className, /is-active/);
+      v.get('next').click();
+      assert.equal(v.window.location.hash, `#step=run-${cycle + 1}-request-${environment}`);
+      assert.match(v.get(`flow-content-${environment}`).className, /is-active/);
+      assert.match(v.get(`flow-content-${environment}`).className, /is-requesting/);
+      assert.match(text(v, 'host-content-label'), /requests fix from Satellite/);
+      assert.equal(text(v, `${environment}-installed`), installed);
+      v.get('next').click();
+      assert.match(text(v, 'host-content-label'), /Satellite returns fix packages/);
+      assert.doesNotMatch(v.get(`flow-content-${environment}`).className, /is-requesting/);
+      assert.equal(text(v, `${environment}-installed`), `CV ${cycle + 1}.1`);
+    }
+  }
 });
