@@ -1,5 +1,37 @@
 # Design decisions history
 
+## 2026-11-16 — Diagnose the live cutoff rejection without disclosing its value
+
+Implementation: `cde7988fafce8416ca22e470093aa1d033f64daf`, version **0.14.5**.
+This **0.14.6** documentation checkpoint records its actual commit; executable
+content and runtime dependencies remain unchanged.
+
+The first real targeted Test/Prod sequence passed on an identical minor,
+including actual reboots and native fix/smoke proof. The following full-update
+job supplied the intended May 23 cutoff but rejected it before any repository
+sync, filter change or publication. Independent native reads confirmed the
+existing serving versions remained unchanged. The same saved variables and
+all 4,456 actual published advisory rows pass unchanged validation offline in
+the selected EE, through JSON and safe YAML transport. Native unquoted YAML
+dates are a reproducing negative control, not proof of the live input's type.
+The original cause remains unproven; do not change the cutoff or claim a fix.
+
+Add only sanitized date-error diagnostics: reason, runtime class and string
+length. Keep accepted types, exact format, valid-calendar and advisory-retention
+checks unchanged; omit values/repr and suppress the calendar exception context.
+Eight affected tests passed in 21.307 seconds in the unchanged selected EE,
+including real native templating, malformed/non-string rejection, value
+suppression and publication/preservation boundaries. Actual-data replays also
+passed. Raw inputs, outputs, immutable runtime provenance and unknown test-start
+timing remain accurately labeled in private Vault evidence.
+
+After the separately scoped CoP repeat/preservation check is terminal, run one
+controlled normal publication with the same explicit cutoff and inspect the
+actual diagnostic result. No full-update, complete NEW or formal review
+acceptance is implied by these diagnostics or offline checks. OLD source and
+all existing holds remain unchanged.
+
+
 ## 2026-11-15 — Select the repository copies serving each registration destination
 
 Implementation: `01f476240c0ef45fa2bbd7f21d6ac2273380d6a3`, version **0.14.3**.

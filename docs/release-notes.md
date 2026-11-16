@@ -1,5 +1,12 @@
 # Release notes
 
+## 0.14.6 — Record the cutoff diagnostic implementation
+
+Record implementation `cde7988fafce8416ca22e470093aa1d033f64daf` and the
+actual-data/focused-test outcomes. Executable content is unchanged from 0.14.5;
+the live cutoff failure's cause and full-update acceptance remain unverified.
+
+
 ## 0.14.5 — Diagnose cutoff validation without exposing input values
 
 Date-validation errors now add only reason, runtime type and string length.

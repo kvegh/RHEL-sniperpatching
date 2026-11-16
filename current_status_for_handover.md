@@ -1,6 +1,7 @@
 # First targeted pair verified; cutoff diagnostics prepared — 2026-11-16
 
-Version **0.14.5** changes only sanitized date-validation error diagnostics.
+Version **0.14.6** records the diagnostic implementation from **0.14.5**;
+executable content is unchanged from that tested checkpoint.
 Errors now distinguish type, format and calendar failures, with the runtime
 class and string length; input values and representations remain excluded.
 The accepted types, exact date format, calendar checks, advisory-preservation
