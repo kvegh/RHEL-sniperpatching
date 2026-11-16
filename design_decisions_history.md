@@ -2,7 +2,7 @@
 
 ## 2026-11-16 — Guard a future NEW Satellite cold installation checkpoint
 
-Implementation: 3eb8f368d4c22e7024e8f94700027011a7bcbd7f, working version
+Implementation: 3931027601c3ad4492d9a4c5e6094bde4f4380fd, working version
 0.16.0 (unpublished). The user explicitly selected a cold checkpoint named
 post-satellite-install after successful installation and before the first sync.
 

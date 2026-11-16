@@ -89,12 +89,28 @@ For a future fresh NEW installation, the required order is:
    blocks content writes. Authenticated Katello readiness is required before
    repository setup or synchronization.
 
-The guest and hypervisor retain their separate existing Machine credentials.
-The automatic AAP sequencing choice and new template import are still pending;
-these playbooks alone do not establish live orchestration. Content synchronization
-remains a separate operator-controlled setup action. A separate foundation launch
-must receive the actual successful final-verification artifacts and public CA
-through the selected native job handoff; never hard-code a successful flag in CaC.
+The approved native AAP workflow connects installation, cold checkpoint and final
+verification through success-only links. Each job retains its existing Machine
+and Satellite API credentials; native ancestor artifacts carry the original
+identity and public trust between stages. A failed stage stops the chain.
+The existing shared CaC importer declares the workflow after its job templates.
+Importing definitions launches no installation, snapshot or synchronization.
+
+Content synchronization remains a separate operator-launched setup job.
+After the workflow succeeds, copy the complete JSON value of its final
+sniper_checkpoint_handoff_json artifact into that job's required native survey.
+The single textarea accepts only this named variable; arbitrary extra-vars
+prompting remains disabled. The playbook parses JSON data, requires the exact
+schema, a true completion flag, the protected VM UUID and matching public-CA
+fingerprint, then verifies native cold metadata and API readiness before writes.
+The handoff supplies the new installation's public CA, without a stale saved
+template CA or a hard-coded success flag.
+
+This is an operator-mediated copy of the actual successful final artifact.
+The JSON is not a cryptographic attestation of its originating Controller job.
+Operators must use the successful workflow's value; validation does not create
+a separate authentication or provenance service. The bundle contains public
+trust and VM identity, with no password, token or private key.
 
 An existing checkpoint is reused only when its exact name, owner, VM/disk/NIC,
 cold state and installation/CA provenance match. A foreign same-name snapshot

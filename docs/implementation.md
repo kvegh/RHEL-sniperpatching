@@ -247,9 +247,9 @@ automatic retry or power recovery. Post-start guest identity, native service
 health and authenticated TLS use shared native Ansible tasks.
 
 Initial content setup verifies the native checkpoint before its localhost play,
-requires the actual successful post-start guest-verification artifact bound to
-the same VM UUID and public-CA fingerprint, then checks Katello readiness before
-any content write. A missing/mismatched final result or a failed/excluded
+requires the operator-copied successful post-start guest-verification handoff
+bound to the same VM UUID and public-CA fingerprint, then checks Katello readiness
+before any content write. A missing/mismatched final result or a failed/excluded
 hypervisor play cannot grant localhost a successful gate. This controls the
 provided setup route; it does not revoke independent Satellite administrator
 access or coordinate unrelated external synchronizations.
@@ -262,3 +262,26 @@ and replaces later content setup with a sentinel write; other content behavior
 remains covered by existing tests. The fixtures use the actual nested Katello
 ping shape and filtered history counts, without real SSH, APIs or VM changes.
 Fresh live capture and final post-start acceptance remain separate evidence.
+
+
+The approved three-node native AAP workflow uses success links only and preserves
+each job template's saved credential, inventory and EE bindings. Controller
+ancestor artifacts propagate within that workflow even with arbitrary-variable
+prompting disabled. A separately launched job has no automatic ancestor handoff,
+so the existing foundation template exposes one required native textarea survey
+variable, sniper_checkpoint_handoff_json. Its value comes from the successful
+final verification job's set_stats output. Native AAP survey filtering accepts
+that declared string while ask_variables_on_launch remains false.
+
+tasks/satellite_checkpoint_handoff.yml parses the bounded string as data, refuses
+unexpected keys/types, unsuccessful results, wrong VM identity and inconsistent
+CA fingerprints, then supplies only the validated public CA to the existing
+TLS tasks. The candidate configuration removes the foundation's stale template
+CA; credentials and other extra-vars remain unchanged. The string is never
+evaluated as Jinja or expanded into arbitrary variables. Native snapshot metadata
+is independently checked before content writes. This validates consistency of an
+operator-mediated handoff; it does not authenticate the original Controller job.
+
+Primary native behavior: [AAP job-template variables](https://docs.redhat.com/en/documentation/red_hat_ansible_automation_platform/2.7/develop-ref_controller_job_template_variables),
+[Controller workflow artifacts](https://docs.ansible.com/projects/awx/en/24.6.1/userguide/workflows.html)
+and the matching [native ancestor-artifact implementation](https://github.com/ansible/awx/blob/24.6.1/awx/main/models/workflow.py#L324-L354).

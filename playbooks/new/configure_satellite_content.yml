@@ -11,10 +11,8 @@
   vars:
     sniper_checkpoint_read_operation: verify
   pre_tasks:
-    - name: Require the original installation public trust for checkpoint verification
-      ansible.builtin.assert:
-        that: sniper_satellite_ca_pem | default('') | length > 0
-      no_log: true
+    - name: Validate the operator-supplied successful final verification artifact
+      ansible.builtin.include_tasks: tasks/satellite_checkpoint_handoff.yml
 
     - name: Load the management-verified hypervisor SSH pin
       ansible.builtin.import_tasks: tasks/ssh_pin.yml
@@ -71,14 +69,17 @@
     - name: Remove job-local Satellite CA
       ansible.builtin.include_tasks: tasks/api_ca_cleanup.yml
   tasks:
+    - name: Validate the same bounded final verification artifact for local API access
+      ansible.builtin.include_tasks: tasks/satellite_checkpoint_handoff.yml
+
     # A failed or excluded earlier play must not leave localhost free to write.
     - name: Require this execution's successful native checkpoint verification
       ansible.builtin.assert:
         that:
           - hostvars['sniper_satellite_hypervisor'].sniper_satellite_checkpoint_verified | default(false) is sameas true
-          - sniper_new_checkpoint_installation_verified | default(false) is sameas true
-          - sniper_new_checkpoint_verified_vm_uuid | default('') | lower == sniper_new_vm_uuid | lower
-          - sniper_new_checkpoint_verified_ca_sha256 | default('') == (sniper_satellite_ca_pem.split() | join('') | hash('sha256'))
+          - sniper_checkpoint_handoff.installation_verified is sameas true
+          - sniper_checkpoint_handoff.vm_uuid | lower == sniper_new_vm_uuid | lower
+          - sniper_checkpoint_handoff.ca_sha256 == (sniper_satellite_ca_pem.split() | join('') | hash('sha256'))
         fail_msg: >-
           The initial content foundation requires the owned post-satellite-install
           checkpoint and the successful original-guest post-start verification artifacts.

@@ -1,0 +1,53 @@
+---
+# Native survey data stays one untrusted string; never template or merge it as extra vars.
+# See docs/implementation.md#pre-sync-satellite-checkpoint.
+- name: Require the actual successful verification artifact copied through the native survey
+  ansible.builtin.assert:
+    that:
+      - sniper_checkpoint_handoff_json | default('') is string
+      - sniper_checkpoint_handoff_json | default('') | length > 0
+      - sniper_checkpoint_handoff_json | length <= 65536
+    fail_msg: Copy the actual successful workflow's sniper_checkpoint_handoff_json artifact into the required first-sync survey.
+  no_log: true
+
+- name: Decode only JSON data from the bounded native survey
+  block:
+    - name: Read the original-guest verification record without evaluating its contents
+      ansible.builtin.set_fact:
+        sniper_checkpoint_handoff: "{{ sniper_checkpoint_handoff_json | from_json }}"
+      no_log: true
+  rescue:
+    - name: Refuse a malformed checkpoint handoff
+      ansible.builtin.fail:
+        msg: The first-sync handoff must be the complete JSON value from a successful final verification job.
+
+- name: Require exact successful original-VM and public-trust fields
+  ansible.builtin.assert:
+    that:
+      - sniper_checkpoint_handoff is mapping
+      - >-
+        sniper_checkpoint_handoff.keys() | sort | list ==
+        ['ca_pem', 'ca_sha256', 'checkpoint', 'installation_verified', 'schema_version', 'vm_uuid']
+      - sniper_checkpoint_handoff.schema_version is integer
+      - sniper_checkpoint_handoff.schema_version == 1
+      - sniper_checkpoint_handoff.checkpoint == 'post-satellite-install'
+      - sniper_checkpoint_handoff.installation_verified is sameas true
+      - sniper_checkpoint_handoff.vm_uuid is string
+      - sniper_checkpoint_handoff.vm_uuid | lower == sniper_new_vm_uuid | lower
+      - sniper_checkpoint_handoff.ca_pem is string
+      - sniper_checkpoint_handoff.ca_pem | length > 0
+      - sniper_checkpoint_handoff.ca_sha256 is string
+      - sniper_checkpoint_handoff.ca_sha256 is match('^[0-9a-f]{64}$')
+      - >-
+        sniper_checkpoint_handoff.ca_sha256 ==
+        (sniper_checkpoint_handoff.ca_pem.split() | join('') | hash('sha256'))
+      - >-
+        sniper_satellite_ca_pem | default('') | length == 0 or
+        (sniper_satellite_ca_pem.split() | join('') | hash('sha256')) == sniper_checkpoint_handoff.ca_sha256
+    fail_msg: The final verification record is missing, unsuccessful, stale or inconsistent with the selected VM and public CA.
+  no_log: true
+
+- name: Use only the validated original installation public CA for first content setup
+  ansible.builtin.set_fact:
+    sniper_satellite_ca_pem: "{{ sniper_checkpoint_handoff.ca_pem }}"
+  no_log: true

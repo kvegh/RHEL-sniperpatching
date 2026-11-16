@@ -1,6 +1,6 @@
 # Release notes
 
-## 0.16.0 — Future post-install cold checkpoint (unreleased)
+## 0.16.0 — Future post-install cold checkpoint
 
 Add the NEW-only post-satellite-install cold checkpoint boundary between
 verified Satellite installation and initial content setup. Bind native metadata
@@ -10,12 +10,18 @@ without automatic retries or power recovery. Recheck original guest identity,
 services and authenticated TLS after restart; require the owned checkpoint before
 content writes. Keep separate existing credentials and protected configuration.
 
-The selected Core 2.20.10 EE passed 33 focused helper/orchestration tests,
-including missing or mismatched post-start proof and malformed native replies.
+The selected Core 2.20.10 EE passed 35 focused helper/orchestration tests,
+including malformed replies, missing/mismatched proof and an actual exported
+JSON handoff into the separate first-sync job. Existing frontend tests passed
+all 20 cases after its displayed version was synchronized.
 Eleven related CA/installer regressions and four playbook syntaxes also passed;
 the final artifact-binding correction is covered by the focused suite.
 These offline results do not establish a real fresh capture or formal acceptance.
-The new AAP sequencing choice/import and fresh live acceptance remain pending.
+The user selected a native three-job workflow with success-only links.
+Keep first sync separately operator-launched through one bounded native survey
+handoff; preserve saved credentials and disable arbitrary-variable prompting.
+Workflow declaration/import verification and fresh live acceptance are recorded
+separately from the source tests.
 The current populated Satellite and the completed nine patching cycles are unchanged.
 
 ## 0.15.3 — Remove redundant AAP capability badges

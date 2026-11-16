@@ -89,6 +89,12 @@
               sniper_new_checkpoint_installation_verified: true
               sniper_new_checkpoint_verified_vm_uuid: "{{ ansible_facts.product_uuid | lower }}"
               sniper_new_checkpoint_verified_ca_sha256: "{{ sniper_new_installation_ca_sha256 }}"
+              sniper_checkpoint_handoff_json: >-
+                {{ {'schema_version': 1, 'checkpoint': 'post-satellite-install',
+                    'installation_verified': true,
+                    'vm_uuid': (ansible_facts.product_uuid | lower),
+                    'ca_sha256': sniper_new_installation_ca_sha256,
+                    'ca_pem': sniper_satellite_health_ca_pem} | to_json }}
       always:
         - name: Remove the execution-local guest public pin
           ansible.builtin.file:

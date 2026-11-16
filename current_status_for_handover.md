@@ -6,20 +6,26 @@ hypervisor capture, original guest post-start verification and a fail-closed
 initial-content gate. This work has no live snapshot acceptance and no new
 template import yet. The current synchronized Satellite must remain untouched.
 
-Selected Core2.20.10 qualification passed 33 focused helper/orchestration tests
+Selected Core2.20.10 qualification passed 35 focused helper/orchestration tests
 and 11 related CA/installer regressions. Four playbook syntax checks passed;
 the final identity-bound artifact gate is covered by the focused suite.
 An independent integration review found that final guest proof was not consumed;
 the correction now refuses missing or mismatched original VM/CA proof before sync.
 These are local synthetic checks, with no VM/API or power operation.
 
-The native AAP workflow versus separate manual-job choice remains pending.
+The user selected the native three-job AAP workflow. Its saved credentials stay
+separate; ancestor artifacts connect installation, checkpoint and final
+verification. A required single-field native survey carries the successful final
+JSON record and public CA to the separate initial-content job.
 Existing guest and hypervisor Machine credentials remain separate. No new
 secret input is required; use the existing protected configuration mechanism.
-The independent encrypted cycle-two archive publication decision remains pending.
+The user-approved fourteen encrypted cycle-two receipts and README0.14.13 were
+published separately at private1bbec39a1ed632b02d793e17d42889ef3d7857e0.
+Exact SSH remote verification passed; canonical configuration was unchanged
+during that scoped archive publication.
 Held image, generic VM/rollback and OLD/formal-review work remain held or blocked.
 
-Latest verified public release is 0.15.2; 0.16.0 is an unpublished working version.
+Latest verified public release is 0.15.3; 0.16.0 is an unpublished working version.
 The historical nine-cycle acceptance below remains valid for its recorded source.
 
 # Nine NEW chronological procedures passed — 2026-11-16

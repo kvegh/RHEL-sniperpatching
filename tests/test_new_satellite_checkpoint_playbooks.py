@@ -121,6 +121,8 @@ class CheckpointPlaybooks(unittest.TestCase):
                 for task in tasks:
                     for branch in ("block", "always", "rescue"):
                         replace(task.get(branch, []))
+                    if "ansible.builtin.set_stats" in task:
+                        task["register"] = "sniper_fixture_exported_stats"
                     for kind in ("command", "uri", "setup", "stat", "slurp"):
                         key = "ansible.builtin." + kind
                         if key not in task:
@@ -143,10 +145,20 @@ class CheckpointPlaybooks(unittest.TestCase):
                         play["become"] = False
                         for branch in ("pre_tasks", "tasks", "post_tasks"):
                             replace(play.get(branch, []))
+                    if entry == "verify_satellite_checkpoint.yml":
+                        data[0]["post_tasks"] = [{
+                            "name": "Retain only the synthetic exported artifact for the next fixture job",
+                            "ansible.builtin.copy": {
+                                "content": "{{ sniper_fixture_exported_stats.ansible_stats.data | to_json }}",
+                                "dest": str(folder / "exported-stats.json"), "mode": "0600",
+                            },
+                        }]
                     if entry == "configure_satellite_content.yml":
                         # Exercise the actual cross-play gate before a synthetic first write.
                         # Other content orchestration has its own tests and selected-EE syntax.
-                        data[1]["tasks"] = data[1]["tasks"][:1] + [{
+                        prefix = next(i for i, task in enumerate(data[1]["tasks"])
+                                      if task.get("name") == "Require protected HTTPS access and an explicit content policy")
+                        data[1]["tasks"] = data[1]["tasks"][:prefix] + [{
                             "name": "Synthetic first content write after the actual gate",
                             "checkpoint_boundary": {"kind": "content", "arguments": {}},
                         }]
@@ -169,18 +181,32 @@ class CheckpointPlaybooks(unittest.TestCase):
                                                    "authenticated_https_verified": True},
                 "sniper_new_checkpoint_result": {"name": "post-satellite-install", "cold_verified": True, "vm_running": True},
             }
-            variables.update(
-                sniper_new_checkpoint_installation_verified=True,
-                sniper_new_checkpoint_verified_vm_uuid=UUID,
-                sniper_new_checkpoint_verified_ca_sha256=variables["sniper_new_installation_ca_sha256"])
+            handoff = {
+                "schema_version": 1, "checkpoint": "post-satellite-install",
+                "installation_verified": True, "vm_uuid": UUID,
+                "ca_sha256": variables["sniper_new_installation_ca_sha256"], "ca_pem": CA,
+            }
             if missing_install:
                 variables.pop("sniper_new_installation_result")
-            if scenario.pop("missing_final", False):
-                variables.pop("sniper_new_checkpoint_installation_verified")
+            missing_final = scenario.pop("missing_final", False)
             if scenario.pop("wrong_final_uuid", False):
-                variables["sniper_new_checkpoint_verified_vm_uuid"] = "wrong"
+                handoff["vm_uuid"] = "wrong"
             if scenario.pop("wrong_final_ca", False):
-                variables["sniper_new_checkpoint_verified_ca_sha256"] = "0" * 64
+                handoff["ca_sha256"] = "0" * 64
+            if scenario.pop("failed_final", False):
+                handoff["installation_verified"] = False
+            if scenario.pop("extra_handoff_key", False):
+                handoff["ansible_host"] = "unrelated.example.test"
+            if not missing_final:
+                variables["sniper_checkpoint_handoff_json"] = json.dumps(handoff)
+            if scenario.pop("malformed_handoff", False):
+                variables["sniper_checkpoint_handoff_json"] = "{"
+            if scenario.pop("object_handoff", False):
+                variables["sniper_checkpoint_handoff_json"] = handoff
+            if "handoff_override" in scenario:
+                variables["sniper_checkpoint_handoff_json"] = scenario.pop("handoff_override")
+            if scenario.pop("no_configured_ca", False):
+                variables.pop("sniper_satellite_ca_pem")
             if scenario.pop("wrong_install", False):
                 variables["sniper_new_installation_vm_uuid"] = "wrong"
             inventory = {"all": {"hosts": {host: {
@@ -207,6 +233,8 @@ class CheckpointPlaybooks(unittest.TestCase):
                 command += ["--limit", limit]
             result = subprocess.run(command, cwd=source, env=environment, text=True, capture_output=True, timeout=180)
             state = json.loads(state_path.read_text())
+            exported = folder / "exported-stats.json"
+            state["exported_stats"] = json.loads(exported.read_text()) if exported.exists() else {}
             state["remaining_pins"] = [call["pin"] for call in state["calls"]
                                        if call.get("pin") and Path(call["pin"]).exists()]
             state["remaining_cas"] = list((folder / "local").rglob("*-sniper-satellite-ca.pem"))
@@ -277,6 +305,7 @@ class CheckpointPlaybooks(unittest.TestCase):
                 self.check_result(result, state, not scenario)
                 if not scenario:
                     self.assertIn("sniper_new_checkpoint_installation_verified", result.stdout)
+                    self.assertIn("sniper_checkpoint_handoff_json", result.stdout)
 
     def test_initial_content_requires_this_execution_native_checkpoint_gate(self):
         for scenario in ({"exists": True}, {}, {"exists": True, "stopped": True}, {"exists": True, "foreign": True}):
@@ -288,12 +317,33 @@ class CheckpointPlaybooks(unittest.TestCase):
                 self.assertNotIn("create", self.operations(state))
 
     def test_missing_or_mismatched_final_guest_verification_blocks_content(self):
-        for scenario in ({"missing_final": True}, {"wrong_final_uuid": True}, {"wrong_final_ca": True}):
+        for scenario in ({"missing_final": True}, {"wrong_final_uuid": True}, {"wrong_final_ca": True},
+                         {"failed_final": True}, {"extra_handoff_key": True}, {"malformed_handoff": True},
+                         {"object_handoff": True}):
             with self.subTest(scenario=scenario):
                 result, state = self.run_play("configure_satellite_content.yml", exists=True, **scenario)
                 self.check_result(result, state, False)
                 self.assertFalse(any(c["kind"] == "content" for c in state["calls"]))
-                self.assertEqual(self.operations(state), ["verify"])
+                self.assertEqual(self.operations(state), [])
+
+    def test_fresh_public_ca_can_come_only_from_validated_handoff(self):
+        result, state = self.run_play("configure_satellite_content.yml", exists=True, no_configured_ca=True)
+        self.check_result(result, state, True)
+        self.assertTrue(any(c["kind"] == "content" for c in state["calls"]))
+
+    def test_final_handoff_round_trip_uses_the_actual_exported_json_string(self):
+        result, state = self.run_play("verify_satellite_checkpoint.yml")
+        self.check_result(result, state, True)
+        exported = state["exported_stats"]["sniper_checkpoint_handoff_json"]
+        self.assertIsInstance(exported, str)
+        proof = json.loads(exported)
+        self.assertEqual(proof["vm_uuid"], UUID)
+        self.assertEqual(proof["ca_pem"], CA)
+        self.assertIs(proof["installation_verified"], True)
+        result, state = self.run_play("configure_satellite_content.yml", exists=True,
+                                      no_configured_ca=True, handoff_override=exported)
+        self.check_result(result, state, True)
+        self.assertTrue(any(c["kind"] == "content" for c in state["calls"]))
 
     def test_excluding_hypervisor_cannot_bypass_the_content_gate(self):
         result, state = self.run_play("configure_satellite_content.yml", limit="localhost", exists=True)
