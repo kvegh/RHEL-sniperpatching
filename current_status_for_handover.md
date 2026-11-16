@@ -1,3 +1,18 @@
+# Mechanical CV counters and simplified visualization — 2026-11-16
+
+Frontend **0.19.0**, implementation 08ef2338c35617a606d41528eceae2790cab50d4,
+is published by successful Pages run 43943781452. All four public assets match;
+thirteen deployed interaction checks and nineteen local model checks pass.
+The page now uses Test Server/Prod Server, visible CV snapshot guidance,
+mechanical CV counter transitions and a 42-action two-run story. Generic
+connectors and redundant announcement/pair-check/kernel states are removed;
+named AAP triggers, selected-fix deployment, approval and exact promotion remain.
+Kernel reboots are grouped with updates, followed by separate verification.
+Actual browser appearance/animation remains unverified. These are presentation
+changes and do not extend the runtime acceptance evidence below.
+
+---
+
 # AAP orchestration visualization published — 2026-11-16
 
 Frontend version **0.18.0**, implementation

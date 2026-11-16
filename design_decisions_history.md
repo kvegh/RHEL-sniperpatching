@@ -1572,3 +1572,16 @@ review, an equal-specificity mobile label rule was found to override counter
 text to 8px. Strengthening the two counter typography selectors preserves the
 surrounding CV font on narrow screens. This focused correction does not change
 states or animation timing; browser rendering remains unverified.
+
+
+Implementation: `08ef2338c35617a606d41528eceae2790cab50d4` (0.19.0).
+[Pages run 43943781452](https://github.com/kvegh/RHEL-sniperpatching/actions/runs/43943781452)
+succeeded. Four public assets match source and all thirteen deployed HTML/script
+interaction checks pass, including every current CV field across both cycles,
+motion-off behavior, full server names, direct publication-to-deployment and
+combined kernel reboot/verification behavior. Nineteen model checks and local
+syntax/markup/version/whitespace checks pass. The stale skip-link expectation
+was updated for the removed action; the mobile counter inheritance finding was
+fixed and confirmed in source review. Actual browser appearance, text wrapping
+and animation perception remain unverified. No browser tooling was installed;
+no AAP/Satellite/client runtime or infrastructure was changed.
