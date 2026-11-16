@@ -1471,3 +1471,16 @@ Source-linked detail preserves these boundaries. The work was split into a
 scoped card-CSS stream and model stream, with root integrating labels, connected
 arrows, availability state and regressions. Implementation and live publication
 references follow after verification. Browser rendering remains unverified.
+
+
+Implementation: `cd3d9a42770569715fba604d489a77738bb7f0bd` (0.18.0).
+[Pages run 43929434866](https://github.com/kvegh/RHEL-sniperpatching/actions/runs/43929434866)
+succeeded. All four public assets match source and all twelve deployed
+HTML/script interaction checks pass, including both complete orchestration
+sequences and client request/response exchanges. Nineteen local model checks,
+syntax, markup, version and whitespace checks pass. Independent read-only
+integration review found no concrete issue in the inspected CSS/markup/state
+changes; it verified the matching column math, reverse request marker and motion
+controls by source inspection. This is not formal project-review acceptance or
+browser rendering verification. No browser tooling was installed and no AAP,
+Satellite or client runtime was changed.

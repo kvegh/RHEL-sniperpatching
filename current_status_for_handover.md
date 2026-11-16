@@ -1,3 +1,18 @@
+# AAP orchestration visualization published — 2026-11-16
+
+Frontend version **0.18.0**, implementation
+cd3d9a42770569715fba604d489a77738bb7f0bd, is published by successful Pages run
+43929434866. Four public assets match and all twelve deployed HTML/script
+interaction checks pass. It shows the four AAP triggers, CV composition versus
+published availability, and CVE-scoped deployment with client request/Satellite
+response in both fixed runs. Smaller centered platform cards and the enlarged
+Red Hat source retain the requested top alignment and connected download arrow.
+Real-browser layout remains unverified. This explanatory frontend release makes
+no automation or infrastructure change and does not extend the runtime
+acceptance records below. See [presenter controls and limits](demo/README.md).
+
+---
+
 # Seven-scene visualization update — 2026-11-16
 
 Public frontend version **0.17.0** implements the approved seven-scene narrative
