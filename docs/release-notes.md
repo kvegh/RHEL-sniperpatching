@@ -1,5 +1,25 @@
 # Release notes
 
+## 0.14.8 — Diagnose the exact-version promotion comparison
+
+Add bounded type, string-length and equality diagnostics to failed promotion
+assertions. Preserve requested-version validation, exact Test-version equality,
+the normal lifecycle path, exact promotion and final readback; no type coercion
+or force promotion is added. Actual saved inputs and the returned Test row pass
+unchanged equality offline. A numeric control fails, but the live runtime cause
+remains unproven until the normal controlled job reports its actual types.
+Five promotion regression methods, exercising nine real local playbook runs,
+passed in 42.850 seconds in the unchanged selected EE. Standalone host strict
+lint could not resolve that EE's certified collection; full formal review remains
+unfinished rather than passed.
+
+The corrected bounded publication and Test full update passed on 0.14.7. All
+4,469 published advisories respect the May 23 cutoff and retain all 4,456 prior
+advisories. Test has no pending updates or reboot. Prod promotion stopped before
+mutation and still serves 1.1. Full NEW acceptance and later CVE cycles remain
+unfinished; the complete formal review and held/OLD scopes remain separate.
+
+
 ## 0.14.7 — Accept native calendar cutoff values
 
 AAP supplied a native YAML calendar date to a string-only validator. Normalize

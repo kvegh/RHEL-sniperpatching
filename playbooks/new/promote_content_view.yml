@@ -46,7 +46,15 @@
         that:
           - (sniper_test_version.resources | sniper_one).version == sniper_version
           - sniper_env.prior.id | int == (sniper_promote_test.resources | sniper_one).id | int
-        fail_msg: Promote the exact Test version through the project path; force promotion is never used.
+        fail_msg: >-
+          Promote the exact Test version through the project path; force promotion is never used.
+          requested_type={{ sniper_version | type_debug }};
+          requested_length={{ (sniper_version | length) if sniper_version is string else 'unavailable' }};
+          test_type={{ (sniper_test_version.resources | sniper_one).version | type_debug }};
+          test_length={{ ((sniper_test_version.resources | sniper_one).version | length)
+            if (sniper_test_version.resources | sniper_one).version is string else 'unavailable' }};
+          version_equal={{ (sniper_test_version.resources | sniper_one).version == sniper_version }};
+          path_equal={{ sniper_env.prior.id | int == (sniper_promote_test.resources | sniper_one).id | int }}.
 
     - name: Promote the selected tested version
       redhat.satellite.content_view_version:

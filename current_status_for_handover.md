@@ -1,3 +1,25 @@
+# Full Test passed; bounded promotion diagnostics prepared — 2026-11-16
+
+Published executable **0.14.7** completed the May 23 bounded full publication
+and Test full update. The actual returned version is **2.0**; all 4,469 actual
+advisory dates satisfy the inclusive cutoff and all 4,456 previous advisories
+are retained. Test completed native fix/reboot/smoke checks and a fresh package
+manager check with no remaining updates. Prod still serves tested minor 1.1.
+
+The exact-version Prod promotion failed before the promotion task at the
+requested-version/Test-version equality assertion. Saved input and the native
+Test metadata both represent 2.0. Exact saved-input/Test-row replay passes in
+the unchanged selected EE; a numeric control fails, without proving the live
+type. Version **0.14.8** adds only bounded type/length/equality failure diagnostics
+and preserves all exact-version/normal-path checks. Run one controlled normal
+promotion on that published source and inspect its actual result before any
+Prod update; do not coerce versions or force a promotion.
+No Prod full update, first complete NEW acceptance or remaining-CVE completion
+is claimed. All operational evidence is retained as whole-file Vault data in
+the private companion. Held/shared/OLD scopes remain unchanged.
+
+---
+
 # Native calendar cutoff fix; full acceptance next — 2026-11-16
 
 Version **0.14.7** normalizes genuine native calendar dates to ISO text before

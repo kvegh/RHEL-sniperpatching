@@ -2,9 +2,12 @@
 
 This source prepares the frozen baseline before either client is
 registered. The owner selected direct registration to that served content,
-without temporary registration to Library. This sequence has offline fixture
-coverage; live publication, registration and the complete NEW demo remain
-unverified. OLD retains its existing host-derived preparation.
+without temporary registration to Library. GA publication, direct registration
+and registered-host preparation passed through AAP and independent native reads.
+Both clients passed the first targeted cycle; the bounded full publication and
+Test full update passed, while Prod promotion stopped at its exact-version guard.
+Complete NEW acceptance remains unfinished. OLD retains its existing host-derived
+preparation.
 
 ## Sequence and inputs
 

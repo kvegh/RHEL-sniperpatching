@@ -1,38 +1,33 @@
 # RHEL-sniperpatching
 
-**Version: 0.14.7.**
+**Version: 0.14.8.**
 
 Development and publication use **main only**. NEW includes scoped CoP content
-configuration, a qualified demo EE, content-first GA preparation and explicit
-direct Test/Prod registration. Full proactive RHEL 9.4 BaseOS/AppStream sync
-and the frozen GA content baseline passed actual AAP execution and independent
-readback. Direct registration, registered-host preparation and the first targeted
-Test/Prod fix have passed. The first full cutoff run exposed native calendar
-date input handling, now corrected with targeted real-templating tests; live
-full-update acceptance
-remains unfinished.
-Registration now selects repository copies by both published version and
-lifecycle environment; the strict two-repository guard remains in place.
-See [scoped CoP qualification](docs/cop-qualification.md) and
-[release notes](docs/release-notes.md) for verified scope and remaining work.
-The [RHEL 9.4 CVE candidate catalog](docs/rhel94-cve-candidates.md) separates
-pre-9.5 fixes from actual client applicability and independent patching steps.
-The owner selected that catalog for validation and chronological demonstrations
-after NEW acceptance. Both clients passed package-version screening for the ten
-CVEs. All selected advisories, first-fixed builds and original affected builds
-are present in synchronized BaseOS. Registered-host applicability, dependency
-validation and client demonstrations remain pending.
+configuration, a qualified demo EE, content-first GA preparation and direct
+Test/Prod registration. Full proactive RHEL 9.4 BaseOS/AppStream sync, the frozen
+GA baseline, direct registration and registered-host preparation passed actual
+AAP execution and independent readback. Both original clients passed the first
+targeted fix on identical minor 1.1, including reboots and smoke checks.
 
-NEW now prepares and verifies its frozen RHEL 9.4 GA-cutoff content before
-registration, then accepts the directly registered pair in a separate invocation.
-See [NEW baseline sequence](docs/new-baseline.md) for inputs, recovery and the
-explicit limit that selected-package verification does not reproduce a full ISO.
-The first targeted advisory was verified on the same minor version in Test
-and Prod, including reboots and smoke checks. Full-update acceptance remains
-unfinished; [release notes](docs/release-notes.md) distinguish the current
-validation investigation from completed stages.
-The selected NEW content window ends at RHSA-2024:8446 on 2024-10-24; its
-existing full-update cutoff defaults to that date, with no 9.5 demo requirement.
+The corrected May 23 publication passed and returned version 2.0. Independent
+reads checked all 4,469 advisories against that inclusive cutoff and retained
+all 4,456 prior advisories. Test completed its full update, fix/smoke checks and
+no-pending-update/reboot checks. The following Prod promotion stopped at its
+exact-version equality guard before changing Prod; its runtime comparison is
+under investigation. Bounded failure diagnostics now expose only types, lengths
+and equality results while retaining the exact-version and lifecycle-path guards.
+Prod still serves 1.1, so complete NEW acceptance remains unfinished. See [scoped CoP qualification](docs/cop-qualification.md) and
+[release notes](docs/release-notes.md) for verified scope and remaining work.
+
+The owner selected the [ten-CVE catalog](docs/rhel94-cve-candidates.md) for
+validation and chronological demonstrations. Both clients passed original
+package-version screening, all selected first-fixed builds are synchronized,
+and Satellite reported all nine RHSAs applicable to both registered hosts.
+Actual DNF transactions are being tested in chronological order; ten CVEs share
+nine advisories, and cumulative updates can cover earlier fixes. The selected
+RHEL 9.4 window ends at RHSA-2024:8446 on 2024-10-24, with no 9.5 requirement.
+Use each explicit per-cycle cutoff so the first full update does not consume
+later examples.
 
 See [current handover status](current_status_for_handover.md) for recorded
 validation, review status and continuation boundaries.
@@ -72,8 +67,8 @@ and published with Core 2.20.10, certified Satellite collection 6.0.0 and
 unchanged CoP 1.5.0. Its dedicated immutable binding was applied through the
 existing CaC importer. The normal read-only runtime template passed through AAP
 with authenticated collection and native URI HTTPS verification. The complete
-procedure bindings now pass exact protected readback. Client registration and
-end-to-end patching acceptance remain unfinished.
+procedure bindings pass exact protected readback. Client registration is verified;
+complete Test/Prod full-update acceptance remains unfinished.
 
 There are no root-level forwarding playbooks. Update a template's playbook path
 and synchronize the matching source revision together. The private companion
