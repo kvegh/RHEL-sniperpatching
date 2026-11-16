@@ -1,5 +1,30 @@
 # Design decisions history
 
+## 2026-11-16 — Diagnose exact-version equality before Prod promotion
+
+Implementation: `4a50e1af12f1dc0c888eb48371f7002d641074e0`, version **0.14.8**.
+The bounded May 23 publication and Test full update passed on 0.14.7; the next
+Prod promotion stopped before mutation at exact-version equality. Actual saved
+input and the returned Test row pass the unchanged guard offline. A numeric
+control fails but does not establish the failed live job's runtime type.
+
+Add only types, guarded string lengths and comparison results to that existing
+failure message. Do not coerce numeric versions: for example, 2.10 cannot safely
+be recovered from 2.1. Preserve the exact Test-version comparison, normal prior
+environment, no-force promotion and exact final readback. Five regression methods
+with nine real local playbook invocations passed in 42.850 seconds in the
+unchanged selected EE, covering legitimate 2.0/2.10 strings, wrong versions/path,
+non-string controls and wrong final readback. Standalone host strict lint cannot
+resolve the qualified collection; the matching EE has no installed linter.
+No tools/dependencies were installed and no full formal review is claimed.
+
+Run one normal controlled promotion on this source and inspect actual bounded
+diagnostics before changing semantics or proceeding to the Prod host update.
+Keep the original failure as private whole-file Vault evidence, preserve held/
+shared/OLD scopes and distinguish this diagnostic checkpoint from a completed
+first full cycle or all-CVE acceptance.
+
+
 ## 2026-11-16 — Normalize the native calendar date proven by AAP
 
 Implementation: `63fe436499d7a19b8dd6ac84db3ff99f777f60ba`, version **0.14.7**.
