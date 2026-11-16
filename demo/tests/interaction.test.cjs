@@ -18,6 +18,7 @@ class Element {
     this.listeners = {}; this.dataset = {}; this.className = ''; this.disabled = false;
     this.ownText = '';
     this.classList = {
+      contains: name => this.className.split(' ').includes(name),
       add: name => this.classes(true, name), remove: name => this.classes(false, name),
       toggle: (name, force) => this.classes(force === undefined ? !this.className.split(' ').includes(name) : force, name),
     };
@@ -32,6 +33,7 @@ class Element {
   append(...children) { this.children.push(...children); }
   replaceChildren(...children) { this.children = children; this.ownText = ''; }
   setAttribute(name, value) { this.attributes[name] = String(value); }
+  getAttribute(name) { return this.attributes[name] ?? null; }
   addEventListener(name, handler) { (this.listeners[name] ||= []).push(handler); }
   dispatch(name, event = {}) { for (const handler of this.listeners[name] || []) handler(event); }
   getBoundingClientRect() { return this.bounds || { left: 0, top: 0, right: 0, bottom: 0, width: 0, height: 0 }; }
@@ -44,6 +46,7 @@ function launch(hash = '', reduce = false) {
     if (!id) continue;
     const node = new Element(match[1]);
     node.id = id[1]; node.className = /\bclass="([^"]+)"/.exec(match[2])?.[1] || '';
+    for (const attr of match[2].matchAll(/([\w:-]+)="([^"]*)"/g)) node.setAttribute(attr[1], attr[2]);
     nodes.set(node.id, node);
   }
   const satellite = new Element();
@@ -274,6 +277,8 @@ test('AAP orchestrates query, repository update, CV update and publication befor
     v.get('next').click();
     assert.equal(v.window.location.hash, `#step=run-${cycle + 1}-trigger-sync`);
     assert.equal(text(v, 'api-label'), 'Trigger software repository update');
+    assert.equal(v.get('api-pulse').dataset.action, 'Trigger software repository update');
+    assert.match(v.get('api-pulse').className, /is-moving/);
     assert.equal(v.get('cv-update').hidden, true);
     v.get('next').click();
     assert.equal(text(v, 'delivery-label'), 'Download fix');
@@ -308,11 +313,14 @@ test('AAP launches a CVE-scoped job before clients pull and apply the fix', () =
       const installed = text(v, `${environment}-installed`);
       assert.match(text(v, 'job-label'), new RegExp(v.story.scenarios[cycle].cve));
       assert.match(v.get(`flow-execute-${environment}`).className, /is-active/);
+      assert.match(v.get(`flow-execute-${environment}-pulse`).className, /is-active/);
       assert.doesNotMatch(v.get(`flow-content-${environment}`).className, /is-active/);
       v.get('next').click();
       assert.equal(v.window.location.hash, `#step=run-${cycle + 1}-patch-${environment}`);
       assert.match(v.get(`flow-content-${environment}`).className, /is-active/);
       assert.match(v.get(`flow-content-${environment}`).className, /is-requesting/);
+      assert.match(v.get(`flow-content-${environment}-pulse`).className, /is-requesting/);
+      assert.equal(v.get(`flow-content-${environment}-pulse`).attributes.d, v.get(`flow-content-${environment}`).attributes.d);
       assert.match(text(v, 'host-content-label'), /pulls the selected fix from Satellite/);
       assert.notEqual(text(v, `${environment}-installed`), installed);
       assert.equal(text(v, `${environment}-installed`), `CV ${cycle + 1}.1`);
@@ -364,6 +372,8 @@ test('the upstream connector exits Red Hat right and reaches Satellite top after
   assert.deepEqual([endX, endY], [600, 190]);
   assert.ok(bendX > startX && bendX < 800);
   assert.ok(bendY > 110 && bendY < endY);
+  assert.equal(v.get('upstream-pulse').attributes.d, v.get('upstream-path').attributes.d);
+  assert.match(v.get('upstream-pulse').className, /is-active/);
   v.get('satellite-platform').bounds = { left: 620, top: 250, width: 200, height: 220 };
   v.window.dispatch('resize');
   assert.match(v.get('upstream-path').attributes.d, /H 620 V 200$/);

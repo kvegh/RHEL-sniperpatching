@@ -464,13 +464,11 @@ h1 {
 .upstream-path {
   fill:none;
   stroke:var(--purple);
-  stroke-width:1.5;
+  stroke-width:2.2;
   vector-effect:non-scaling-stroke;
   stroke-linecap:round;
   stroke-linejoin:round;
-  stroke-dasharray:5 7;
   marker-end:url(#arrow-upstream);
-  animation:flow 1.8s linear 2;
 }
 #arrow-upstream {
   color:var(--purple);
@@ -546,10 +544,6 @@ h1 {
 }
 [data-motion=off] .redhat-supply .content-parcel {
   animation:none;
-}
-[data-motion=off] .upstream-path {
-  animation:none;
-  stroke-dasharray:none;
 }
 .target-scope {
   margin-top:10px;
@@ -700,7 +694,7 @@ h1 {
   top:8px;
   left:0;
   right:1px;
-  height:1.5px;
+  height:2.2px;
   border-radius:2px;
   background:currentColor;
 }
@@ -708,22 +702,29 @@ h1 {
   content:'';
   position:absolute;
   right:1px;
-  top:3px;
-  width:10px;
-  height:10px;
-  border-right:2px solid currentColor;
-  border-bottom:2px solid currentColor;
-  border-radius:1px;
-  transform:rotate(-45deg);
+  top:1px;
+  width:16px;
+  height:16px;
+  background:currentColor;
+  clip-path:polygon(0 20%,100% 50%,0 80%);
 }
 .api-connection.is-active,
 .api-connection.is-active .api-arrow {
   color:var(--blue);
 }
-.api-connection.is-active .api-arrow:before {
-  background:repeating-linear-gradient(to right,currentColor 0 5px,transparent 5px 12px);
-  background-size:24px 100%;
-  animation:api-flow 1.8s linear 2;
+.api-pulse {
+  position:absolute;
+  left:0;
+  top:7.5px;
+  width:18px;
+  height:3px;
+  border-radius:3px;
+  background:#42c8ed;
+  opacity:0;
+  pointer-events:none;
+}
+.api-connection.is-active .api-pulse.is-moving {
+  animation:api-pulse-flow 1.8s ease-in-out 2 both;
 }
 .cv-definition {
   margin-top:8px;
@@ -848,11 +849,22 @@ strong.cv-counter > span.cv-counter-previous {
 }
 .routes svg>path {
   fill:none;
-  stroke-width:1.5;
-  stroke:#adbed0;
+  stroke-width:2.2;
+  stroke:currentColor;
   vector-effect:non-scaling-stroke;
   stroke-linecap:round;
   stroke-linejoin:round;
+}
+/* Keep inactive routes contextual; the current route retains its actor color. */
+.routes svg>path.execution-route,
+.routes svg>path.content-route {
+  stroke:#9badc0;
+  stroke-width:1.7;
+}
+.routes svg>path.execution-route.is-active,
+.routes svg>path.content-route.is-active {
+  stroke:currentColor;
+  stroke-width:2.2;
 }
 #arrow-execution { color:var(--blue); }
 #arrow-content { color:var(--purple); }
@@ -864,12 +876,6 @@ strong.cv-counter > span.cv-counter-previous {
   color:var(--purple);
   marker-end:url(#arrow-content);
 }
-.routes svg>path.is-active {
-  stroke:currentColor;
-  stroke-width:1.8;
-  stroke-dasharray:5 7;
-  animation:flow 1.8s linear 2;
-}
 .routes svg>path.content-route.is-active {
   color:var(--purple);
 }
@@ -877,10 +883,38 @@ strong.cv-counter > span.cv-counter-previous {
 .routes svg>path.content-route.is-requesting {
   marker-end:none;
   marker-start:url(#arrow-content);
-  animation:request-flow 1.8s linear 2;
 }
 .routes svg>path.execution-route.is-active {
   color:var(--blue);
+}
+/* A brief highlight travels over each continuous shaft; pulse paths have no heads. */
+.upstream-route>path.route-pulse,
+.routes svg>path.route-pulse {
+  fill:none;
+  stroke-width:3;
+  vector-effect:non-scaling-stroke;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-dasharray:6 94;
+  stroke-dashoffset:100;
+  marker-start:none;
+  marker-end:none;
+  opacity:0;
+}
+.upstream-route>path.content-pulse,
+.routes svg>path.content-pulse {
+  stroke:#b58bea;
+}
+.routes svg>path.execution-pulse {
+  stroke:#42c8ed;
+}
+.upstream-route>path.route-pulse.is-active,
+.routes svg>path.route-pulse.is-active {
+  animation:route-pulse-flow 1.8s ease-in-out 2 both;
+}
+.upstream-route>path.route-pulse.is-active.is-requesting,
+.routes svg>path.route-pulse.is-active.is-requesting {
+  animation-name:route-pulse-request;
 }
 .route-label {
   position:absolute;
@@ -1136,26 +1170,30 @@ strong.cv-counter > span.cv-counter-previous {
 .is-approval .narrative h3 {
   color:var(--amber);
 }
-@keyframes api-flow {
-  to { background-position:24px 0; }
+@keyframes api-pulse-flow {
+  0% { left:0; transform:translateX(0); opacity:0; }
+  10%,90% { opacity:1; }
+  100% { left:100%; transform:translateX(-100%); opacity:0; }
 }
-@keyframes request-flow {
-  to { stroke-dashoffset:48; }
+@keyframes route-pulse-flow {
+  0% { stroke-dashoffset:100; opacity:0; }
+  10%,90% { opacity:1; }
+  100% { stroke-dashoffset:0; opacity:0; }
 }
-@keyframes flow {
-  to {
-    stroke-dashoffset:-48;
-  }
+@keyframes route-pulse-request {
+  0% { stroke-dashoffset:0; opacity:0; }
+  10%,90% { opacity:1; }
+  100% { stroke-dashoffset:100; opacity:0; }
 }
-[data-motion=off] .api-connection.is-active .api-arrow:before {
-  animation:none;
-  background:currentColor;
-}
-[data-motion=off] .routes svg>path.is-active {
-  animation:none;
-  stroke-dasharray:none;
+[data-motion=off] .route-pulse,
+[data-motion=off] .api-pulse {
+  display:none!important;
+  animation:none!important;
 }
 @media(prefers-reduced-motion:reduce) {
+  .route-pulse,.api-pulse {
+    display:none!important;
+  }
   *,*:before,*:after {
     animation:none!important;
     scroll-behavior:auto!important;

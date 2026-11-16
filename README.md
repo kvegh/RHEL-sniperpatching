@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Version: 0.19.1.**
+**Version: 0.19.2.**
 
 [Open the interactive RHEL patching mockup](https://kvegh.github.io/RHEL-sniperpatching/)
 to follow two fixed CVE/RHSA cycles through seven explanatory scenes: green
@@ -18,8 +18,8 @@ makes AAP's orchestration explicit: query, repository update, CV composition,
 publication, then CVE-scoped deployment. Hosts request packages from Satellite;
 Satellite returns the fix. Smaller platform cards sit centered in equal halves,
 with a larger Red Hat source and one continuous download arrow. Server cards
-are more compact; the long API arrow and other connectors use finer open heads
-and smoother flow animations. The generic protocol connector is hidden; named
+are more compact; the long API arrow and other connectors use solid acute heads
+and continuous lines with moving flow highlights. The generic protocol connector is hidden; named
 AAP actions retain their arrows with clearer heads and a larger AAP card.
 Changing CV readouts roll like mechanical counters; the simplified walkthrough
 uses Test Server and Prod Server names. The page uses

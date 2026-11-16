@@ -2,7 +2,7 @@
 
 [Open the visualization](https://kvegh.github.io/RHEL-sniperpatching/).
 
-Version **0.19.1**. This browser-only explanation is for security staff, Linux
+Version **0.19.2**. This browser-only explanation is for security staff, Linux
 administrators and AAP administrators. It follows the checked-in NEW architecture
 while grouping tasks and shortening operations for presentation. It is an
 explanatory mockup: statuses, CV numbers and outcomes are illustrative. No host,
@@ -53,11 +53,15 @@ Satellite with one continuous arrow. The top status/source panels stack on
 screens up to 640px. The AAP-to-Satellite API arrow spans the gap between the
 cards, carrying the current action label only when a named query/repository/CV
 action applies. The generic HTTPS API label and arrow are absent. AAP is another
-20% wider than the preceding revision; the connector fits its new gap. Open
-arrowheads are larger and stronger for visibility while shafts remain thin. Arrow
+20% wider than the preceding revision; the connector fits its new gap. Solid
+arrowheads use a narrower angle and stronger visibility while shafts stay
+continuous throughout the animation. Arrow
 labels are larger and bold across AAP, download and host routes. Generic Red Hat
-content labels/arrows stay hidden when no download is happening. Connectors use thin rounded lines,
-open arrowheads and slower, finer animated dashes. Host arrows show the client
+content labels/arrows stay hidden when no download is happening. Connectors use rounded continuous lines with solid acute arrowheads. A cyan
+or purple highlight travels over the full shaft rather than animating gaps in
+it. The API highlight restarts for each named query/trigger action, improving
+visibility of the repository-update request. Motion off and reduced motion hide
+the highlights while retaining the solid lines and heads. Host arrows show the client
 pulling from Satellite; package return and installation share that action.
 The Red Hat source lane delivers content to Satellite. One selected fix and its
 dependencies are visually distinct from the later batch of maintenance updates.

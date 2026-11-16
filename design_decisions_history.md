@@ -1624,3 +1624,20 @@ endpoints, resize updates and inactive visibility. Source review confirmed the
 24px gutter correction; local syntax, markup, version and whitespace checks
 passed. Browser appearance remains unverified. No dependency, automation or
 infrastructure change was made.
+
+
+## 2026-11-16 20:32 UTC — Keep arrows solid and move a highlight along them
+
+The user reported the repository-update trigger arrow was hard to see, requested
+an alternative to dashed lines, and specified solid heads with half the previous
+wide angle. Version 0.19.2 retains continuous visible shafts and overlays a short
+cyan/purple moving highlight, with request direction reversed where appropriate.
+Solid triangular SVG heads narrow from about67degrees to33degrees; the API head
+uses the same acute shape. The API highlight restarts at every distinct named
+query/trigger, including consecutive AAP-to-Satellite actions.
+
+Native SVG paths reuse the base route geometry; CSS handles the finite highlight
+animation. Motion-off and reduced-motion hide highlights while leaving the solid
+line/head visible. The existing story, CV counters, labels, card sizes and layout
+are preserved. No dependency or runtime change is introduced. Implementation and
+publication references follow verification; browser appearance remains unverified.

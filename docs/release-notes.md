@@ -1,5 +1,13 @@
 # Release notes
 
+## 0.19.2 — Keep arrows solid and animate a moving highlight
+
+Replace dashed shafts with continuous visible lines and cyan/purple traveling
+highlights. Restart the API highlight for each named query/trigger action so the
+repository-update request remains clear. Use filled acute arrowheads at about
+half the prior SVG head angle, preserving route direction and motion controls.
+No story or CV state changes are made.
+
 ## 0.19.1 — Tighten upstream spacing and reroute downloads
 
 Halve the reserved upstream gap to 45px and move Red Hat left by half its gap to

@@ -114,13 +114,16 @@
     const bendX = Math.min(surface.width - 3, Math.max(startX + 18, endX + 18));
     const bendY = (source.bottom - surface.top + endY) / 2;
     byId('upstream-route').setAttribute('viewBox', `0 0 ${surface.width} ${surface.height}`);
-    byId('upstream-path').setAttribute('d', `M ${startX} ${startY} H ${bendX} V ${bendY} H ${endX} V ${endY}`);
+    const path = `M ${startX} ${startY} H ${bendX} V ${bendY} H ${endX} V ${endY}`;
+    byId('upstream-path').setAttribute('d', path);
+    byId('upstream-pulse').setAttribute('d', path);
   }
 
   function renderDelivery(state) {
     byId('redhat-supply').dataset.delivery = state.delivery;
     byId('supply-transfer').hidden = state.delivery === 'none';
     byId('upstream-route').classList.toggle('is-visible', state.delivery !== 'none');
+    byId('upstream-pulse').classList.toggle('is-active', state.delivery !== 'none');
     const labels = state.delivery === 'targeted'
       ? ['Selected security fix', 'Required dependencies']
       : state.delivery === 'bulk'
@@ -172,6 +175,7 @@
     byId('job-label').textContent = state.job;
     renderCV('binding-test', state.testCV);
     renderCV('binding-prod', state.prodCV);
+    const previousApiAction = byId('api-label').textContent;
     byId('api-label').textContent = step.kind === 'trigger-sync'
       ? 'Trigger software repository update'
       : step.kind === 'cv-build' ? 'Trigger Content View update'
@@ -179,6 +183,16 @@
           : step.scene === 2 ? 'Query: fix available?' : '';
     byId('flow-resolve').hidden = !byId('api-label').textContent;
     byId('flow-resolve').setAttribute('aria-label', byId('api-label').textContent);
+    if (previousApiAction !== byId('api-label').textContent) {
+      const pulse = byId('api-pulse');
+      pulse.classList.remove('is-moving');
+      pulse.dataset.action = byId('api-label').textContent;
+      if (pulse.dataset.action) {
+        // Restart the highlight for each distinct query or trigger action.
+        void pulse.offsetWidth;
+        pulse.classList.add('is-moving');
+      }
+    }
     byId('cv-update').hidden = step.scene !== 4 && step.scene !== 5;
     byId('cv-update').textContent = `CV ${step.cycle + 1}.0 + fix == CV ${step.cycle + 1}.1`;
     byId('cv-availability').hidden = byId('cv-update').hidden;
@@ -209,6 +223,13 @@
       const requesting = step.kind === `patch-${environment}`;
       route.classList.toggle('is-requesting', requesting);
       if (requesting || (step.route === `execute-${environment}` && step.kind !== `deploy-${environment}`)) route.classList.add('is-active');
+    }
+    for (const routeName of ['execute-test', 'execute-prod', 'content-test', 'content-prod']) {
+      const route = byId(`flow-${routeName}`);
+      const pulse = byId(`flow-${routeName}-pulse`);
+      pulse.setAttribute('d', route.getAttribute('d'));
+      pulse.classList.toggle('is-active', route.classList.contains('is-active'));
+      pulse.classList.toggle('is-requesting', route.classList.contains('is-requesting'));
     }
     byId('execution-label').textContent = step.kind.startsWith('deploy-')
       ? `AAP deploys fix · ${state.scenario.cve}` : 'AAP executes host automation';
