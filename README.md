@@ -80,7 +80,8 @@ Future fresh installations have a
 verify installation, shut down the selected VM, capture
 post-satellite-install, restart and verify the original installation. Initial
 content setup refuses to write without its verified native checkpoint.
-This addition has local synthetic qualification only; the already populated
+Synthetic guard tests and native AAP configuration readback passed.
+A real cold capture still awaits a fresh installation; the already populated
 Satellite has no retroactive pre-sync checkpoint.
 
 All four setup stages have passed through AAP. Initial application configuration

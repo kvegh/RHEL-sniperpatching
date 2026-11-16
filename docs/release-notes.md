@@ -30,8 +30,13 @@ These offline results do not establish a real fresh capture or formal acceptance
 The user selected a native three-job workflow with success-only links.
 Keep first sync separately operator-launched through one bounded native survey
 handoff; preserve saved credentials and disable arbitrary-variable prompting.
-Workflow declaration/import verification and fresh live acceptance are recorded
-separately from the source tests.
+The normal CaC import and exact configuration readback subsequently passed:
+sixteen templates, the three-node graph, existing bindings, protected inventory
+and the required survey matched. Preserve the first failed dependency download
+and successful bounded recovery as recovered acceptance. Its checksum cause
+remains unknown; no integrity/security workaround was added. The workflow and
+new checkpoint jobs were not executed, so fresh live capture and survey transport
+remain unverified.
 The current populated Satellite and the completed nine patching cycles are unchanged.
 
 ## 0.15.3 — Remove redundant AAP capability badges

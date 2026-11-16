@@ -112,6 +112,27 @@ Operators must use the successful workflow's value; validation does not create
 a separate authentication or provenance service. The bundle contains public
 trust and VM identity, with no password, token or private key.
 
+Recorded configuration acceptance on 16 November 2026: the normal shared CaC
+import and exact readback passed for sixteen NEW job templates and the
+three-node success-only workflow. Saved playbooks, credential/EE/inventory
+bindings and extra-vars matched the protected declarations. The foundation had
+exactly one required JSON survey field, arbitrary-variable prompting disabled,
+and native launch inspection refused a missing handoff without requesting a new
+secret. Protected inventory identity and all four hosts matched. The workflow
+and both new checkpoint jobs had zero executions at readback.
+
+The first import did not execute because a shared-source Galaxy download failed
+its checksum check. After preserving that failure and independently verifying
+the current artifact's complete size/SHA-256, one normal recovery import passed.
+The recovery used a newer shared-source revision. The original rejected bytes
+were absent from available API evidence, so the exact checksum cause remains
+unknown. No integrity, TLS, cache or credential workaround was introduced.
+
+This verifies configuration and local handoff behavior, not an actual fresh
+installation, live survey transport or cold snapshot. Those positive runtime
+checks remain for the next genuinely authorized pre-sync installation. The
+current synchronized Satellite was not stopped or reset.
+
 An existing checkpoint is reused only when its exact name, owner, VM/disk/NIC,
 cold state and installation/CA provenance match. A foreign same-name snapshot
 is refused. Unsupported storage, backing chains, NVRAM, extra writable disks or

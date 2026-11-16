@@ -1,5 +1,32 @@
 # Design decisions history
 
+## 2026-11-16 — Verify the imported native checkpoint configuration
+
+Functional implementation: 339009520fd20b7eb431f719ca25764d0755d37e
+(feature 0.16.0). The later 0.17.0 visualization is preserved byte-for-byte;
+checkpoint automation is unchanged.
+
+The approved encrypted declarations were published through the existing private
+route after explicit publication approval. The normal shared CaC recovery import
+succeeded, and read-only acceptance matched all sixteen NEW templates, saved
+playbooks/credentials/EEs/inventory/extra-vars, the exact three success-only nodes,
+the single required first-sync JSON survey and protected inventory/four hosts.
+Launch inspection required the handoff without requesting a new secret.
+The workflow and two new jobs had zero executions at acceptance.
+
+Retain the first failed import: it never started because its shared-source
+Galaxy collection download failed checksum validation. The exact rejected bytes
+and digest were absent from available API evidence. A fresh complete read matched
+current metadata; one normal recovery passed with integrity/TLS controls unchanged.
+The shared-source revision also advanced, so no root-cause or causal-fix claim is
+made. Existing shared integrity investigation and unrelated holds remain intact.
+
+This is recovered configuration acceptance plus 35 focused synthetic tests, not a
+real fresh installation, cold capture or live survey handoff. Those checks await
+the next genuine authorized pre-sync boundary. No current populated VM was
+stopped, reset or snapshotted, and no broader rollback scope was resumed.
+
+
 ## 2026-11-16 — Wire the approved native checkpoint workflow and bounded handoff
 
 Implementation: 339009520fd20b7eb431f719ca25764d0755d37e, version0.16.0.
@@ -17,7 +44,7 @@ native cold metadata and API readiness before writes. Remove the stale saved
 foundation CA. This is an operator-mediated copy of the actual successful final
 artifact, without authenticated originating-job provenance or a new service.
 
-The selected Core2.20.10 EE passed35 focused tests in166.904s, including an actual
+The selected Core 2.20.10 EE passed35 focused tests in166.904s, including an actual
 final-job serialized export into the separately launched foundation fixture.
 Earlier11related CA/installer tests remain valid;20existing frontend tests passed
 after only the displayed version was synchronized. The public main0.15.3

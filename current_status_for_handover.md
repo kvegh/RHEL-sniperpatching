@@ -14,35 +14,41 @@ See [presenter controls and functional checks](demo/README.md).
 
 ---
 
-# Future pre-sync cold checkpoint — working 0.16.0
+# Native NEW installation checkpoint configured — 2026-11-16
 
-The user approved a cold post-satellite-install checkpoint after successful
-NEW installation and before first content synchronization. Source adds guarded
-hypervisor capture, original guest post-start verification and a fail-closed
-initial-content gate. This work has no live snapshot acceptance and no new
-template import yet. The current synchronized Satellite must remain untouched.
+The cold post-satellite-install feature introduced in 0.16.0 is published and its
+native AAP configuration is imported and read back. The concurrent 0.17.0
+presentation above preserves the exact checkpoint automation. Thirty-five
+selected Core 2.20.10 focused tests passed, including the actual serialized final
+artifact into a separately launched foundation fixture; the earlier eleven
+related CA/installer regressions remain valid.
 
-Selected Core2.20.10 qualification passed 35 focused helper/orchestration tests
-and 11 related CA/installer regressions. Four playbook syntax checks passed;
-the final identity-bound artifact gate is covered by the focused suite.
-An independent integration review found that final guest proof was not consumed;
-the correction now refuses missing or mismatched original VM/CA proof before sync.
-These are local synthetic checks, with no VM/API or power operation.
+The three-stage success-only workflow keeps the installer, hypervisor checkpoint
+and original-guest verification on their saved existing credentials. Exact
+readback matched all sixteen NEW templates, saved extra-vars/credential/EE/target
+bindings, protected inventory identity and all four hosts. The separate first
+sync requires one bounded native JSON survey variable, with arbitrary-variable
+prompting disabled and launch blocked without the handoff. No new secret input
+is needed. At readback the workflow and both new jobs had zero executions.
 
-The user selected the native three-job AAP workflow. Its saved credentials stay
-separate; ancestor artifacts connect installation, checkpoint and final
-verification. A required single-field native survey carries the successful final
-JSON record and public CA to the separate initial-content job.
-Existing guest and hypervisor Machine credentials remain separate. No new
-secret input is required; use the existing protected configuration mechanism.
-The user-approved fourteen encrypted cycle-two receipts and README0.14.13 were
-published separately at private1bbec39a1ed632b02d793e17d42889ef3d7857e0.
-Exact SSH remote verification passed; canonical configuration was unchanged
-during that scoped archive publication.
-Held image, generic VM/rollback and OLD/formal-review work remain held or blocked.
+The first import never started after a shared-source Galaxy checksum failure.
+The failed attempt was preserved; a fresh complete artifact read matched current
+metadata, and one normal recovery import/readback passed. Shared source also
+advanced between attempts. Original rejected bytes/hash are absent from available
+API evidence, so the exact cause remains unknown. No cache, pin, credential,
+TLS or integrity workaround was introduced.
 
-Latest verified public release is 0.15.3; 0.16.0 is an unpublished working version.
-The historical nine-cycle acceptance below remains valid for its recorded source.
+The approved fourteen encrypted case-two receipts and acceptance README were
+published separately before the workflow CaC change, preserving canonical
+configuration during that archive publication. Later-cycle evidence remains
+outside that approved archive. All publication choices are resolved.
+
+A real workflow execution, live survey handoff and positive cold capture still
+await a genuinely authorized fresh pre-sync installation. The current populated
+Satellite was not stopped/reset/reinstalled or snapshotted to manufacture it.
+Keep this runtime qualification separate from completed implementation and
+configuration acceptance. Existing image/generic-VM/rollback holds and
+OLD/formal-review blockers remain unchanged.
 
 ---
 
