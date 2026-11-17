@@ -1681,3 +1681,10 @@ notice it. The existing motion-off and reduced-motion behavior is retained.
 This is a CSS presentation adjustment with no added dependency or component.
 Implementation and publication references follow verification; browser
 appearance remains unverified.
+
+Implementation: `25e267ef88cd36f9bf9c0e29efbaad54f97ae573` (0.19.4).
+[Pages run 44029298588](https://github.com/kvegh/RHEL-sniperpatching/actions/runs/44029298588)
+succeeded. All 33 local model/interaction tests, release metadata, CSS brace
+and whitespace checks passed. Four public assets match source and all fourteen
+deployed HTML/script interaction checks passed. Actual browser appearance and
+perceived animation visibility remain unverified by these checks.
