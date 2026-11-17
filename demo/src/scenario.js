@@ -4,7 +4,7 @@
 (function (root) {
   'use strict';
 
-  const version = '0.19.6';
+  const version = '0.19.7';
   const sourceRevision = '2fe10cd27c874691780c72eb66105f87cd5c12fa';
   const source = name => `playbooks/new/${name}`;
   const scenes = [

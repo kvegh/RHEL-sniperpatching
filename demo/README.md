@@ -2,7 +2,7 @@
 
 [Open the visualization](https://kvegh.github.io/RHEL-sniperpatching/).
 
-Version **0.19.6**. This browser-only explanation is for security staff, Linux
+Version **0.19.7**. This browser-only explanation is for security staff, Linux
 administrators and AAP administrators. It follows the checked-in NEW architecture
 while grouping tasks and shortening operations for presentation. It is an
 explanatory mockup: statuses, CV numbers and outcomes are illustrative. No host,
@@ -57,14 +57,17 @@ action applies. The generic HTTPS API label and arrow are absent. AAP is another
 arrowheads use a narrower angle and stronger visibility while shafts stay
 continuous throughout the animation. Arrow
 labels are larger and bold across AAP, download and host routes. Generic Red Hat
-content labels/arrows stay hidden when no download is happening. Connectors use rounded continuous lines with solid acute arrowheads. A cyan
-or purple highlight travels over the full shaft rather than animating gaps in
-it. The API highlight is a short 18px capsule in the arrow's own blue, with a
-white halo and matching soft glow. It makes three quick one-second passes and
-restarts for each named query/trigger action. Motion off and reduced motion hide
-the highlights while retaining the solid lines and heads. Active host-route
-highlights are thicker and longer, with stronger colors and a white glow. They
-repeat throughout the current step, so they remain visible during explanation.
+content labels/arrows stay hidden when no download is happening. All action
+connectors follow the Content View update arrow style: rounded
+continuous shafts, matching solid acute heads and a same-color capsule highlight
+with a white halo and soft glow. All passes use the same one-second linear pace.
+The API capsule is 18px long; SVG highlight length scales with its route. The API
+makes three passes and restarts for each named query/trigger action. Red Hat
+content makes two passes, while active host routes repeat throughout the current
+step. Motion off and reduced motion hide highlights while retaining the shafts
+and heads. API captions sit above the shaft; host captions wrap within the middle
+half of the diagram, at least 8px above their horizontal lanes and away from
+vertical stems. Download captions sit beside the route, above the package list.
 Host arrows show the client pulling from Satellite; package return and installation
 share that action. The moving highlight reverses for a client request.
 The Red Hat source lane delivers content to Satellite. One selected fix and its

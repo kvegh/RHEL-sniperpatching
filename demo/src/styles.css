@@ -15,6 +15,7 @@
   --amber-soft:#fff3d6;
   --red:#aa3030;
   --red-soft:#faeeee;
+  --action-flow-duration:1s;
   font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   color:var(--ink);
   background:var(--canvas);
@@ -439,14 +440,14 @@ h1 {
   min-height:45px;
 }
 .delivery-label {
-  position:absolute;
-  right:0;
-  top:11px;
+  /* Keep the caption beside the download route, above the package list. */
+  position:relative;
   width:calc(50% - 12px);
-  color:var(--muted);
-  font-size:13px;
+  margin-bottom:7px;
+  color:var(--purple);
+  font-size:12px;
   font-weight:700;
-  line-height:1.5;
+  line-height:1.4;
 }
 .upstream-route {
   position:absolute;
@@ -681,11 +682,14 @@ h1 {
 .api-connection[hidden] {
   display:none;
 }
+#api-label {
+  display:block;
+  padding-bottom:8px;
+}
 .api-arrow {
   position:relative;
   height:18px;
   width:100%;
-  margin-top:7px;
   color:#8ca2b8;
 }
 .api-arrow:before {
@@ -727,7 +731,7 @@ h1 {
   pointer-events:none;
 }
 .api-connection.is-active .api-pulse.is-moving {
-  animation:api-pulse-flow 1s linear 3 both;
+  animation:api-pulse-flow var(--action-flow-duration) linear 3 both;
 }
 .cv-definition {
   margin-top:8px;
@@ -842,7 +846,8 @@ strong.cv-counter > span.cv-counter-previous {
 }
 .routes {
   position:relative;
-  height:116px;
+  /* Room for wrapped captions above both horizontal lanes, also on mobile. */
+  height:180px;
 }
 .routes svg {
   width:100%;
@@ -862,7 +867,7 @@ strong.cv-counter > span.cv-counter-previous {
 .routes svg>path.execution-route,
 .routes svg>path.content-route {
   stroke:#9badc0;
-  stroke-width:1.7;
+  stroke-width:2.2;
 }
 .routes svg>path.execution-route.is-active,
 .routes svg>path.content-route.is-active {
@@ -890,11 +895,13 @@ strong.cv-counter > span.cv-counter-previous {
 .routes svg>path.execution-route.is-active {
   color:var(--blue);
 }
-/* Highlights travel over continuous shafts; pulse paths have no heads. */
+/* Match the AAP action arrow: same-color rounded highlight and white halo.
+ * SVG segments scale with route length; host traffic still repeats per step. */
 .upstream-route>path.route-pulse,
 .routes svg>path.route-pulse {
   fill:none;
-  stroke-width:3;
+  stroke:currentColor;
+  stroke-width:8;
   vector-effect:non-scaling-stroke;
   stroke-linecap:round;
   stroke-linejoin:round;
@@ -902,32 +909,21 @@ strong.cv-counter > span.cv-counter-previous {
   stroke-dashoffset:100;
   marker-start:none;
   marker-end:none;
+  filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 3px currentColor);
   opacity:0;
 }
 .upstream-route>path.content-pulse,
 .routes svg>path.content-pulse {
-  stroke:#b58bea;
+  color:var(--purple);
 }
 .routes svg>path.execution-pulse {
-  stroke:#42c8ed;
+  color:var(--blue);
 }
 .upstream-route>path.route-pulse.is-active {
-  animation:route-pulse-flow 1.8s ease-in-out 2 both;
-}
-/* Keep active host traffic visible while the presenter explains the step. */
-.routes svg>path.route-pulse {
-  stroke-width:6;
-  stroke-dasharray:10 90;
-  filter:drop-shadow(0 0 2px #fff);
-}
-.routes svg>path.content-pulse {
-  stroke:#9b42d0;
-}
-.routes svg>path.execution-pulse {
-  stroke:#00a8e8;
+  animation:route-pulse-flow var(--action-flow-duration) linear 2 both;
 }
 .routes svg>path.route-pulse.is-active {
-  animation:route-pulse-flow 2.2s linear infinite both;
+  animation:route-pulse-flow var(--action-flow-duration) linear infinite both;
 }
 .upstream-route>path.route-pulse.is-active.is-requesting,
 .routes svg>path.route-pulse.is-active.is-requesting {
@@ -936,30 +932,24 @@ strong.cv-counter > span.cv-counter-previous {
 .route-label {
   position:absolute;
   z-index:1;
+  left:25%;
+  right:25%;
   font-size:12px;
   font-weight:700;
   line-height:1.4;
-  display:flex;
-  gap:6px;
-  align-items:center;
-  background:var(--canvas);
-  padding:3px 7px;
-  white-space:nowrap;
+  text-align:center;
+  padding:3px 0;
+  overflow-wrap:anywhere;
 }
+/* SVG bends sit at 25% and 70%; leave a clear gap above each shaft.
+ * The middle half also avoids the vertical stems in either direction. */
 .execution-label {
-  top:30px;
-  left:25%;
+  bottom:calc(75% + 8px);
   color:var(--blue);
 }
 .content-label {
-  top:73px;
-  right:24%;
+  bottom:calc(30% + 8px);
   color:var(--purple);
-}
-.route-label i {
-  width:14px;
-  height:3px;
-  background:currentColor;
 }
 .environments {
   display:grid;
@@ -1452,20 +1442,8 @@ strong.cv-counter > span.cv-counter-previous {
   .bindings span:not(.promotion-arrow) {
     font-size:8px;
   }
-  .routes {
-    height:100px;
-  }
   .route-label {
     font-size:10px;
-    padding:3px 4px;
-  }
-  .execution-label {
-    left:20%;
-    top:24px;
-  }
-  .content-label {
-    right:16%;
-    top:65px;
   }
   .environments {
     gap:10px;

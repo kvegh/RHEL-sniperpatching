@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Version: 0.19.6.**
+**Version: 0.19.7.**
 
 [Open the interactive RHEL patching mockup](https://kvegh.github.io/RHEL-sniperpatching/)
 to follow two fixed CVE/RHSA cycles through seven explanatory scenes: green
@@ -19,8 +19,10 @@ publication, then CVE-scoped deployment. Hosts request packages from Satellite;
 Satellite returns the fix. Smaller platform cards sit centered in equal halves,
 with a larger Red Hat source and one continuous download arrow. Server cards
 are more compact; the long API arrow and other connectors use solid acute heads
-and continuous lines with moving flow highlights. Active host-route highlights repeat
-while the presenter explains the step. The generic protocol connector is hidden; named
+and continuous lines with matching-color highlights at the same one-second pace.
+Action descriptions sit clear of the arrow lines, with wrapped host captions
+above their routes. Active host-route highlights repeat while the presenter
+explains the step. The generic protocol connector is hidden; named
 AAP actions retain their arrows with clearer heads and a larger AAP card.
 Changing CV readouts roll like mechanical counters; the simplified walkthrough
 uses Test Server and Prod Server names. The page uses

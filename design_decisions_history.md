@@ -1729,3 +1729,26 @@ succeeded. All 33 local tests, release metadata, CSS brace and whitespace checks
 passed. Four published assets match source and all fourteen deployed HTML/script
 interaction checks passed. Browser appearance and perceived animation speed
 remain unverified by these checks.
+
+
+## 2026-11-17 11:24 UTC — Use one action-arrow style and separate the captions
+
+The user requested the Trigger Content View update arrow style across all other
+action arrows and readable descriptions clear of the lines. Version 0.19.7 uses
+the same actor-colored rounded highlight, white halo, solid acute head size and
+one-second linear pace across AAP, host and Red Hat content routes. Host traffic
+continues repeating during its active step; upstream and AAP traffic retain their
+finite pass counts. SVG highlight lengths scale with the route rather than being
+fixed to the API capsule's 18px length. Motion controls and request direction stay
+intact. This supersedes the distinct cyan/purple highlight colors and slower
+host/upstream timings.
+
+Source inspection confirmed host captions crossed horizontal route lanes. They
+now wrap in the central half of a taller route area, with their bottoms at least
+8px above each horizontal line and clear of the outer vertical stems. The API
+caption has an explicit gap, and the download caption occupies the space beside
+the route above the package list. This is a presentation correction within the
+existing buildless design, with no new component, dependency or runtime change.
+The current full review-policy source matches the local policy consulted.
+Implementation and publication references follow verification. Actual browser
+rendering remains unverified unless separately evidenced.
