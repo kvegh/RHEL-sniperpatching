@@ -1857,3 +1857,14 @@ box only. This supersedes the provisional both-boxes interpretation above. All
 uncommitted sidebar sizing/spacing adjustments were removed; the sidebar retains
 its previous dimensions and behavior. The top explanation, card/route compaction
 and Red Hat placement remain within the requested changes.
+
+Implementation: `48ac7a925046c49519767624f79632acf8f60648` (0.19.10).
+[Pages run 44097024947](https://github.com/kvegh/RHEL-sniperpatching/actions/runs/44097024947)
+succeeded for that exact revision. Existing local model/interaction suites, app
+syntax, CSS/release and whitespace checks pass. The extended geometry interaction
+check verifies the upstream elbow clears package content. Source comparison
+confirms the sidebar styles retain their previous sizing. Independent source
+review found no blocking defect after the package-list correction. All four
+published assets match the checkout and all fourteen deployed HTML/script
+interaction checks pass. Browser rendering, actual text wrapping and visual
+acceptance remain unverified. No dependency or infrastructure change was made.
