@@ -603,14 +603,6 @@ h1 {
   background:var(--amber-soft);
   color:var(--amber);
 }
-.phase-badge {
-  font-size:11px;
-  color:var(--purple);
-  background:var(--purple-soft);
-  padding:8px 11px;
-  border-radius:5px;
-  max-width:200px;
-}
 .control-row {
   position:relative;
   display:grid;
@@ -1193,10 +1185,6 @@ strong.cv-counter > span.cv-counter-previous {
   line-height:1.5;
   color:var(--muted);
 }
-.is-approval .phase-badge {
-  color:var(--amber);
-  background:var(--amber-soft);
-}
 .is-approval .narrative {
   border-top-color:#d5b16c;
 }
@@ -1468,11 +1456,6 @@ strong.cv-counter > span.cv-counter-previous {
   .step-list button {
     font-size:11px;
     padding:6px;
-  }
-  .phase-badge {
-    font-size:10px;
-    max-width:110px;
-    padding:6px 8px;
   }
   .platform-header {
     padding:9px 8px;

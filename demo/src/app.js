@@ -174,7 +174,6 @@
     byId('step-title').textContent = step.title;
     byId('step-summary').textContent = step.summary;
     byId('phase-label').textContent = step.phase;
-    byId('phase-badge').textContent = approval ? 'Approval required' : step.phase;
     byId('job-label').textContent = state.job;
     renderCV('binding-test', state.testCV);
     renderCV('binding-prod', state.prodCV);

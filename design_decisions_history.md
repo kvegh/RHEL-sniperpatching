@@ -2003,3 +2003,17 @@ removed before commit. All four published assets match the checkout and all
 fourteen deployed HTML/script interaction checks pass. Browser-rendered spacing
 and visual acceptance remain unverified. No dependency or infrastructure change
 was made.
+
+
+## 2026-11-17 16:38 UTC — Remove the separate content-availability reminder
+
+The user requested removing Available content ≠ installed packages beside the
+Content View history heading. Version 0.19.16 removes that redundant caption.
+The host cards continue to show content availability and installed state. This
+is a narrow copy correction, with no workflow change. Implementation and
+publication references follow verification.
+
+Before publication, the user also explicitly requested removing the footer's
+phase badge after its purpose was explained. The badge markup, renderer and
+unused normal/approval/mobile styles are removed in the same 0.19.16 change.
+The left workflow phase label and actual production approval controls remain.

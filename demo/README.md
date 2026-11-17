@@ -2,7 +2,7 @@
 
 [Open the visualization](https://kvegh.github.io/RHEL-sniperpatching/).
 
-Version **0.19.15**. This browser-only explanation is for security staff, Linux
+Version **0.19.16**. This browser-only explanation is for security staff, Linux
 administrators and AAP administrators. It follows the checked-in NEW architecture
 while grouping tasks and shortening operations for presentation. It is an
 explanatory mockup: statuses, CV numbers and outcomes are illustrative. No host,
@@ -51,7 +51,8 @@ is shifted left by half the horizontal gap to the status box on wide screens.
 Its single download arrow exits the right side and enters Satellite's top; native
 rendered bounds and resize observation keep the endpoints attached as cards wrap.
 The generic host-content caption reads **Satellite provides updates**.
-The secondary phase badge sits in the footer. Compact AAP and Satellite cards
+The phase appears in the left workflow panel; the duplicate footer badge and
+separate content-availability reminder are removed. Compact AAP and Satellite cards
 are centered in equal halves. The latest refinement makes the server cards 20%
 narrower with tighter padding and enlarges Satellite and Red Hat another 10%.
 Narrow screens retain readable card widths; the Red Hat source stays above
