@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Version: 0.19.16.**
+**Version: 0.19.17.**
 
 [Open the interactive RHEL patching mockup](https://kvegh.github.io/RHEL-sniperpatching/)
 to follow two fixed CVE/RHSA cycles through seven explanatory scenes: green
@@ -18,7 +18,9 @@ fix contrasted against the later bulk content flow. This browser-only mockup
 makes AAP's orchestration explicit: query, repository update, CV composition,
 publication, then CVE-scoped deployment. Hosts request packages from Satellite;
 Satellite returns the fix. Smaller platform cards sit centered in equal halves,
-with a larger Red Hat source and one continuous download arrow. Server cards
+with a larger Red Hat source and one continuous download arrow. Its colored
+category labels form a vertical stack beside the arrow, with at most five
+broader-update categories plus the retained fix. Server cards
 are more compact; the long API arrow and other connectors use solid acute heads
 and continuous lines with solid matching-color highlights, without glow, at the same one-second pace.
 Action descriptions sit clear of the arrow lines, with wrapped host captions

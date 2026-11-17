@@ -105,18 +105,35 @@
   function updateUpstreamRoute() {
     const surface = byId('architecture').getBoundingClientRect();
     if (!surface.width || !surface.height) return;
+    const transfer = byId('supply-transfer');
+    let satellite = byId('satellite-platform').getBoundingClientRect();
+    const sourceBeforeLayout = byId('redhat-source').getBoundingClientRect();
+    const outerLane = Math.max(sourceBeforeLayout.right - surface.left + 18,
+      satellite.left + satellite.width - surface.left + 8);
+    // Keep the labels to the shaft's right, clear of both horizontal arrow runs.
+    const labelLeft = outerLane + 12;
+    const labelWidth = Math.min(132, surface.width - 3 - labelLeft);
+    // Use the gutter beside Satellite when labels can fit; otherwise keep normal flow.
+    const besideRoute = labelWidth >= 48;
+    transfer.classList.toggle('is-beside-route', besideRoute);
+    // Removing the list from flow can move Satellite upward; read its final position.
     const source = byId('redhat-source').getBoundingClientRect();
-    const satellite = byId('satellite-platform').getBoundingClientRect();
+    satellite = byId('satellite-platform').getBoundingClientRect();
     const startX = source.right - surface.left;
     const startY = source.top + source.height / 2 - surface.top;
     const endX = satellite.left + satellite.width / 2 - surface.left;
     const endY = satellite.top - surface.top;
-    const bendX = Math.min(surface.width - 3, Math.max(startX + 18, endX + 18));
-    // Leave the horizontal arrival lane below the wrapping package list.
-    const transfer = byId('supply-transfer').getBoundingClientRect();
-    const contentBottom = Math.max(source.bottom, transfer.bottom) - surface.top;
+    const bendX = besideRoute ? outerLane
+      : Math.min(surface.width - 3, Math.max(startX + 18, endX + 18));
+    // An overlaid stack must not increase the diagram height or move its own elbow.
+    const contentBottom = (besideRoute ? source.bottom
+      : Math.max(source.bottom, transfer.getBoundingClientRect().bottom)) - surface.top;
     const bendY = (contentBottom + endY) / 2;
-    byId('upstream-route').setAttribute('viewBox', `0 0 ${surface.width} ${surface.height}`);
+    if (besideRoute) {
+      transfer.setAttribute('style', `--download-label-left:${labelLeft}px;--download-label-top:${startY}px;--download-label-width:${labelWidth}px`);
+    }
+    const finalHeight = byId('architecture').getBoundingClientRect().height;
+    byId('upstream-route').setAttribute('viewBox', `0 0 ${surface.width} ${finalHeight}`);
     const path = `M ${startX} ${startY} H ${bendX} V ${bendY} H ${endX} V ${endY}`;
     byId('upstream-path').setAttribute('d', path);
     byId('upstream-pulse').setAttribute('d', path);
@@ -130,7 +147,7 @@
     const labels = state.delivery === 'targeted'
       ? ['Selected security fix', 'Required dependencies']
       : state.delivery === 'bulk'
-        ? ['Earlier fix ✓', 'Security updates', 'Bug fixes', 'Enhancements', 'Libraries', 'System tools', 'Drivers', 'Package updates', 'Maintenance fixes']
+        ? ['Earlier fix ✓', 'Security updates', 'Bug fixes', 'Enhancements', 'Libraries', 'Drivers']
         : [];
     byId('delivery-label').textContent = state.delivery === 'targeted'
       ? 'Download fix'

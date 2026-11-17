@@ -2,7 +2,7 @@
 
 [Open the visualization](https://kvegh.github.io/RHEL-sniperpatching/).
 
-Version **0.19.16**. This browser-only explanation is for security staff, Linux
+Version **0.19.17**. This browser-only explanation is for security staff, Linux
 administrators and AAP administrators. It follows the checked-in NEW architecture
 while grouping tasks and shortening operations for presentation. It is an
 explanatory mockup: statuses, CV numbers and outcomes are illustrative. No host,
@@ -91,9 +91,14 @@ additional row space equally. Width is capped to fit its half of the diagram.
 Red Hat is centered over Satellite again, with room for its rightward
 arrow exit and header links above. At widths through 850px the header, workflow
 and architecture stack normally, and the status/source offsets reset. The
-existing narrower top-row stacking is retained. Package labels use
-the available source-column width, and the download elbow stays below their
-rendered bounds in a reserved 24px arrival lane. Download captions sit beside the
+existing narrower top-row stacking is retained. Category labels form a vertical stack beside the download arrow in the gutter
+outside Satellite, so they do not expand the architecture's source row. The
+broader list keeps the green earlier-fix chip and five blue categories: Security
+updates, Bug fixes, Enhancements, Libraries and Drivers. Targeted content keeps
+its green selected-fix and purple dependency chips. On very narrow layouts the
+list and Red Hat share a row in separate columns; where no side gutter fits,
+the arrow clears that normal-flow list. The existing colors and motion controls
+are retained. Download captions sit beside the
 route, above the package list.
 Host arrows show the client pulling from Satellite; package return and installation
 share that action. The moving highlight reverses for a client request.

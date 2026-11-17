@@ -2026,3 +2026,29 @@ match the checkout and all fourteen deployed HTML/script interaction checks
 pass, including the production approval controls. Both requested duplicate
 labels and obsolete badge code/styles are absent. Browser rendering remains
 unverified. No dependency or infrastructure change was made.
+
+
+## 2026-11-17 16:52 UTC — Stack Red Hat content labels beside the download arrow
+
+The user reported that the Red Hat labels stretch the architecture and requested
+a vertical stack beside the download arrow, preserving colors and limiting the
+nonselected-fix categories to five. Version 0.19.17 retains the green earlier
+fix plus Security updates, Bug fixes, Enhancements, Libraries and Drivers in
+blue. The generic Package updates/Maintenance fixes and lower-priority System
+tools labels are omitted. Targeted fix/dependency chips retain their colors.
+
+The existing native route geometry places the stack outside Satellite beside
+a shaft outside Satellite when a readable gutter is available. It is removed from
+row sizing, and its height no longer moves the elbow. The geometry is reread
+after the layout class changes. Where the gutter cannot fit, labels remain in
+normal flow; through 640px the labels and Red Hat share one row in separate
+columns, avoiding their heights being added together. This uses existing CSS,
+DOM and resize observation, without a new dependency or component. Existing
+interaction checks cover exact categories/colors, side placement and narrow
+fallback. Implementation and publication references follow verification; actual
+browser rendering remains unverified.
+
+Source inspection caught that putting the list to the left of a right-edge
+shaft would let the arrow's horizontal runs cross the labels. The final layout
+keeps the shaft outside Satellite and the labels 12px farther right, so both
+horizontal runs end before the text column. This was corrected before testing.

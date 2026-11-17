@@ -227,7 +227,12 @@ test('Red Hat supply distinguishes the single-fix request from the later bulk up
   assert.equal(v.get('redhat-supply').dataset.delivery, 'bulk');
   assert.equal(text(v, 'delivery-label'), 'Download updates');
   assert.equal(v.get('supply-transfer').hidden, false);
-  assert.ok(v.get('package-stream').children.length >= 8);
+  const parcels = v.get('package-stream').children;
+  assert.equal(parcels.length, 6);
+  assert.match(parcels[0].className, /selected-fix/);
+  assert.equal(parcels.filter(item => item.classList.contains('routine-update')).length, 5);
+  assert.deepEqual(parcels.slice(1).map(item => item.textContent),
+    ['Security updates', 'Bug fixes', 'Enhancements', 'Libraries', 'Drivers']);
   assert.match(text(v, 'package-stream'), /Earlier fix ✓/);
   assert.equal(text(v, 'test-installed'), 'CV 1.1');
   assert.equal(text(v, 'test-available'), 'CV 2.0');
@@ -364,7 +369,7 @@ test('the upstream connector exits Red Hat right and reaches Satellite top after
   assert.equal(text(v, 'host-content-label'), 'Satellite provides updates');
   v.get('architecture').bounds = { left: 100, top: 50, width: 800, height: 1000 };
   v.get('redhat-source').bounds = { left: 550, top: 60, right: 750, bottom: 160, width: 200, height: 100 };
-  v.get('supply-transfer').bounds = { left: 550, top: 160, right: 750, bottom: 200, width: 200, height: 40 };
+  v.get('supply-transfer').bounds = { left: 550, top: 160, right: 750, bottom: 500, width: 200, height: 340 };
   v.get('satellite-platform').bounds = { left: 600, top: 240, width: 200, height: 220 };
   go(v, at(v, 0, 'ensure-content'));
   assert.match(v.get('upstream-route').className, /is-visible/);
@@ -374,8 +379,14 @@ test('the upstream connector exits Red Hat right and reaches Satellite top after
   assert.deepEqual([startX, startY], [650, 60]);
   assert.deepEqual([endX, endY], [600, 190]);
   assert.ok(bendX > startX && bendX < 800);
-  // The arrival lane clears the package list, not just the source card.
-  assert.ok(bendY > 150 && bendY < endY);
+  // The tall overlaid list does not push the arrow below Satellite.
+  assert.ok(bendY > 110 && bendY < endY);
+  assert.match(v.get('supply-transfer').className, /is-beside-route/);
+  const placement = v.get('supply-transfer').attributes.style;
+  const labelLeft = Number(/--download-label-left:([\d.]+)px/.exec(placement)[1]);
+  const labelWidth = Number(/--download-label-width:([\d.]+)px/.exec(placement)[1]);
+  assert.ok(labelLeft > bendX && labelLeft + labelWidth < 800);
+  assert.ok(bendX > 700, 'The vertical download shaft stays outside Satellite');
   assert.equal(v.get('upstream-pulse').attributes.d, v.get('upstream-path').attributes.d);
   assert.match(v.get('upstream-pulse').className, /is-active/);
   v.get('satellite-platform').bounds = { left: 620, top: 250, width: 200, height: 220 };
@@ -384,9 +395,11 @@ test('the upstream connector exits Red Hat right and reaches Satellite top after
   v.get('architecture').bounds = { left: 0, top: 0, width: 288, height: 1000 };
   v.get('redhat-source').bounds = { left: 136, top: 120, right: 264, bottom: 220, width: 128, height: 100 };
   v.get('satellite-platform').bounds = { left: 160, top: 265, width: 128, height: 220 };
+  v.get('supply-transfer').bounds = { left: 0, top: 120, right: 132, bottom: 240, width: 132, height: 120 };
   v.window.dispatch('resize');
   const narrow = /^M ([\d.]+) ([\d.]+) H ([\d.]+) V ([\d.]+) H ([\d.]+) V ([\d.]+)$/.exec(v.get('upstream-path').attributes.d);
   assert.ok(narrow);
+  assert.doesNotMatch(v.get('supply-transfer').className, /is-beside-route/);
   assert.equal(Number(narrow[1]), 264);
   assert.ok(Number(narrow[3]) > 264 && Number(narrow[3]) < 288);
   assert.deepEqual(narrow.slice(5).map(Number), [224, 265]);

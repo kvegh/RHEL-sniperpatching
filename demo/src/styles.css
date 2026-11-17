@@ -464,9 +464,21 @@ h1 {
   width:100%;
   min-width:0;
 }
+.supply-transfer.is-beside-route {
+  /* The architecture is the containing block; this stack adds no row height. */
+  position:absolute;
+  left:var(--download-label-left);
+  top:var(--download-label-top);
+  width:var(--download-label-width);
+}
+.supply-transfer.is-beside-route .delivery-label,
+.supply-transfer.is-beside-route .package-stream {
+  width:100%;
+}
 .delivery-label {
-  /* Keep the caption beside the download route, above the package list. */
+  /* Keep the caption above the vertical category list, clear of the arrow shaft. */
   position:relative;
+  overflow-wrap:anywhere;
   width:calc(100% - 24px);
   margin-bottom:7px;
   color:var(--purple);
@@ -502,9 +514,9 @@ h1 {
 .package-stream {
   position:relative;
   display:flex;
-  align-items:center;
-  flex-wrap:wrap;
-  gap:5px;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:4px;
   width:calc(100% - 24px);
   margin:8px 0;
   padding:3px 0;
@@ -554,10 +566,6 @@ h1 {
 .package-stream .content-parcel:nth-child(4) { animation-delay:240ms; }
 .package-stream .content-parcel:nth-child(5) { animation-delay:320ms; }
 .package-stream .content-parcel:nth-child(6) { animation-delay:400ms; }
-.package-stream .content-parcel:nth-child(7) { animation-delay:480ms; }
-.package-stream .content-parcel:nth-child(8) { animation-delay:560ms; }
-.package-stream .content-parcel:nth-child(9) { animation-delay:640ms; }
-.package-stream .content-parcel:nth-child(10) { animation-delay:720ms; }
 @keyframes parcel-arrival {
   from {
     opacity:0;
@@ -1612,10 +1620,21 @@ strong.cv-counter > span.cv-counter-previous {
     margin-right:0;
   }
   .redhat-supply {
-    width:calc(50% - 16px);
-    justify-self:end;
+    width:100%;
+    justify-self:stretch;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    grid-template-rows:auto;
+  }
+  .supply-transfer:not(.is-beside-route) {
+    grid-column:1;
+    grid-row:1;
+    align-self:start;
+    width:calc(100% - 12px);
   }
   .redhat-source {
+    grid-column:2;
+    grid-row:1;
+    align-self:start;
     /* Leave room for a rightward exit before the download arrow bends down. */
     width:100%;
     margin-left:-24px;
