@@ -1889,3 +1889,13 @@ reset. This supersedes the preceding wide single-line status panel and far-right
 Red Hat placement while retaining the compact cards and glow-free action arrows.
 Implementation and publication references follow verification. Actual browser
 rendering and visual acceptance remain unverified.
+
+Implementation: `a31061d98454132e9073b4674523d8f63f5deef7` (0.19.11).
+[Pages run 44099394057](https://github.com/kvegh/RHEL-sniperpatching/actions/runs/44099394057)
+succeeded for that exact revision. Existing local model/interaction suites, CSS
+braces, markup IDs, version metadata and whitespace checks pass. Source checks
+confirm the workflow panel retains its sizing; independent layout review found
+no blocking defect in the grid resets, subtitle edge, status wrapping or source
+gutter. All four published assets match the checkout and all fourteen deployed
+HTML/script interaction checks pass. Rendered browser alignment, text wrapping
+and visual acceptance remain unverified; no browser tooling was installed.
