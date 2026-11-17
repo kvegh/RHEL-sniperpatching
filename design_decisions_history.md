@@ -2213,3 +2213,12 @@ interaction checks, syntax, version/CSS/whitespace checks pass. Static inspectio
 confirms that no internal auto/scroll overflow rule remains; normal page
 scrolling and intentionally clipped CV-counter animation are preserved.
 Browser geometry remains unverified; no tooling was installed.
+
+Implementation: `bbf5789e61e5e61c3b0c6ae9dc176a896618bcca` (0.19.21).
+[Pages run 44160987420](https://github.com/kvegh/RHEL-sniperpatching/actions/runs/44160987420)
+completed successfully. Four published assets match the checkout and all
+fourteen deployed HTML/script interactions pass. The 33 local tests and static
+checks pass; no internal scrolling rule remains. Independent source review
+supported the larger known-content bounds after the narrow-platform correction.
+Rendered text fit, exact screenshot matching and visual acceptance remain
+unverified. No browser tooling was installed or infrastructure changed.
