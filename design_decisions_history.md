@@ -1919,3 +1919,12 @@ subtitle could let the text overflow right instead of shifting the full block
 left. The desktop block now uses its full intrinsic single-line width for the
 shared edge anchor. The existing small-screen reset remains. Actual viewport
 clearance and visual alignment remain part of the unverified browser check.
+
+Implementation: `1e50fd21de09b3860c42ea6f312be3946700093a` (0.19.12).
+[Pages run 44100737298](https://github.com/kvegh/RHEL-sniperpatching/actions/runs/44100737298)
+succeeded for that exact revision. Existing local model/interaction suites, CSS
+braces, release metadata and whitespace checks pass. Focused source review
+identified the retained width cap; it was removed before commit. All four
+published assets match the checkout and all fourteen deployed HTML/script
+interaction checks pass. Actual browser alignment, left-edge clearance and text
+rendering remain unverified. No dependency or infrastructure change was made.
