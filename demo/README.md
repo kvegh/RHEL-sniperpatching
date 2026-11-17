@@ -2,7 +2,7 @@
 
 [Open the visualization](https://kvegh.github.io/RHEL-sniperpatching/).
 
-Version **0.19.5**. This browser-only explanation is for security staff, Linux
+Version **0.19.6**. This browser-only explanation is for security staff, Linux
 administrators and AAP administrators. It follows the checked-in NEW architecture
 while grouping tasks and shortening operations for presentation. It is an
 explanatory mockup: statuses, CV numbers and outcomes are illustrative. No host,
@@ -59,9 +59,9 @@ continuous throughout the animation. Arrow
 labels are larger and bold across AAP, download and host routes. Generic Red Hat
 content labels/arrows stay hidden when no download is happening. Connectors use rounded continuous lines with solid acute arrowheads. A cyan
 or purple highlight travels over the full shaft rather than animating gaps in
-it. The API highlight is a larger cyan capsule with a dark outline, white halo
-and soft glow, making it distinct from the solid arrow. It makes three 2.2-second
-passes and restarts for each named query/trigger action. Motion off and reduced motion hide
+it. The API highlight is a short 18px capsule in the arrow's own blue, with a
+white halo and matching soft glow. It makes three quick one-second passes and
+restarts for each named query/trigger action. Motion off and reduced motion hide
 the highlights while retaining the solid lines and heads. Active host-route
 highlights are thicker and longer, with stronger colors and a white glow. They
 repeat throughout the current step, so they remain visible during explanation.

@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Version: 0.19.5.**
+**Version: 0.19.6.**
 
 [Open the interactive RHEL patching mockup](https://kvegh.github.io/RHEL-sniperpatching/)
 to follow two fixed CVE/RHSA cycles through seven explanatory scenes: green

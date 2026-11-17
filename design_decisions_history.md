@@ -1710,3 +1710,15 @@ and whitespace checks passed. Four published assets match source and all
 fourteen deployed HTML/script interaction checks passed, including active
 route selection and reverse request direction. Browser rendering and perceived
 animation remain unverified by these checks. No infrastructure was changed.
+
+
+## 2026-11-17 09:21 UTC — Shorten and speed up the query highlight
+
+The user requested a shorter, faster Query: fix available? animation in the
+arrow's own color. Version 0.19.6 reduces the shared AAP highlight length from
+30px to 18px and each pass from 2.2 seconds to one second, using constant speed.
+Its fill, outline and glow inherit the arrow color; a white halo retains
+separation from the shaft. Three passes and the existing motion controls remain.
+The active host-route animations are unchanged. This supersedes the earlier
+large cyan AAP highlight styling without adding a component or dependency.
+Implementation and publication references follow verification.
