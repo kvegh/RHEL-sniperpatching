@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Version: 0.19.17.**
+**Version: 0.19.18.**
 
 [Open the interactive RHEL patching mockup](https://kvegh.github.io/RHEL-sniperpatching/)
 to follow two fixed CVE/RHSA cycles through seven explanatory scenes: green
@@ -30,8 +30,8 @@ redundant product-name line is removed. The colored status box is centered in
 its half of the diagram, with balanced spacing above and below and a wider
 wrapped panel; Red Hat sits closer to Satellite again. Tighter platform/host cards and a 96px desktop
 connector area reduce overall height, with extra room for wrapped descriptions
-on smaller screens. Active host-route highlights
-repeat while the presenter explains the step. The generic protocol connector is hidden; named
+on smaller screens. Every animated arrow makes three one-second passes,
+then its moving highlight stops. The generic protocol connector is hidden; named
 AAP actions retain their arrows with clearer heads and a larger AAP card.
 Changing CV readouts roll like mechanical counters; the simplified walkthrough
 uses Test Server and Prod Server names. The page uses

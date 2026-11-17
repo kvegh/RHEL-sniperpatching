@@ -2,7 +2,7 @@
 
 [Open the visualization](https://kvegh.github.io/RHEL-sniperpatching/).
 
-Version **0.19.17**. This browser-only explanation is for security staff, Linux
+Version **0.19.18**. This browser-only explanation is for security staff, Linux
 administrators and AAP administrators. It follows the checked-in NEW architecture
 while grouping tasks and shortening operations for presentation. It is an
 explanatory mockup: statuses, CV numbers and outcomes are illustrative. No host,
@@ -68,10 +68,10 @@ content labels/arrows stay hidden when no download is happening. All action
 connectors follow the Content View update arrow style: rounded
 continuous shafts, matching solid acute heads and a same-color capsule highlight
 without glow, blur or halo. All passes use the same one-second linear pace.
-The API capsule is 18px long; SVG highlight length scales with its route. The API
-makes three passes and restarts for each named query/trigger action. Red Hat
-content makes two passes, while active host routes repeat throughout the current
-step. Motion off and reduced motion hide highlights while retaining the shafts
+The API capsule is 18px long; SVG highlight length scales with its route. Every
+animated arrow makes exactly three passes per activation, then its highlight
+stops. This includes AAP actions, Red Hat downloads and host execution/content
+routes in both directions. The API restarts for each named query/trigger action. Motion off and reduced motion hide highlights while retaining the shafts
 and heads. API captions sit above the shaft; host captions wrap within the middle
 half of the diagram, at least 8px above their horizontal lanes and away from
 vertical stems. The route area is 96px high above 1100px viewport width,
@@ -104,7 +104,7 @@ Host arrows show the client pulling from Satellite; package return and installat
 share that action. The moving highlight reverses for a client request.
 The Red Hat source lane delivers content to Satellite. One selected fix and its
 dependencies are visually distinct from the later batch of maintenance updates.
-Content arrival animations are finite; active host-route highlights repeat.
+Arrow highlights stop after three passes; category arrivals remain finite.
 Both respect **Motion off** and reduced-motion preferences. The page makes no actual download or API request.
 
 Satellite includes a visible definition: a Content View (CV) version is a

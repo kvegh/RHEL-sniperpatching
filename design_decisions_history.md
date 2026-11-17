@@ -2064,3 +2064,17 @@ height is reread after the list changes flow. All four published assets match
 the checkout and all fourteen deployed HTML/script interaction checks pass.
 Actual browser rendering, text wrapping and visual acceptance remain unverified.
 No dependency or infrastructure change was made.
+
+
+## 2026-11-17 18:08 UTC — Limit every animated arrow to three passes
+
+The user reported that Satellite provides updates continued animating and
+explicitly requested three passes for all animated arrows. Version 0.19.18
+changes host-route highlights from infinite repetition to three passes, and
+Red Hat downloads from two passes to three. AAP action highlights already use
+three passes. Shared SVG styling keeps the count consistent in either direction,
+retaining the one-second pace, final hidden highlight and visible base arrows.
+Motion off and reduced motion remain intact. This supersedes the earlier
+request for host highlights to repeat throughout a step. No new component,
+script or timer is introduced. Implementation and publication references follow
+verification; actual browser animation remains unverified.

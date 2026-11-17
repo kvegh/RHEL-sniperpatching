@@ -923,7 +923,7 @@ strong.cv-counter > span.cv-counter-previous {
   color:var(--blue);
 }
 /* Match the AAP action arrow: solid same-color rounded highlight, without glow.
- * SVG segments scale with route length; host traffic still repeats per step. */
+ * SVG segments scale with route length; all arrow highlights stop after three passes. */
 .upstream-route>path.route-pulse,
 .routes svg>path.route-pulse {
   fill:none;
@@ -945,11 +945,9 @@ strong.cv-counter > span.cv-counter-previous {
 .routes svg>path.execution-pulse {
   color:var(--blue);
 }
-.upstream-route>path.route-pulse.is-active {
-  animation:route-pulse-flow var(--action-flow-duration) linear 2 both;
-}
+.upstream-route>path.route-pulse.is-active,
 .routes svg>path.route-pulse.is-active {
-  animation:route-pulse-flow var(--action-flow-duration) linear infinite both;
+  animation:route-pulse-flow var(--action-flow-duration) linear 3 both;
 }
 .upstream-route>path.route-pulse.is-active.is-requesting,
 .routes svg>path.route-pulse.is-active.is-requesting {
