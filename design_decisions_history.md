@@ -1668,3 +1668,16 @@ succeeded. All 33 existing local tests passed. All four public assets match
 source and all fourteen deployed HTML/script interaction checks passed.
 The removed sentence is absent from the published application asset. Browser
 rendering remains unverified; this change only removes text.
+
+
+## 2026-11-17 06:09 UTC — Make the AAP query highlight easier to see
+
+The user reported that the Query: fix available? arrow itself was good but its
+moving highlight was practically invisible. Version 0.19.4 enlarges the shared
+AAP-to-Satellite highlight from 18 by 3px to 30 by 8px, capped at 70% of the
+arrow width on narrow screens. A cyan fill, dark outline, white halo and soft
+glow separate it from the shaft. Three 2.2-second passes provide more time to
+notice it. The existing motion-off and reduced-motion behavior is retained.
+This is a CSS presentation adjustment with no added dependency or component.
+Implementation and publication references follow verification; browser
+appearance remains unverified.

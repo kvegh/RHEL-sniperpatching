@@ -715,16 +715,19 @@ h1 {
 .api-pulse {
   position:absolute;
   left:0;
-  top:7.5px;
-  width:18px;
-  height:3px;
-  border-radius:3px;
-  background:#42c8ed;
+  top:5px;
+  width:30px;
+  max-width:70%;
+  height:8px;
+  border:1px solid #07579a;
+  border-radius:8px;
+  background:#11c5ed;
+  box-shadow:0 0 0 2px #fff,0 0 10px #0075c980;
   opacity:0;
   pointer-events:none;
 }
 .api-connection.is-active .api-pulse.is-moving {
-  animation:api-pulse-flow 1.8s ease-in-out 2 both;
+  animation:api-pulse-flow 2.2s ease-in-out 3 both;
 }
 .cv-definition {
   margin-top:8px;
