@@ -1946,3 +1946,13 @@ specific date labels say All updates until date cutoff. The shared history-label
 renderer now uses that exact text for both fixed runs. Scenario cutoff data and
 technical details are preserved. This copy correction is included in the same
 unpublished 0.19.13 implementation.
+
+Implementation: `3f4b9f4b673faf7cdcc069c21104015b5dbfc8e4` (0.19.13).
+[Pages run 44102049342](https://github.com/kvegh/RHEL-sniperpatching/actions/runs/44102049342)
+succeeded for that exact revision. Existing local model/interaction suites,
+JavaScript syntax and whitespace checks pass. Existing interaction checks now
+verify the colon-prefixed second action and omission on a single-action scene.
+An actual completed-story readback confirms both broader-update labels use the
+requested wording. All four published assets match the checkout and all fourteen
+deployed HTML/script interaction checks pass. Browser rendering remains
+unverified. No dependency, infrastructure or automation behavior was changed.
