@@ -2,7 +2,7 @@
 
 [Open the visualization](https://kvegh.github.io/RHEL-sniperpatching/).
 
-Version **0.19.19**. This browser-only explanation is for security staff, Linux
+Version **0.19.20**. This browser-only explanation is for security staff, Linux
 administrators and AAP administrators. It follows the checked-in NEW architecture
 while grouping tasks and shortening operations for presentation. It is an
 explanatory mockup: statuses, CV numbers and outcomes are illustrative. No host,
@@ -13,7 +13,10 @@ separately in the project README and handover.
 
 Scene and optional action progress share one line: **SCENE 4 OF 7: Action 2 of 2**.
 Single-action scenes show only the scene indicator, with no trailing separator.
-The sidebar ends after the scene navigation, without the redundant summary footnote.
+The sidebar has a fixed responsive height: its explanation and scene list scroll
+above a separate bottom control section. Back/Next are the lowest row, below
+Restart/Motion, so changing text cannot shift them. No content is clipped; short
+viewports may still require page scrolling. The redundant summary footnote is absent.
 Both broader-update history entries read **All updates until date cutoff**;
 the fixed scenario cutoff dates remain available in the technical explanation.
 
@@ -81,9 +84,9 @@ content margins and host CV/fix/check gaps are tighter without reducing text siz
 Platform footers stay at the bottom of their cards. The fixed-location refinement
 reserves two sidebar title lines and a 225px narrative region, while preserving
 the sidebar width. Hidden CV composition/publication details keep their layout
-slots through visibility:hidden, without revealing future state. Server fix lists
-reserve room for both announced issues; baseline content stays at the top. A
-permanent vertical scrollbar gutter keeps the centered page origin steady. Approval controls also reserve two text lines, keeping the scene list steady.
+slots through visibility:hidden, without revealing future state. Server cards keep a fixed height while their fix list can scroll; baseline
+content stays at the top. A
+permanent vertical scrollbar gutter keeps the centered page origin steady. Approval controls reserve two text lines and stay in a separate bottom footer.
 History uses fixed responsive slots; the normal-flow download fallback reserves
 its largest list even when hidden. Existing checks cover behavior and source
 consistency; browser-rendered positions and visual acceptance remain unverified.
@@ -92,8 +95,8 @@ panel. The redundant product-name eyebrow is removed. The title and subtitle are
 left-aligned as one block shifted left toward the page padding, with a single-line
 subtitle on desktop. Small screens retain natural wrapping. On desktop the colored
 status panel is centered horizontally in the left half
-of the diagram, with a maximum width of 572px (30% wider than 440px) and a 172px
-minimum height to accommodate longer status messages. Its distance from the site top equals its gap above AAP: the
+of the diagram, with a maximum width of 572px (30% wider than 440px) and a fixed 118px
+height on wide screens; longer messages scroll inside it. Its distance from the site top equals its gap above AAP: the
 centered margin box reserves the same 28px as the page's top inset and shares
 additional row space equally. Width is capped to fit its half of the diagram.
 Red Hat is centered over Satellite again, with room for its rightward
@@ -250,3 +253,16 @@ The repository Pages source must be GitHub Actions. A successful push alone is
 not a verified deployment; inspect the workflow and run the functional command.
 
 Return to the [project README](../README.md) or [process diagram](../docs/process.md).
+
+### Fixed presentation geometry
+
+Version 0.19.20 replaces minimum-only card reserves with fixed responsive heights.
+Wide layouts use 224px AAP/Satellite cards and 282px server cards, using the user's
+expanded-state screenshot as the size reference. Through the existing narrower
+breakpoints the cards use larger fixed heights (300/340px and 400/440px), so text
+can wrap. Platform bodies, status messages and host-fix lists scroll internally
+when needed; headers, footers and host checks stay outside those scrollers.
+The sidebar uses a viewport-based height clamped to 720–960px on desktop and
+620–800px in the stacked layout. Minimum heights can exceed short viewports. Its content can scroll while footer controls remain at
+the panel bottom. These are source-checked sizes, not browser-measured pixels;
+rendered geometry and visual acceptance remain unverified. No browser is installed.

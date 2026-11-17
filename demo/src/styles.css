@@ -42,7 +42,7 @@ button {
   font:inherit;
   cursor:pointer;
 }
-button:focus-visible,a:focus-visible,summary:focus-visible {
+button:focus-visible,a:focus-visible,summary:focus-visible,[tabindex="0"]:focus-visible {
   outline:3px solid var(--blue);
   outline-offset:4px;
 }
@@ -165,6 +165,9 @@ h1 {
   align-items:start;
 }
 .story-panel {
+  display:flex;
+  flex-direction:column;
+  height:clamp(720px,calc(100vh - 144px),960px);
   grid-column:1;
   grid-row:2;
   background:var(--paper);
@@ -172,6 +175,22 @@ h1 {
   border-radius:12px;
   padding:22px;
 }
+/* Only the content scrolls; presenter controls stay at the panel's bottom. */
+.sidebar-content {
+  flex:1;
+  min-height:0;
+  overflow-y:auto;
+  scrollbar-gutter:stable;
+  padding-right:4px;
+}
+.sidebar-controls {
+  flex:none;
+  margin-top:16px;
+  padding-top:12px;
+  border-top:1px solid var(--line);
+}
+.sidebar-controls .navigation { margin-top:9px; }
+.sidebar-controls .secondary-controls { margin-top:0; }
 .story-intro h2 {
   min-height:2.5em;
   font-size:23px;
@@ -332,7 +351,10 @@ h1 {
   align-self:center;
   justify-self:center;
   width:min(100%,572px);
-  min-height:172px;
+  height:118px;
+  min-height:118px;
+  overflow-y:auto;
+  scrollbar-gutter:stable;
   /* Match the page's 28px top inset, then share any extra row space equally. */
   margin:0 0 28px;
   padding:15px 16px;
@@ -633,6 +655,7 @@ h1 {
   align-items:stretch;
 }
 .platform {
+  height:224px;
   display:flex;
   flex-direction:column;
   width:calc(60% - 23px);
@@ -645,6 +668,7 @@ h1 {
   box-shadow:0 3px 10px #182f4810;
 }
 .platform-header {
+  flex:none;
   display:flex;
   align-items:center;
   gap:7px;
@@ -688,6 +712,8 @@ h1 {
   font-weight:600;
 }
 .platform-body {
+  overflow-y:auto;
+  scrollbar-gutter:stable;
   flex:1;
   padding:8px 11px;
   min-height:0;
@@ -706,6 +732,7 @@ h1 {
   margin-top:5px;
 }
 .platform footer {
+  flex:none;
   padding:5px 11px;
   border-top:1px solid var(--line);
   font-size:10px;
@@ -1004,6 +1031,9 @@ strong.cv-counter > span.cv-counter-previous {
   gap:24px;
 }
 .environment {
+  display:flex;
+  flex-direction:column;
+  height:282px;
   width:80%;
   justify-self:center;
   background:var(--paper);
@@ -1018,6 +1048,7 @@ strong.cv-counter > span.cv-counter-previous {
   box-shadow:0 0 0 2px #1859a420;
 }
 .environment header {
+  flex:none;
   display:flex;
   justify-content:space-between;
   align-items:center;
@@ -1042,6 +1073,7 @@ strong.cv-counter > span.cv-counter-previous {
   line-height:1.4;
 }
 .cv-pair {
+  flex:none;
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:10px;
@@ -1070,15 +1102,18 @@ strong.cv-counter > span.cv-counter-previous {
   color:var(--blue);
 }
 .fix-list {
-  /* Both runs fit here, even before a future issue has been announced. */
-  min-height:105px;
+  /* Extra issue text scrolls here instead of changing the server geometry. */
+  flex:1;
+  min-height:0;
+  overflow-y:auto;
+  scrollbar-gutter:stable;
   align-content:start;
   display:grid;
   gap:11px;
   margin:10px 0;
 }
 .fix-row {
-  min-height:47px;
+  min-height:0;
   display:flex;
   justify-content:space-between;
   gap:10px;
@@ -1107,6 +1142,7 @@ strong.cv-counter > span.cv-counter-previous {
   color:var(--green);
 }
 .host-checks {
+  flex:none;
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:8px;
@@ -1396,7 +1432,11 @@ strong.cv-counter > span.cv-counter-previous {
     grid-template-rows:none;
   }
   .story-panel {
+    height:clamp(620px,75vh,800px);
+  }
+  .sidebar-content {
     display:grid;
+    align-content:start;
     grid-template-columns:1fr 1fr;
     gap:0 24px;
   }
@@ -1470,6 +1510,8 @@ strong.cv-counter > span.cv-counter-previous {
   }
   .story-panel {
     padding:17px;
+  }
+  .sidebar-content {
     display:block;
   }
   .story-intro h2 {
@@ -1727,12 +1769,12 @@ strong.cv-counter > span.cv-counter-previous {
 
 /* Reserve responsive text capacities; content may still grow rather than clip. */
 @media(max-width:1300px) and (min-width:851px) {
-  .story-event { min-height:268px; }
+  .story-event { height:210px; min-height:210px; }
+  .platform { height:300px; }
+  .environment { height:340px; }
   .cv-update { min-height:3em; }
   .cv-availability { min-height:4.5em; }
   .job-label { min-height:4.2em; }
-  .fix-row { min-height:64px; }
-  .fix-list { min-height:139px; }
 }
 @media(max-width:1100px) {
   .version-list {
@@ -1742,7 +1784,9 @@ strong.cv-counter > span.cv-counter-previous {
   }
 }
 @media(max-width:850px) {
-  .story-event { min-height:210px; }
+  .story-event { height:210px; min-height:210px; }
+  .platform { height:300px; }
+  .environment { height:340px; }
   .narrative { min-height:225px; }
 }
 @media(max-width:640px) {
@@ -1754,4 +1798,10 @@ strong.cv-counter > span.cv-counter-previous {
     min-height:226px;
   }
   .version-item { min-width:0; min-height:72px; }
+}
+
+@media(max-width:540px) {
+  .platform { height:400px; }
+  .environment { height:440px; }
+  .environment header { height:80px; }
 }

@@ -2148,3 +2148,31 @@ pass. No browser was installed; rendered positions remain unverified. Both the
 browser-install decision and category clarification are resolved by actual user
 answers. A subsequent user request to bottom-anchor sidebar navigation is
 tracked separately in the next refinement.
+
+
+## 2026-11-17 — Fix card sizes and bottom-anchor sidebar controls
+
+The user explicitly requested a fixed-size sidebar with Back/Next at its lowest
+point, then supplied the expanded second-run CV-composition screenshot as the
+reference for fixed diagram box sizes. Version 0.19.20 replaces minimum-only
+card reserves with fixed responsive heights: 118px status, 224px platforms and
+282px servers on wide layouts, with larger bounded sizes at narrower breakpoints.
+This supersedes the earlier assumption that minimum reserves alone adequately
+prevent resizing. Exact screenshot dimensions are inferred from existing CSS;
+no browser measurement or visual acceptance is claimed.
+
+The sidebar is a fixed-height flex panel with scrollable content and a separate
+bottom footer. Restart/Motion precede Back/Next, making those navigation buttons
+the lowest row. Tablet grid rules move onto the content wrapper, and mobile
+preserves the outer flex layout. Text can scroll instead of resizing or being
+clipped; stable scrollbar gutters preserve content width. The tradeoff is
+internal scrolling for long explanations/fix lists, and page scrolling on short
+viewports. Existing controls and native responsive breakpoints are reused, with
+no dependency or runtime automation change. The user's no-browser-install
+decision remains in force. Implementation and publication references follow.
+
+Independent source review found no concrete flex/min-height or responsive markup
+blocker after implementation. Scrolling regions are keyboard-focusable with
+visible focus, and status content also reserves its scrollbar gutter. The
+existing 33 model/interaction tests, syntax, HTML-ID, CSS-structure, version and
+whitespace checks pass. No browser was installed or rendering test performed.
