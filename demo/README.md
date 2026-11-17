@@ -2,7 +2,7 @@
 
 [Open the visualization](https://kvegh.github.io/RHEL-sniperpatching/).
 
-Version **0.19.8**. This browser-only explanation is for security staff, Linux
+Version **0.19.9**. This browser-only explanation is for security staff, Linux
 administrators and AAP administrators. It follows the checked-in NEW architecture
 while grouping tasks and shortening operations for presentation. It is an
 explanatory mockup: statuses, CV numbers and outcomes are illustrative. No host,
@@ -60,7 +60,7 @@ labels are larger and bold across AAP, download and host routes. Generic Red Hat
 content labels/arrows stay hidden when no download is happening. All action
 connectors follow the Content View update arrow style: rounded
 continuous shafts, matching solid acute heads and a same-color capsule highlight
-with a white halo and soft glow. All passes use the same one-second linear pace.
+without glow, blur or halo. All passes use the same one-second linear pace.
 The API capsule is 18px long; SVG highlight length scales with its route. The API
 makes three passes and restarts for each named query/trigger action. Red Hat
 content makes two passes, while active host routes repeat throughout the current

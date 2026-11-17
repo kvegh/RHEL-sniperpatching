@@ -1779,3 +1779,24 @@ lines, arrow styling and motion behavior remain intact. This refines the
 0.19.7 spacing without changing the established buildless design or adding
 dependencies. Implementation and publication references follow verification.
 Actual browser rendering remains unverified unless separately evidenced.
+
+Implementation: `ce87da17e04849cc71f509431434a10ba06ccd9b` (0.19.8).
+[Pages run 44087718746](https://github.com/kvegh/RHEL-sniperpatching/actions/runs/44087718746)
+succeeded. Existing local model/interaction suites, CSS braces, release metadata
+and whitespace checks passed. All four deployed assets match source and all
+fourteen deployed HTML/script interaction checks pass. Independent source
+analysis supports the desktop/mobile spacing compromise. Browser rendering and
+actual text wrapping remain unverified.
+
+
+## 2026-11-17 12:57 UTC — Remove glow from all moving arrow blocks
+
+The user reported that the other arrows did not match the Content View update
+reference well and explicitly requested removing their glow. Version 0.19.9
+removes the SVG drop shadows and API capsule box shadow, leaving solid rounded
+blocks in the arrow's own color, without blur, glow or a halo. Removing the
+shared effects is a focused CSS correction; it preserves the newly compact
+spacing, readable captions, one-second movement, route direction and motion
+controls. This supersedes the glow/halo styling documented for 0.19.7. No new
+dependency, component or architecture is needed. Implementation and publication
+references follow verification. Actual browser rendering remains unverified.

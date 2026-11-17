@@ -726,7 +726,6 @@ h1 {
   border:1px solid currentColor;
   border-radius:8px;
   background:currentColor;
-  box-shadow:0 0 0 2px #fff,0 0 5px currentColor;
   opacity:0;
   pointer-events:none;
 }
@@ -895,7 +894,7 @@ strong.cv-counter > span.cv-counter-previous {
 .routes svg>path.execution-route.is-active {
   color:var(--blue);
 }
-/* Match the AAP action arrow: same-color rounded highlight and white halo.
+/* Match the AAP action arrow: solid same-color rounded highlight, without glow.
  * SVG segments scale with route length; host traffic still repeats per step. */
 .upstream-route>path.route-pulse,
 .routes svg>path.route-pulse {
@@ -909,7 +908,6 @@ strong.cv-counter > span.cv-counter-previous {
   stroke-dashoffset:100;
   marker-start:none;
   marker-end:none;
-  filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 3px currentColor);
   opacity:0;
 }
 .upstream-route>path.content-pulse,
