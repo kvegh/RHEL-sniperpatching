@@ -406,3 +406,25 @@ test('the upstream connector exits Red Hat right and reaches Satellite top after
   go(v, v.story.steps[0]);
   assert.doesNotMatch(v.get('upstream-route').className, /is-visible/);
 });
+
+
+test('platform sizing variants cover every live CV preparation message', () => {
+  // This guards copy/slot consistency, not rendered browser geometry.
+  const normalizeVersions = value => value.replace(/CV \d+\.\d+/g, 'CV #.#');
+  const variants = new Set();
+  for (const match of html.matchAll(/<div\b([^>]*class="cv-preparation-size"[^>]*)>([\s\S]*?)<\/div>/g)) {
+    assert.match(match[1], /aria-hidden="true"/, 'Sizing copy stays out of announcements');
+    const equation = /class="cv-update">([^<]*)<\/p>/.exec(match[2]);
+    const availability = /class="cv-availability">([^<]*)<\/p>/.exec(match[2]);
+    assert.ok(equation && availability, 'Each sizing alternative includes the full pair');
+    variants.add(normalizeVersions(equation[1] + '\n' + availability[1]));
+  }
+  assert.ok(variants.size, 'The preparation slot has real text alternatives');
+  const v = launch();
+  for (const step of v.story.steps) {
+    go(v, step);
+    if (v.get('cv-update').hidden) continue;
+    const current = normalizeVersions(text(v, 'cv-update') + '\n' + text(v, 'cv-availability'));
+    assert.ok(variants.has(current), `Missing full-content size alternative at ${step.id}`);
+  }
+});

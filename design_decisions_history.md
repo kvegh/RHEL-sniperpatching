@@ -2222,3 +2222,30 @@ checks pass; no internal scrolling rule remains. Independent source review
 supported the larger known-content bounds after the narrow-platform correction.
 Rendered text fit, exact screenshot matching and visual acceptance remain
 unverified. No browser tooling was installed or infrastructure changed.
+
+
+## 2026-11-17 — Roll back broad enlargement; size only AAP and Satellite
+
+The user rejected the broad enlargement in 0.19.21 and clarified that largest
+necessary size applies only to AAP and Satellite. Version 0.19.22 restores the
+0.19.20 status/server/sidebar dimensions and existing content behavior, preserving
+the separately requested bottom sidebar navigation. This supersedes the global
+no-scroll/enlargement interpretation recorded above.
+
+AAP and Satellite no longer use guessed fixed pixel heights or scrolling bodies.
+The existing shared grid stretches both to Satellite's full-content requirement.
+A native CSS grid preparation slot overlays current text with invisible,
+aria-hidden sizing variants for the actual CV equation and three availability
+message forms. Their natural wrapping reserves the largest necessary height at
+the current width throughout the story. This avoids arbitrary larger card
+capacities, script measurement loops and dependencies. Only the platforms receive
+this scoped sizing correction; no architecture or infrastructure changes are made.
+Actual rendered geometry remains unverified under the user's no-browser-install
+direction. Implementation and publication references follow verification.
+
+Independent review of the actual scoped diff found no concrete blocker. A
+regression check now walks all story steps and verifies each visible CV
+preparation message has an aria-hidden full-text sizing alternative; tabular
+numerals keep version digits equal in width across runs. This checks copy/slot
+consistency, not browser geometry. The restored dimensions match 0.19.20 outside
+the platform correction, including bottom controls.
