@@ -2052,3 +2052,15 @@ Source inspection caught that putting the list to the left of a right-edge
 shaft would let the arrow's horizontal runs cross the labels. The final layout
 keeps the shaft outside Satellite and the labels 12px farther right, so both
 horizontal runs end before the text column. This was corrected before testing.
+
+Implementation: `ee6a4543a3f39abf8e6141011c6abe12e7fd4b11` (0.19.17).
+[Pages run 44131466225](https://github.com/kvegh/RHEL-sniperpatching/actions/runs/44131466225)
+succeeded for that exact revision. Existing local model/interaction suites, app
+syntax, CSS/release and whitespace checks pass. Updated checks verify six chips
+with five routine categories and retained colors, an overlaid list taller than
+the source lane, text clear of the shaft and the narrow fallback. Independent
+source review found no blocking issue after the crossing correction; final SVG
+height is reread after the list changes flow. All four published assets match
+the checkout and all fourteen deployed HTML/script interaction checks pass.
+Actual browser rendering, text wrapping and visual acceptance remain unverified.
+No dependency or infrastructure change was made.
