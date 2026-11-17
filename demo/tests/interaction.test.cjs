@@ -362,6 +362,7 @@ test('the upstream connector exits Red Hat right and reaches Satellite top after
   assert.equal(text(v, 'host-content-label'), 'Satellite provides updates');
   v.get('architecture').bounds = { left: 100, top: 50, width: 800, height: 1000 };
   v.get('redhat-source').bounds = { left: 550, top: 60, right: 750, bottom: 160, width: 200, height: 100 };
+  v.get('supply-transfer').bounds = { left: 550, top: 160, right: 750, bottom: 200, width: 200, height: 40 };
   v.get('satellite-platform').bounds = { left: 600, top: 240, width: 200, height: 220 };
   go(v, at(v, 0, 'ensure-content'));
   assert.match(v.get('upstream-route').className, /is-visible/);
@@ -371,7 +372,8 @@ test('the upstream connector exits Red Hat right and reaches Satellite top after
   assert.deepEqual([startX, startY], [650, 60]);
   assert.deepEqual([endX, endY], [600, 190]);
   assert.ok(bendX > startX && bendX < 800);
-  assert.ok(bendY > 110 && bendY < endY);
+  // The arrival lane clears the package list, not just the source card.
+  assert.ok(bendY > 150 && bendY < endY);
   assert.equal(v.get('upstream-pulse').attributes.d, v.get('upstream-path').attributes.d);
   assert.match(v.get('upstream-pulse').className, /is-active/);
   v.get('satellite-platform').bounds = { left: 620, top: 250, width: 200, height: 220 };

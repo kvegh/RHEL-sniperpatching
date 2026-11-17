@@ -2,7 +2,7 @@
 
 [Open the visualization](https://kvegh.github.io/RHEL-sniperpatching/).
 
-Version **0.19.9**. This browser-only explanation is for security staff, Linux
+Version **0.19.10**. This browser-only explanation is for security staff, Linux
 administrators and AAP administrators. It follows the checked-in NEW architecture
 while grouping tasks and shortening operations for presentation. It is an
 explanatory mockup: statuses, CV numbers and outcomes are illustrative. No host,
@@ -40,7 +40,7 @@ automatic approval node. Scene links are educational navigation, not access cont
 
 The compact status box sits beside the Red Hat software repositories on wider
 screens, aligned with the workflow panel’s top edge and saving vertical space.
-The reserved space above AAP/Satellite is 45px, half the earlier 90px. Red Hat
+The minimum content-arrival reserve above AAP/Satellite is 24px. Red Hat
 is shifted left by half the horizontal gap to the status box on wide screens.
 Its single download arrow exits the right side and enters Satellite's top; native
 rendered bounds and resize observation keep the endpoints attached as cards wrap.
@@ -67,10 +67,17 @@ content makes two passes, while active host routes repeat throughout the current
 step. Motion off and reduced motion hide highlights while retaining the shafts
 and heads. API captions sit above the shaft; host captions wrap within the middle
 half of the diagram, at least 8px above their horizontal lanes and away from
-vertical stems. The route area is 128px high on wider screens, reduced from
-180px to bring the platforms and servers closer together. At widths up to 540px,
-it is 168px high to leave room for wrapped captions. The existing arrow paths
-and 8px caption-to-line gaps are retained. Download captions sit beside the
+vertical stems. The route area is 96px high above 1100px viewport width,
+128px through 1100px, and 168px through 540px. Its horizontal lanes sit at 36%
+and 80%, with captions still 8px above the shafts. Platform padding, Satellite
+content margins and host CV/fix/check gaps are tighter without reducing text size.
+Platform footers stay at the bottom of their cards. Sidebar sizing is unchanged;
+the user scoped textbox resizing to the top explanation box. The top explanation gets the
+remaining space beside a 310px Red Hat column on wider screens; Red Hat sits
+farther right with a 24px gutter for its outgoing arrow. Descriptions wrap when
+needed, and the existing stacked mobile layout is retained. Package labels use
+the available source-column width, and the download elbow stays below their
+rendered bounds in a reserved 24px arrival lane. Download captions sit beside the
 route, above the package list.
 Host arrows show the client pulling from Satellite; package return and installation
 share that action. The moving highlight reverses for a client request.

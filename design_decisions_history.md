@@ -1810,3 +1810,50 @@ is retained. All four published assets match the checkout and all fourteen
 deployed HTML/script interaction checks pass. Browser rendering, actual caption
 wrapping and perceived motion remain unverified; no browser tool was installed.
 No infrastructure or AAP operation was performed.
+
+
+## 2026-11-17 13:47 UTC — Tighten the complete diagram and widen its explanation
+
+The user supplied further screenshots showing that the diagram remains too
+spread out vertically, and requested a longer top explanation box with Red Hat
+farther right so the Content View explanation can fit on one line where space
+allows. Version 0.19.10 gives that explanation the remaining width beside a
+310px Red Hat column on wider screens, with a 24px right gutter for the outgoing
+arrow. Text still wraps on smaller screens rather than being clipped. The
+existing two-column and stacked top layouts remain responsive.
+
+The wide-screen host connector area shrinks to 96px. Its horizontal bends move
+to 36%/80%, with corresponding captions still 8px above the lines. Source
+analysis found that 96px would crowd two-line captions at intermediate widths,
+so the area retains 128px through 1100px and 168px through 540px. Platform
+padding and Satellite margins, host CV/fix/check spacing, and the idle source
+reserve are also reduced, without shrinking text or removing information.
+Platform footers stay at the bottom of their cards. The existing stretched row
+keeps host arrows attached. Motion and glow-free styling are preserved. This
+refines the earlier spacing choices within the approved buildless diagram.
+Implementation/publication evidence and any additional left-box adjustment
+follow verification. Actual browser rendering remains unverified.
+
+The user also requested fixing the left textbox sizes. The agent asked whether
+this meant the sidebar, explanation box or both; while that optional
+clarification remained unanswered, it stated the working interpretation as both.
+Within the requested compact layout, the sidebar gains 20px at desktop sizes
+and less padding, while its action panel follows the content instead of a
+175px minimum. Section gaps are reduced. Smaller layout breakpoints and text
+font sizes are retained. This is an implementation interpretation, not a claim
+that the user selected an option in the pending question.
+
+Independent source review identified that the narrower Red Hat column would
+otherwise constrain package chips to half its width and make bulk-download
+scenes taller. The package list and caption now use the available column width,
+with a 24px arrival lane below the source content. The existing native geometry
+calculation includes the package list bounds so the horizontal arrow remains
+below those rows. The existing resize interaction test now covers that clearance.
+This directly preserves the compact layout during download scenes; it adds no
+component or dependency.
+
+Before publication, the user answered the optional clarification: Top explanation
+box only. This supersedes the provisional both-boxes interpretation above. All
+uncommitted sidebar sizing/spacing adjustments were removed; the sidebar retains
+its previous dimensions and behavior. The top explanation, card/route compaction
+and Red Hat placement remain within the requested changes.

@@ -112,7 +112,10 @@
     const endX = satellite.left + satellite.width / 2 - surface.left;
     const endY = satellite.top - surface.top;
     const bendX = Math.min(surface.width - 3, Math.max(startX + 18, endX + 18));
-    const bendY = (source.bottom - surface.top + endY) / 2;
+    // Leave the horizontal arrival lane below the wrapping package list.
+    const transfer = byId('supply-transfer').getBoundingClientRect();
+    const contentBottom = Math.max(source.bottom, transfer.bottom) - surface.top;
+    const bendY = (contentBottom + endY) / 2;
     byId('upstream-route').setAttribute('viewBox', `0 0 ${surface.width} ${surface.height}`);
     const path = `M ${startX} ${startY} H ${bendX} V ${bendY} H ${endX} V ${endY}`;
     byId('upstream-path').setAttribute('d', path);
