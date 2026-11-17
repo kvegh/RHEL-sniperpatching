@@ -2,7 +2,7 @@
 
 [Open the visualization](https://kvegh.github.io/RHEL-sniperpatching/).
 
-Version **0.19.4**. This browser-only explanation is for security staff, Linux
+Version **0.19.5**. This browser-only explanation is for security staff, Linux
 administrators and AAP administrators. It follows the checked-in NEW architecture
 while grouping tasks and shortening operations for presentation. It is an
 explanatory mockup: statuses, CV numbers and outcomes are illustrative. No host,
@@ -62,12 +62,15 @@ or purple highlight travels over the full shaft rather than animating gaps in
 it. The API highlight is a larger cyan capsule with a dark outline, white halo
 and soft glow, making it distinct from the solid arrow. It makes three 2.2-second
 passes and restarts for each named query/trigger action. Motion off and reduced motion hide
-the highlights while retaining the solid lines and heads. Host arrows show the client
-pulling from Satellite; package return and installation share that action.
+the highlights while retaining the solid lines and heads. Active host-route
+highlights are thicker and longer, with stronger colors and a white glow. They
+repeat throughout the current step, so they remain visible during explanation.
+Host arrows show the client pulling from Satellite; package return and installation
+share that action. The moving highlight reverses for a client request.
 The Red Hat source lane delivers content to Satellite. One selected fix and its
 dependencies are visually distinct from the later batch of maintenance updates.
-Arrival animations are finite and respect **Motion off** and reduced-motion
-preferences. The page makes no actual download or API request.
+Content arrival animations are finite; active host-route highlights repeat.
+Both respect **Motion off** and reduced-motion preferences. The page makes no actual download or API request.
 
 Satellite includes a visible definition: a Content View (CV) version is a
 predefined snapshot of selected software repositories. This explains why the

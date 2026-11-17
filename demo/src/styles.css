@@ -890,7 +890,7 @@ strong.cv-counter > span.cv-counter-previous {
 .routes svg>path.execution-route.is-active {
   color:var(--blue);
 }
-/* A brief highlight travels over each continuous shaft; pulse paths have no heads. */
+/* Highlights travel over continuous shafts; pulse paths have no heads. */
 .upstream-route>path.route-pulse,
 .routes svg>path.route-pulse {
   fill:none;
@@ -911,9 +911,23 @@ strong.cv-counter > span.cv-counter-previous {
 .routes svg>path.execution-pulse {
   stroke:#42c8ed;
 }
-.upstream-route>path.route-pulse.is-active,
-.routes svg>path.route-pulse.is-active {
+.upstream-route>path.route-pulse.is-active {
   animation:route-pulse-flow 1.8s ease-in-out 2 both;
+}
+/* Keep active host traffic visible while the presenter explains the step. */
+.routes svg>path.route-pulse {
+  stroke-width:6;
+  stroke-dasharray:10 90;
+  filter:drop-shadow(0 0 2px #fff);
+}
+.routes svg>path.content-pulse {
+  stroke:#9b42d0;
+}
+.routes svg>path.execution-pulse {
+  stroke:#00a8e8;
+}
+.routes svg>path.route-pulse.is-active {
+  animation:route-pulse-flow 2.2s linear infinite both;
 }
 .upstream-route>path.route-pulse.is-active.is-requesting,
 .routes svg>path.route-pulse.is-active.is-requesting {

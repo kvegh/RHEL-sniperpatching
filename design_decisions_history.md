@@ -1688,3 +1688,17 @@ succeeded. All 33 local model/interaction tests, release metadata, CSS brace
 and whitespace checks passed. Four public assets match source and all fourteen
 deployed HTML/script interaction checks passed. Actual browser appearance and
 perceived animation visibility remain unverified by these checks.
+
+
+## 2026-11-17 09:05 UTC — Keep active host routes animated
+
+The user reported that the Satellite provides updates and Test Server pulls the
+selected fix from Satellite routes no longer appeared animated. Source inspection
+confirmed their highlights stopped after two 1.8-second passes. Version 0.19.5
+keeps host-route highlights repeating for the active step, with a 2.2-second
+linear pass. The segment is longer and twice as thick, with stronger actor
+colors and a white glow. Client requests retain reverse travel toward Satellite.
+Motion off and reduced motion still suppress highlights; inactive routes stay
+still. The AAP query highlight and upstream arrival timing are unchanged.
+This uses the existing CSS animation and motion controls without a new component
+or dependency. Implementation and publication references follow verification.
