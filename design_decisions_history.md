@@ -1722,3 +1722,10 @@ separation from the shaft. Three passes and the existing motion controls remain.
 The active host-route animations are unchanged. This supersedes the earlier
 large cyan AAP highlight styling without adding a component or dependency.
 Implementation and publication references follow verification.
+
+Implementation: `a5217937c6bd841c119239d82e9e6abd5b850f6b` (0.19.6).
+[Pages run 44054953734](https://github.com/kvegh/RHEL-sniperpatching/actions/runs/44054953734)
+succeeded. All 33 local tests, release metadata, CSS brace and whitespace checks
+passed. Four published assets match source and all fourteen deployed HTML/script
+interaction checks passed. Browser appearance and perceived animation speed
+remain unverified by these checks.
