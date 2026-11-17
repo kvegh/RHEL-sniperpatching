@@ -93,7 +93,14 @@ button.approval {
   grid-row:1;
   margin:0;
   padding:0;
-  text-align:right;
+  text-align:left;
+}
+.header-copy {
+  position:relative;
+  left:100%;
+  transform:translateX(-100%);
+  /* Anchor the full one-line block, rather than a capped wrapping width. */
+  width:max-content;
 }
 .header-copy h1 {
   white-space:nowrap;
@@ -116,13 +123,8 @@ h1 {
   color:#c9190b;
 }
 .subtitle {
-  position:relative;
-  left:100%;
-  transform:translateX(-100%);
-  width:max-content;
-  /* End at the workflow edge; only extend left into available page padding. */
-  max-width:calc(100% + var(--page-gutter));
-  text-align:right;
+  /* Shift the complete left-aligned header, keeping the desktop subtitle intact. */
+  white-space:nowrap;
   font-size:15px;
   color:var(--muted);
   margin-top:7px;
@@ -322,7 +324,7 @@ h1 {
   align-self:start;
   width:min(100%,440px);
   min-height:118px;
-  margin:60px 0 0;
+  margin:24px 0 0;
   padding:15px 16px;
   background:var(--blue-soft);
   border:1px solid #c3d6ec;
@@ -1328,6 +1330,10 @@ strong.cv-counter > span.cv-counter-previous {
     text-align:left;
   }
   .header-copy {
+    position:static;
+    transform:none;
+    width:auto;
+    max-width:none;
     min-width:0;
   }
   .header-copy h1 {
@@ -1335,11 +1341,7 @@ strong.cv-counter > span.cv-counter-previous {
     white-space:normal;
   }
   .subtitle {
-    position:static;
-    transform:none;
-    width:auto;
-    max-width:none;
-    text-align:left;
+    white-space:normal;
     font-size:15px;
   }
   .header-links {
@@ -1358,9 +1360,6 @@ strong.cv-counter > span.cv-counter-previous {
     justify-self:end;
     margin-right:24px;
     width:min(calc(100% - 24px),286px);
-  }
-  .page-header .eyebrow {
-    max-width:400px;
   }
   .app-shell {
     grid-template-columns:1fr;
@@ -1431,9 +1430,6 @@ strong.cv-counter > span.cv-counter-previous {
   }
   .page-header h1 {
     font-size:27px;
-  }
-  .page-header .eyebrow {
-    font-size:9px;
   }
   .subtitle {
     font-size:13px;

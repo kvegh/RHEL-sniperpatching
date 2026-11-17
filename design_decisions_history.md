@@ -1899,3 +1899,23 @@ no blocking defect in the grid resets, subtitle edge, status wrapping or source
 gutter. All four published assets match the checkout and all fourteen deployed
 HTML/script interaction checks pass. Rendered browser alignment, text wrapping
 and visual acceptance remain unverified; no browser tooling was installed.
+
+
+## 2026-11-17 14:11 UTC — Remove the product eyebrow and left-align the remaining header
+
+The user requested removing the top product-name line, then clarified that the
+remaining title and subtitle should align left and move far enough left for the
+subtitle to stay on one line. Version 0.19.12 removes that line and shifts the
+remaining header as one left-aligned block. The desktop subtitle stays together;
+the existing small-screen layout retains natural wrapping. The status offset is
+reduced to 24px to track the now-higher title midpoint. Unused header-eyebrow
+selectors are removed. This supersedes the preceding right-aligned header text
+while preserving workflow sizing, the wrapped status box, source placement and
+glow-free arrows. Implementation and publication references follow verification.
+Actual browser rendering remains unverified.
+
+Source review caught that retaining the earlier header width cap with a nowrap
+subtitle could let the text overflow right instead of shifting the full block
+left. The desktop block now uses its full intrinsic single-line width for the
+shared edge anchor. The existing small-screen reset remains. Actual viewport
+clearance and visual alignment remain part of the unverified browser check.

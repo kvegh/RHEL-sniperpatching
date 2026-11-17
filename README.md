@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Version: 0.19.11.**
+**Version: 0.19.12.**
 
 [Open the interactive RHEL patching mockup](https://kvegh.github.io/RHEL-sniperpatching/)
 to follow two fixed CVE/RHSA cycles through seven explanatory scenes: green
@@ -21,8 +21,9 @@ with a larger Red Hat source and one continuous download arrow. Server cards
 are more compact; the long API arrow and other connectors use solid acute heads
 and continuous lines with solid matching-color highlights, without glow, at the same one-second pace.
 Action descriptions sit clear of the arrow lines, with wrapped host captions
-above their routes. The header sits above the left workflow panel, with the
-subtitle ending at that panel's right edge. The colored status box is raised
+above their routes. The title and subtitle form one left-aligned block shifted
+left above the workflow panel, keeping the desktop subtitle on one line. The
+redundant product-name line is removed. The colored status box is raised
 beside the title and wraps in a narrower, slightly taller panel; Red Hat sits
 closer to Satellite again. Tighter platform/host cards and a 96px desktop
 connector area reduce overall height, with extra room for wrapped descriptions
