@@ -2138,3 +2138,13 @@ was the selected-fix download. The clarification is resolved; existing targeted
 fix/dependency and broad five-category content is retained. No category-content
 change is needed. Independent final source review found no remaining concrete
 blocker in the fixed-location CSS; browser geometry remains unverified.
+
+Implementation: `e5e148b8f8316afb83d8b1815fbdc57a5552ea1e` (0.19.19).
+[Pages run 44158457730](https://github.com/kvegh/RHEL-sniperpatching/actions/runs/44158457730)
+completed successfully. All four served assets match the checkout and all
+fourteen deployed HTML/script interaction checks pass. The 33 local model/
+interaction tests, syntax, release metadata, CSS structure and whitespace checks
+pass. No browser was installed; rendered positions remain unverified. Both the
+browser-install decision and category clarification are resolved by actual user
+answers. A subsequent user request to bottom-anchor sidebar navigation is
+tracked separately in the next refinement.
