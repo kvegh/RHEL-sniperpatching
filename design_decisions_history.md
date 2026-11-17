@@ -1702,3 +1702,11 @@ Motion off and reduced motion still suppress highlights; inactive routes stay
 still. The AAP query highlight and upstream arrival timing are unchanged.
 This uses the existing CSS animation and motion controls without a new component
 or dependency. Implementation and publication references follow verification.
+
+Implementation: `aa8b8681d69facff1c58bd680eb113aa5a1849be` (0.19.5).
+[Pages run 44052441463](https://github.com/kvegh/RHEL-sniperpatching/actions/runs/44052441463)
+succeeded. All 33 local model/interaction tests, release metadata, CSS brace
+and whitespace checks passed. Four published assets match source and all
+fourteen deployed HTML/script interaction checks passed, including active
+route selection and reverse request direction. Browser rendering and perceived
+animation remain unverified by these checks. No infrastructure was changed.
