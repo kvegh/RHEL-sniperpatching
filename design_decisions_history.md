@@ -2292,3 +2292,11 @@ already-visible rows, clipped top/bottom, resize, zero-height lists and oversize
 rows while guarding against page-scrolling calls. All 35 local model/interaction
 tests, syntax, HTML-ID, CSS/version and whitespace checks pass. These tests use
 the existing DOM substitute and do not establish rendered browser geometry.
+
+Implementation: `f4682103323cb1618da1ddb0a04c1eeda1da5bae` (0.19.23).
+[Pages run 44169180854](https://github.com/kvegh/RHEL-sniperpatching/actions/runs/44169180854)
+completed successfully. All four public assets match the checkout and all sixteen
+deployed HTML/script interaction checks pass, including current-scene scrolling.
+The 35 local model/interaction checks and static checks pass. Independent source
+review found no concrete blocker. Browser layout and visual acceptance remain
+unverified; no browser tooling was installed or infrastructure changed.
