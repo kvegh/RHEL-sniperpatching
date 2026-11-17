@@ -2,7 +2,7 @@
 
 [Open the visualization](https://kvegh.github.io/RHEL-sniperpatching/).
 
-Version **0.19.7**. This browser-only explanation is for security staff, Linux
+Version **0.19.8**. This browser-only explanation is for security staff, Linux
 administrators and AAP administrators. It follows the checked-in NEW architecture
 while grouping tasks and shortening operations for presentation. It is an
 explanatory mockup: statuses, CV numbers and outcomes are illustrative. No host,
@@ -67,7 +67,11 @@ content makes two passes, while active host routes repeat throughout the current
 step. Motion off and reduced motion hide highlights while retaining the shafts
 and heads. API captions sit above the shaft; host captions wrap within the middle
 half of the diagram, at least 8px above their horizontal lanes and away from
-vertical stems. Download captions sit beside the route, above the package list.
+vertical stems. The route area is 128px high on wider screens, reduced from
+180px to bring the platforms and servers closer together. At widths up to 540px,
+it is 168px high to leave room for wrapped captions. The existing arrow paths
+and 8px caption-to-line gaps are retained. Download captions sit beside the
+route, above the package list.
 Host arrows show the client pulling from Satellite; package return and installation
 share that action. The moving highlight reverses for a client request.
 The Red Hat source lane delivers content to Satellite. One selected fix and its

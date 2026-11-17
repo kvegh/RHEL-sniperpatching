@@ -1764,3 +1764,18 @@ route direction or motion controls. All four published assets match the checkout
 and all fourteen deployed HTML/script interaction checks pass. No browser
 executable was available; rendered layout, text wrapping and perceived animation
 remain unverified. No dependency, infrastructure or AAP state was changed.
+
+
+## 2026-11-17 12:54 UTC — Compact the gap between platforms and servers
+
+The user supplied a screenshot showing that the 180px route area introduced
+for label clearance leaves too much space between AAP/Satellite and the servers.
+Version 0.19.8 reduces it to 128px on wider screens, about 29% less. Screens up
+to 540px retain 168px for wrapped descriptions. This balances the user's request
+for a more compact diagram with readable action captions. Uniformly shrinking
+the mobile area was avoided because its descriptions can wrap over multiple
+lines. Existing route geometry, central caption widths, 8px gaps above horizontal
+lines, arrow styling and motion behavior remain intact. This refines the
+0.19.7 spacing without changing the established buildless design or adding
+dependencies. Implementation and publication references follow verification.
+Actual browser rendering remains unverified unless separately evidenced.
