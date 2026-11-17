@@ -1752,3 +1752,15 @@ existing buildless design, with no new component, dependency or runtime change.
 The current full review-policy source matches the local policy consulted.
 Implementation and publication references follow verification. Actual browser
 rendering remains unverified unless separately evidenced.
+
+Implementation: `67e9c314ca72670333667052831d04458448a0b3` (0.19.7).
+[Pages run 44073984467](https://github.com/kvegh/RHEL-sniperpatching/actions/runs/44073984467)
+succeeded for that exact revision. The existing local model/interaction suites,
+JavaScript syntax, CSS braces, unique markup IDs, version metadata and whitespace
+checks passed. Source review caught an accidentally changed API active-color
+selector; it was restored and explicitly verified before commit. Independent
+read-only review found no additional concrete defect in caption placement,
+route direction or motion controls. All four published assets match the checkout
+and all fourteen deployed HTML/script interaction checks pass. No browser
+executable was available; rendered layout, text wrapping and perceived animation
+remain unverified. No dependency, infrastructure or AAP state was changed.
