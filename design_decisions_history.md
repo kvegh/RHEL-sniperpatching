@@ -1661,3 +1661,10 @@ announced issue changing host security status. Version 0.19.3 removes that
 sentence from the alert while keeping the CVE identification. This is a copy
 correction within the existing visualization; no workflow or layout change is
 needed. Implementation and publication references follow verification.
+
+Implementation: `e34b6dad4691cff2d9954f149a71e1e6b8881992` (0.19.3).
+[Pages run 44024289907](https://github.com/kvegh/RHEL-sniperpatching/actions/runs/44024289907)
+succeeded. All 33 existing local tests passed. All four public assets match
+source and all fourteen deployed HTML/script interaction checks passed.
+The removed sentence is absent from the published application asset. Browser
+rendering remains unverified; this change only removes text.
