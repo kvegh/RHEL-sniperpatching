@@ -1965,3 +1965,10 @@ scenes per run. Version 0.19.14 removes that paragraph below the scene navigatio
 and its unused desktop/mobile footnote styles. Scenarios, navigation and the
 remaining explanation are preserved. This is a focused copy cleanup within the
 existing design. Implementation and publication references follow verification.
+
+Implementation: `0a03bdb4c74ff748ec447dfa7bef79cd15f838d1` (0.19.14).
+[Pages run 44102589001](https://github.com/kvegh/RHEL-sniperpatching/actions/runs/44102589001)
+succeeded. Existing local model/interaction suites, copy/CSS/version checks and
+whitespace checks pass. All four deployed assets match source and all fourteen
+deployed HTML/script interaction checks pass. The removed paragraph and its
+unused selectors are absent. Browser rendering remains unverified.
