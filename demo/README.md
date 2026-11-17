@@ -2,7 +2,7 @@
 
 [Open the visualization](https://kvegh.github.io/RHEL-sniperpatching/).
 
-Version **0.19.2**. This browser-only explanation is for security staff, Linux
+Version **0.19.3**. This browser-only explanation is for security staff, Linux
 administrators and AAP administrators. It follows the checked-in NEW architecture
 while grouping tasks and shortening operations for presentation. It is an
 explanatory mockup: statuses, CV numbers and outcomes are illustrative. No host,
@@ -15,7 +15,7 @@ Use **Next**, **Back**, **Restart**, or select one of the **seven scenes**.
 Run 01 and Run 02 open their healthy baseline before introducing a new CVE.
 The examples and dates are fixed; there are no presenter-entered values.
 The CVE is announced directly at the query action with a larger bold alert
-heading.
+heading. The alert copy simply identifies the CVE announced to AAP.
 All six current CV readouts use a 650ms mechanical counter: the new version
 descends from above as the old version exits below. Only actual value changes
 animate; first render and unchanged values stay still. Motion off and reduced

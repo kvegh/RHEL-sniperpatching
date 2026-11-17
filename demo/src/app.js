@@ -81,7 +81,7 @@
 
   function eventContent(step, state, approval) {
     if (step.scene === 1) return ['healthy', 'BASELINE VERIFIED', 'All systems up to date', `Test Server and Prod Server verified on baseline CV ${state.testCV}.`];
-    if (step.scene === 2) return ['alert', 'CVE ANNOUNCED', state.scenario.title, `${state.scenario.cve} is announced and named to AAP. Only this newly announced issue changes the hosts’ security status.`];
+    if (step.scene === 2) return ['alert', 'CVE ANNOUNCED', state.scenario.title, `${state.scenario.cve} is announced and named to AAP.`];
     if (step.kind === 'trigger-sync') return ['content', 'AAP ORCHESTRATES', 'Update the software repositories', 'AAP instructs Satellite to update its repository content before preparing the fix.'];
     if (step.scene === 3) return ['content', 'RED HAT CONTENT', 'Download fix', 'Satellite obtains the selected security fix and required dependencies.'];
     if (step.kind === 'cv-build') return ['content', 'AAP ORCHESTRATES', 'Update the Content View', 'The baseline plus the selected fix prepares the next minor CV. It is not available to hosts until publication.'];

@@ -1652,3 +1652,12 @@ checks passed. Independent source review found no concrete issue in the combined
 pulse selectors, solid heads, direction or motion-control behavior. Browser
 appearance and perceived animation quality remain unverified; no browser tooling
 or dependency was installed. Existing automation/runtime was unchanged.
+
+
+## 2026-11-17 05:27 UTC — Shorten the CVE alert copy
+
+The user requested removal of the redundant sentence about only the newly
+announced issue changing host security status. Version 0.19.3 removes that
+sentence from the alert while keeping the CVE identification. This is a copy
+correction within the existing visualization; no workflow or layout change is
+needed. Implementation and publication references follow verification.
