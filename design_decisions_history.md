@@ -2078,3 +2078,12 @@ Motion off and reduced motion remain intact. This supersedes the earlier
 request for host highlights to repeat throughout a step. No new component,
 script or timer is introduced. Implementation and publication references follow
 verification; actual browser animation remains unverified.
+
+Implementation: `8c903e084a0f79a2a805f752cf0477f4e2e25528` (0.19.18).
+[Pages run 44144799569](https://github.com/kvegh/RHEL-sniperpatching/actions/runs/44144799569)
+succeeded. Static checks confirm all arrow animation declarations use three
+iterations and no infinite animation remains. Existing local model/interaction
+suites, CSS/release metadata and whitespace checks pass. All four published
+assets match the checkout and all fourteen deployed HTML/script interaction
+checks pass. Actual rendered animation remains unverified; no browser tooling
+was installed.
