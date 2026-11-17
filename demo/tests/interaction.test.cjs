@@ -80,6 +80,7 @@ test('real HTML and scripts render the first story and restore the baseline on r
   assert.doesNotMatch(text(v, 'test-fixes'), /CVE-/);
   assert.equal(text(v, 'test-available'), 'CV 1.0');
   assert.equal(v.get('previous').disabled, true);
+  assert.equal(text(v, 'scene-progress'), '');
   v.get('next').click();
   assert.notEqual(v.window.location.hash, '#step=baseline');
   v.get('restart').click();
@@ -291,6 +292,7 @@ test('AAP orchestrates query, repository update, CV update and publication befor
     assert.equal(text(v, 'test-available'), baseline);
     v.get('next').click();
     assert.equal(text(v, 'api-label'), 'Trigger publishing updated Content View');
+    assert.equal(text(v, 'scene-progress'), ': Action 2 of 2');
     assert.equal(v.get('flow-resolve').hidden, false);
     assert.match(v.get('flow-resolve').className, /is-active/);
     assert.equal(text(v, 'cv-availability'), `CV ${cycle + 1}.1 available to Test Server`);

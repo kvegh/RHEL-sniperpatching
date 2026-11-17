@@ -4,7 +4,7 @@
 (function (root) {
   'use strict';
 
-  const version = '0.19.12';
+  const version = '0.19.13';
   const sourceRevision = '2fe10cd27c874691780c72eb66105f87cd5c12fa';
   const source = name => `playbooks/new/${name}`;
   const scenes = [
@@ -212,7 +212,7 @@
         case 'verify-prod': verifyTarget(state.prod, scenario); break;
         case 'promote-targeted': state.prodCV = minor; break;
         case 'full-publish':
-          state.versions.push({ version: full, label: `All updates through ${scenario.cutoff}` });
+          state.versions.push({ version: full, label: 'All updates until date cutoff' });
           state.testCV = full;
           break;
         case 'full-test': updateAll(state.test, full); break;

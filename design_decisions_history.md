@@ -1928,3 +1928,21 @@ identified the retained width cap; it was removed before commit. All four
 published assets match the checkout and all fourteen deployed HTML/script
 interaction checks pass. Actual browser alignment, left-edge clearance and text
 rendering remain unverified. No dependency or infrastructure change was made.
+
+
+## 2026-11-17 14:18 UTC — Show scene and action progress together
+
+The user requested optional action progress immediately after the scene
+indicator, separated by a colon and space on one line. Version 0.19.13 uses
+one paragraph with inline scene/action spans, displaying SCENE 4 OF 7: Action
+2 of 2. Single-action scenes retain only their scene indicator, without a
+trailing separator. Existing interaction checks cover that omission and the
+two-action publication scene. This is a compact presentation correction with
+no story or navigation change. Implementation and publication references follow
+verification; actual browser rendering remains unverified.
+
+Before publication, the user also requested that both All updates through a
+specific date labels say All updates until date cutoff. The shared history-label
+renderer now uses that exact text for both fixed runs. Scenario cutoff data and
+technical details are preserved. This copy correction is included in the same
+unpublished 0.19.13 implementation.

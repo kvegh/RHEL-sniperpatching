@@ -170,7 +170,7 @@
     byId('scenario-title').textContent = currentAnnounced ? state.scenario.title : 'All systems up to date';
     byId('scenario-cve').textContent = currentAnnounced ? `${state.scenario.cve} · ${state.scenario.advisory}` : 'Baseline verified · no active security alerts';
     byId('step-count').textContent = `SCENE ${step.scene} OF ${story.scenes.length}`;
-    byId('scene-progress').textContent = actions.length > 1 ? `Action ${actionNumber} of ${actions.length}` : '';
+    byId('scene-progress').textContent = actions.length > 1 ? `: Action ${actionNumber} of ${actions.length}` : '';
     byId('step-title').textContent = step.title;
     byId('step-summary').textContent = step.summary;
     byId('phase-label').textContent = step.phase;

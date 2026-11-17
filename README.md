@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Version: 0.19.12.**
+**Version: 0.19.13.**
 
 [Open the interactive RHEL patching mockup](https://kvegh.github.io/RHEL-sniperpatching/)
 to follow two fixed CVE/RHSA cycles through seven explanatory scenes: green
@@ -8,7 +8,8 @@ baseline, CVE alert, Red Hat fix content, targeted CV, controlled Test Server/Pr
 rollout, the next maintenance window and broader Test Server/Prod Server updates. Rollout
 scenes expand into verification, reboot where needed, operator approval and
 exact-version production promotion. Future CVEs stay hidden until announced;
-prior fixes remain verified while routine updates arrive. A compact status box
+prior fixes remain verified while routine updates arrive. Scene and optional action
+progress share one line, for example SCENE 4 OF 7: Action 2 of 2. A compact status box
 shares a row with Red Hat software repositories, aligned with the workflow
 panel’s top edge. The upstream gap is halved; Red Hat sits closer to the
 status box and its download route exits right into Satellite’s top. The architecture,

@@ -304,8 +304,11 @@ h1 {
   min-width:0;
 }
 /* The upstream lane illustrates content arriving at Satellite, not an AAP download. */
+.scene-position {
+  white-space:nowrap;
+  line-height:1.6;
+}
 .scene-progress {
-  margin-top:4px;
   color:var(--muted);
   font-size:11px;
   line-height:1.5;
