@@ -1993,3 +1993,13 @@ that the prior source-row gap put column centers slightly away from the actual
 diagram-half centers. The desktop source row now uses the same exact halves
 as the platform row; the narrower layout retains its existing inter-column gap.
 This aligns the status panel with the AAP half without a pixel-offset workaround.
+
+Implementation: `28cb5fe6c99137b48e610638ac905ad72c49d23b` (0.19.15).
+[Pages run 44125724043](https://github.com/kvegh/RHEL-sniperpatching/actions/runs/44125724043)
+succeeded for that exact revision. Existing local model/interaction suites,
+CSS/release metadata and whitespace checks pass. Independent source analysis
+confirmed the balanced margin calculation; the desktop half-column offset was
+removed before commit. All four published assets match the checkout and all
+fourteen deployed HTML/script interaction checks pass. Browser-rendered spacing
+and visual acceptance remain unverified. No dependency or infrastructure change
+was made.
