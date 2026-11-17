@@ -2249,3 +2249,13 @@ preparation message has an aria-hidden full-text sizing alternative; tabular
 numerals keep version digits equal in width across runs. This checks copy/slot
 consistency, not browser geometry. The restored dimensions match 0.19.20 outside
 the platform correction, including bottom controls.
+
+Implementation: `4f677b719eba57984dd16b6e02368b7e2915bb4a` (0.19.22).
+[Pages run 44163647985](https://github.com/kvegh/RHEL-sniperpatching/actions/runs/44163647985)
+completed successfully for that exact correction. All four published assets match
+the checkout and all fifteen deployed HTML/script interaction checks pass,
+including the preparation-copy consistency regression. The 34 local tests and
+static checks pass. Status/server/sidebar dimensions match their pre-enlargement
+0.19.20 state; bottom navigation is preserved. The platform-only content sizing
+uses native wrapping without body scrolling or guessed heights. Browser geometry
+and visual acceptance remain unverified. No browser tooling was installed.
