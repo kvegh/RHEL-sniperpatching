@@ -25,6 +25,10 @@
 * {
   box-sizing:border-box;
 }
+/* Keep the page origin steady when a step first needs vertical scrolling. */
+html {
+  overflow-y:scroll;
+}
 body {
   margin:0;
 }
@@ -169,12 +173,14 @@ h1 {
   padding:22px;
 }
 .story-intro h2 {
+  min-height:2.5em;
   font-size:23px;
   line-height:1.25;
   letter-spacing:-.5px;
   margin-top:8px;
 }
 .technical-id {
+  min-height:3em;
   font-size:12px;
   color:var(--muted);
   margin-top:9px;
@@ -200,7 +206,7 @@ h1 {
   border-top:1px solid var(--line);
   margin-top:20px;
   padding-top:20px;
-  min-height:175px;
+  min-height:225px;
 }
 .narrative h3 {
   font-size:20px;
@@ -213,6 +219,10 @@ h1 {
   line-height:1.6;
   color:var(--muted);
   margin-top:10px;
+}
+.navigation button {
+  /* Approval text can wrap without moving the scene navigation. */
+  min-height:56px;
 }
 .navigation {
   display:grid;
@@ -322,7 +332,7 @@ h1 {
   align-self:center;
   justify-self:center;
   width:min(100%,572px);
-  min-height:118px;
+  min-height:172px;
   /* Match the page's 28px top inset, then share any extra row space equally. */
   margin:0 0 28px;
   padding:15px 16px;
@@ -411,6 +421,7 @@ h1 {
 }
 /* Keep a small content-arrival reserve while the overlay connects the actual card edges. */
 .redhat-supply {
+  align-content:start;
   align-self:start;
   justify-self:center;
   width:min(100%,334px);
@@ -421,6 +432,10 @@ h1 {
   padding-bottom:24px;
   justify-items:center;
   min-width:0;
+}
+/* Reserve the largest download list even while it is hidden or targeted. */
+.redhat-supply:has(.supply-transfer:not(.is-beside-route)) {
+  min-height:340px;
 }
 .redhat-source {
   justify-self:center;
@@ -684,6 +699,7 @@ h1 {
   letter-spacing:.08em;
 }
 .job-label {
+  min-height:2.8em;
   font-size:12px;
   line-height:1.4;
   font-weight:600;
@@ -767,6 +783,7 @@ h1 {
   line-height:1.5;
 }
 .cv-update {
+  min-height:1.5em;
   margin-top:4px;
   color:var(--purple);
   font-size:12px;
@@ -775,10 +792,16 @@ h1 {
   overflow-wrap:anywhere;
 }
 .cv-availability {
+  min-height:3em;
   margin-top:3px;
   font-size:10px;
   line-height:1.5;
   color:var(--purple);
+}
+/* Keep composition/publication slots without exposing future state to readers. */
+.cv-update[hidden],.cv-availability[hidden] {
+  display:block;
+  visibility:hidden;
 }
 .is-new-content {
   color:var(--purple);
@@ -1047,11 +1070,15 @@ strong.cv-counter > span.cv-counter-previous {
   color:var(--blue);
 }
 .fix-list {
+  /* Both runs fit here, even before a future issue has been announced. */
+  min-height:105px;
+  align-content:start;
   display:grid;
   gap:11px;
   margin:10px 0;
 }
 .fix-row {
+  min-height:47px;
   display:flex;
   justify-content:space-between;
   gap:10px;
@@ -1113,7 +1140,11 @@ strong.cv-counter > span.cv-counter-previous {
   color:var(--muted);
 }
 .version-list {
-  display:flex;
+  /* Fixed history slots keep later entries from moving the detail/footer row. */
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  min-height:72px;
+  align-items:start;
   list-style:none;
   margin:12px 0 0;
   padding:0;
@@ -1121,6 +1152,7 @@ strong.cv-counter > span.cv-counter-previous {
   gap:8px;
 }
 .version-list li {
+  min-width:0;
   display:flex;
   align-items:center;
   gap:10px;
@@ -1131,6 +1163,8 @@ strong.cv-counter > span.cv-counter-previous {
   font-size:15px;
 }
 .version-item {
+  width:100%;
+  min-height:72px;
   display:flex;
   flex-direction:column;
   gap:3px;
@@ -1138,13 +1172,15 @@ strong.cv-counter > span.cv-counter-previous {
   border:1px solid var(--line);
   background:var(--paper);
   border-radius:6px;
-  min-width:96px;
+  min-width:0;
 }
 .version-item strong {
   font-size:14px;
   color:var(--purple);
 }
 .version-item span {
+  overflow-wrap:anywhere;
+  line-height:1.4;
   font-size:10px;
   color:var(--muted);
 }
@@ -1687,4 +1723,35 @@ strong.cv-counter > span.cv-counter-previous {
   .scene-progress {
     font-size:10px;
   }
+}
+
+/* Reserve responsive text capacities; content may still grow rather than clip. */
+@media(max-width:1300px) and (min-width:851px) {
+  .story-event { min-height:268px; }
+  .cv-update { min-height:3em; }
+  .cv-availability { min-height:4.5em; }
+  .job-label { min-height:4.2em; }
+  .fix-row { min-height:64px; }
+  .fix-list { min-height:139px; }
+}
+@media(max-width:1100px) {
+  .version-list {
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    min-height:152px;
+    grid-auto-rows:72px;
+  }
+}
+@media(max-width:850px) {
+  .story-event { min-height:210px; }
+  .narrative { min-height:225px; }
+}
+@media(max-width:640px) {
+  .redhat-supply:has(.supply-transfer:not(.is-beside-route)) { min-height:242px; }
+}
+@media(max-width:540px) {
+  .version-list {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    min-height:226px;
+  }
+  .version-item { min-width:0; min-height:72px; }
 }

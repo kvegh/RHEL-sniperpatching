@@ -2087,3 +2087,54 @@ suites, CSS/release metadata and whitespace checks pass. All four published
 assets match the checkout and all fourteen deployed HTML/script interaction
 checks pass. Actual rendered animation remains unverified; no browser tooling
 was installed.
+
+
+## 2026-11-17 18:23 UTC — Prepare stable presenter-step positions
+
+The user reported that baseline and CVE steps move objects and explicitly asked
+for fixed locations. Source inspection confirms that changing title/fix-row
+heights and hidden CV rows change natural layout height. The screenshots also
+suggest a horizontal shift when the vertical scrollbar first appears. The
+working 0.19.19 correction uses a permanent scrollbar gutter and bounded CSS
+reserves for sidebar titles/narrative, status text, CV details and server fixes.
+It preserves the existing grid, native responsive flow and hidden future state;
+no new application component or dependency is introduced.
+
+This is an uncommitted, unpublished preparation, not a verified delivery. Existing
+model/interaction checks and whitespace checks pass, but they cannot measure
+browser layout. Independent source review also identified narrow download-list
+fallback and history wrapping as regions requiring browser measurement before
+claiming fixed positions throughout the story. No browser engine is installed;
+the optional temporary browser-tool installation request remains unanswered. No
+installation, deployment or infrastructure operation was launched. Implementation
+and publication references will be recorded after verification and delivery.
+
+
+### 2026-11-17 — Browser-tool decision and completed CSS preparation
+
+The user explicitly declined browser installation. No tool was installed. The
+implementation proceeds with existing source and interaction checks, with actual
+browser positions and visual acceptance explicitly unverified. This supersedes
+the prior pending installation question and publication wait; the fixed-position
+request remains authorized.
+
+Additional responsive reserves cover metadata/approval control wrapping, the
+normal-flow six-label download fallback and history slots (five columns on wide
+screens, three and two at existing narrower breakpoints). Download grid content
+stays at the top so unused reserved height cannot stretch the Red Hat card.
+This trades some blank space for stable presenter positions while allowing text
+to grow rather than clipping it. Source review identified the potential grid
+stretch before publication and it was corrected. Existing model/interaction
+checks pass; this is not a formal code-review acceptance or browser verification.
+Implementation/publication references follow delivery.
+
+The user's newer screenshot asks about top-five download categories during the
+selected-fix step. Clarification is pending on whether the earlier five routine
+categories should also appear there; no category-content change is included
+until that answer is processed. The fixed-position correction proceeds independently.
+
+The user answered: keep five only for broad updates, confirming the screenshot
+was the selected-fix download. The clarification is resolved; existing targeted
+fix/dependency and broad five-category content is retained. No category-content
+change is needed. Independent final source review found no remaining concrete
+blocker in the fixed-location CSS; browser geometry remains unverified.

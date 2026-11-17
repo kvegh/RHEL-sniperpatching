@@ -2,7 +2,7 @@
 
 [Open the visualization](https://kvegh.github.io/RHEL-sniperpatching/).
 
-Version **0.19.18**. This browser-only explanation is for security staff, Linux
+Version **0.19.19**. This browser-only explanation is for security staff, Linux
 administrators and AAP administrators. It follows the checked-in NEW architecture
 while grouping tasks and shortening operations for presentation. It is an
 explanatory mockup: statuses, CV numbers and outcomes are illustrative. No host,
@@ -78,14 +78,22 @@ vertical stems. The route area is 96px high above 1100px viewport width,
 128px through 1100px, and 168px through 540px. Its horizontal lanes sit at 36%
 and 80%, with captions still 8px above the shafts. Platform padding, Satellite
 content margins and host CV/fix/check gaps are tighter without reducing text size.
-Platform footers stay at the bottom of their cards. Sidebar sizing is unchanged;
-the user scoped textbox resizing to the top explanation box. The page header now occupies the left grid column above the unchanged workflow
+Platform footers stay at the bottom of their cards. The fixed-location refinement
+reserves two sidebar title lines and a 225px narrative region, while preserving
+the sidebar width. Hidden CV composition/publication details keep their layout
+slots through visibility:hidden, without revealing future state. Server fix lists
+reserve room for both announced issues; baseline content stays at the top. A
+permanent vertical scrollbar gutter keeps the centered page origin steady. Approval controls also reserve two text lines, keeping the scene list steady.
+History uses fixed responsive slots; the normal-flow download fallback reserves
+its largest list even when hidden. Existing checks cover behavior and source
+consistency; browser-rendered positions and visual acceptance remain unverified.
+The user declined browser installation. The page header now occupies the left grid column above the unchanged workflow
 panel. The redundant product-name eyebrow is removed. The title and subtitle are
 left-aligned as one block shifted left toward the page padding, with a single-line
 subtitle on desktop. Small screens retain natural wrapping. On desktop the colored
 status panel is centered horizontally in the left half
-of the diagram, with a maximum width of 572px (30% wider than 440px) and a 118px
-minimum height. Its distance from the site top equals its gap above AAP: the
+of the diagram, with a maximum width of 572px (30% wider than 440px) and a 172px
+minimum height to accommodate longer status messages. Its distance from the site top equals its gap above AAP: the
 centered margin box reserves the same 28px as the page's top inset and shares
 additional row space equally. Width is capped to fit its half of the diagram.
 Red Hat is centered over Satellite again, with room for its rightward
