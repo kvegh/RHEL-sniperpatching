@@ -1868,3 +1868,24 @@ review found no blocking defect after the package-list correction. All four
 published assets match the checkout and all fourteen deployed HTML/script
 interaction checks pass. Browser rendering, actual text wrapping and visual
 acceptance remain unverified. No dependency or infrastructure change was made.
+
+
+## 2026-11-17 14:04 UTC — Align the header with the workflow and raise the wrapped status
+
+The user requested moving the header left so the subtitle ends at the workflow
+panel's right edge, then raising the colored status box to around the middle of
+the title and restoring wrapping in a box about half its recent wide length.
+The user also requested bringing Red Hat a little left again. Version 0.19.11
+places the header in the existing left grid column above the workflow while the
+architecture spans both rows on the right. This uses the established layout
+without a new component. The sidebar's own size and contents are preserved.
+
+The subtitle ends at the shared column edge, with its left extension capped by
+page padding. The status panel is capped at 440px, with a 118px minimum height
+and a desktop top offset near the title midpoint. Red Hat is centered above
+Satellite again, with space above for the repository links and clearance for its
+outgoing arrow. Below 850px, the header/workflow/architecture stack and offsets
+reset. This supersedes the preceding wide single-line status panel and far-right
+Red Hat placement while retaining the compact cards and glow-free action arrows.
+Implementation and publication references follow verification. Actual browser
+rendering and visual acceptance remain unverified.

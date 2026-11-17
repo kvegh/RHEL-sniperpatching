@@ -2,7 +2,7 @@
 
 [Open the visualization](https://kvegh.github.io/RHEL-sniperpatching/).
 
-Version **0.19.10**. This browser-only explanation is for security staff, Linux
+Version **0.19.11**. This browser-only explanation is for security staff, Linux
 administrators and AAP administrators. It follows the checked-in NEW architecture
 while grouping tasks and shortening operations for presentation. It is an
 explanatory mockup: statuses, CV numbers and outcomes are illustrative. No host,
@@ -72,10 +72,14 @@ vertical stems. The route area is 96px high above 1100px viewport width,
 and 80%, with captions still 8px above the shafts. Platform padding, Satellite
 content margins and host CV/fix/check gaps are tighter without reducing text size.
 Platform footers stay at the bottom of their cards. Sidebar sizing is unchanged;
-the user scoped textbox resizing to the top explanation box. The top explanation gets the
-remaining space beside a 310px Red Hat column on wider screens; Red Hat sits
-farther right with a 24px gutter for its outgoing arrow. Descriptions wrap when
-needed, and the existing stacked mobile layout is retained. Package labels use
+the user scoped textbox resizing to the top explanation box. The page header now occupies the left grid column above the unchanged workflow
+panel. Its subtitle ends at the workflow panel's right edge, extending left only
+into available padding. On desktop the colored status panel starts near the
+middle of the title, wraps within a maximum width of 440px and has a 118px minimum
+height. Red Hat is centered over Satellite again, with room for its rightward
+arrow exit and header links above. At widths through 850px the header, workflow
+and architecture stack normally, and the status/source offsets reset. The
+existing narrower top-row stacking is retained. Package labels use
 the available source-column width, and the download elbow stays below their
 rendered bounds in a reserved 24px arrival lane. Download captions sit beside the
 route, above the package list.

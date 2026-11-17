@@ -89,13 +89,14 @@ button.approval {
   top:10px;
 }
 .page-header {
-  max-width:1640px;
-  margin:auto;
-  padding:28px 36px 24px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:20px;
+  grid-column:1;
+  grid-row:1;
+  margin:0;
+  padding:0;
+  text-align:right;
+}
+.header-copy h1 {
+  white-space:nowrap;
 }
 .eyebrow {
   font-size:11px;
@@ -115,11 +116,21 @@ h1 {
   color:#c9190b;
 }
 .subtitle {
+  position:relative;
+  left:100%;
+  transform:translateX(-100%);
+  width:max-content;
+  /* End at the workflow edge; only extend left into available page padding. */
+  max-width:calc(100% + var(--page-gutter));
+  text-align:right;
   font-size:15px;
   color:var(--muted);
   margin-top:7px;
 }
 .header-links {
+  position:absolute;
+  top:28px;
+  right:var(--page-gutter);
   display:flex;
   align-items:center;
   gap:20px;
@@ -136,15 +147,20 @@ h1 {
   background:var(--paper);
 }
 .app-shell {
+  --page-gutter:36px;
+  position:relative;
   max-width:1640px;
   margin:0 auto 40px;
-  padding:0 36px;
+  padding:28px 36px 0;
   display:grid;
   grid-template-columns:300px minmax(0,1fr);
-  gap:24px;
+  grid-template-rows:min-content 1fr;
+  gap:12px 24px;
   align-items:start;
 }
 .story-panel {
+  grid-column:1;
+  grid-row:2;
   background:var(--paper);
   border:1px solid var(--line);
   border-radius:12px;
@@ -280,6 +296,8 @@ h1 {
   margin-top:17px;
 }
 .architecture {
+  grid-column:2;
+  grid-row:1 / span 2;
   position:relative;
   min-width:0;
 }
@@ -292,7 +310,7 @@ h1 {
 }
 .story-source-row {
   display:grid;
-  grid-template-columns:minmax(0,1fr) 310px;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
   align-items:stretch;
   column-gap:24px;
   margin-bottom:0;
@@ -302,8 +320,10 @@ h1 {
   align-items:flex-start;
   gap:13px;
   align-self:start;
-  margin:0;
-  padding:13px 15px;
+  width:min(100%,440px);
+  min-height:118px;
+  margin:60px 0 0;
+  padding:15px 16px;
   background:var(--blue-soft);
   border:1px solid #c3d6ec;
   border-radius:9px;
@@ -389,6 +409,10 @@ h1 {
 }
 /* Keep a small content-arrival reserve while the overlay connects the actual card edges. */
 .redhat-supply {
+  align-self:start;
+  justify-self:center;
+  width:min(100%,334px);
+  margin-top:38px;
   display:grid;
   grid-template-columns:minmax(0,1fr);
   grid-template-rows:auto auto;
@@ -397,9 +421,8 @@ h1 {
   min-width:0;
 }
 .redhat-source {
-  justify-self:end;
-  margin-right:24px;
-  width:min(calc(100% - 24px),286px);
+  justify-self:center;
+  width:min(calc(100% - 48px),286px);
   display:flex;
   align-items:center;
   gap:14px;
@@ -1210,7 +1233,7 @@ strong.cv-counter > span.cv-counter-previous {
 @media(min-width:1500px) {
   .app-shell {
     grid-template-columns:320px minmax(0,1fr);
-    gap:36px;
+    column-gap:36px;
   }
   .platform-header h3 {
     font-size:16px;
@@ -1231,7 +1254,14 @@ strong.cv-counter > span.cv-counter-previous {
     /* Two-line captions need more separation between horizontal lanes. */
     height:128px;
   }
-  .page-header,.app-shell {
+  .header-copy h1 {
+    font-size:28px;
+  }
+  .subtitle {
+    font-size:13px;
+  }
+  .app-shell {
+    --page-gutter:22px;
     padding-left:22px;
     padding-right:22px;
   }
@@ -1286,14 +1316,55 @@ strong.cv-counter > span.cv-counter-previous {
   }
 }
 @media(max-width:850px) {
+  .page-header,.story-panel,.architecture {
+    grid-column:1;
+    grid-row:auto;
+  }
   .page-header {
+    display:flex;
+    justify-content:space-between;
     align-items:flex-start;
+    gap:20px;
+    text-align:left;
+  }
+  .header-copy {
+    min-width:0;
+  }
+  .header-copy h1 {
+    font-size:32px;
+    white-space:normal;
+  }
+  .subtitle {
+    position:static;
+    transform:none;
+    width:auto;
+    max-width:none;
+    text-align:left;
+    font-size:15px;
+  }
+  .header-links {
+    position:static;
+  }
+  .story-event {
+    width:100%;
+    min-height:0;
+    margin-top:0;
+  }
+  .redhat-supply {
+    width:100%;
+    margin-top:0;
+  }
+  .redhat-source {
+    justify-self:end;
+    margin-right:24px;
+    width:min(calc(100% - 24px),286px);
   }
   .page-header .eyebrow {
     max-width:400px;
   }
   .app-shell {
     grid-template-columns:1fr;
+    grid-template-rows:none;
   }
   .story-panel {
     display:grid;
@@ -1355,7 +1426,7 @@ strong.cv-counter > span.cv-counter-previous {
     height:168px;
   }
   .page-header {
-    padding:20px 16px;
+    padding:20px 4px;
     gap:10px;
   }
   .page-header h1 {
