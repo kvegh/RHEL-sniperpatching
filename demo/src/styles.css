@@ -311,17 +311,20 @@ h1 {
   display:grid;
   grid-template-columns:minmax(0,1fr) minmax(0,1fr);
   align-items:stretch;
-  column-gap:24px;
+  /* Use the same exact halves as the platform row below. */
+  column-gap:0;
   margin-bottom:0;
 }
 .story-event {
   display:flex;
   align-items:flex-start;
   gap:13px;
-  align-self:start;
-  width:min(100%,440px);
+  align-self:center;
+  justify-self:center;
+  width:min(100%,572px);
   min-height:118px;
-  margin:24px 0 0;
+  /* Match the page's 28px top inset, then share any extra row space equally. */
+  margin:0 0 28px;
   padding:15px 16px;
   background:var(--blue-soft);
   border:1px solid #c3d6ec;
@@ -1245,10 +1248,6 @@ strong.cv-counter > span.cv-counter-previous {
   }
 }
 @media(max-width:1100px) {
-  .story-source-row {
-    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
-    column-gap:20px;
-  }
   .routes {
     /* Two-line captions need more separation between horizontal lanes. */
     height:128px;
@@ -1315,6 +1314,9 @@ strong.cv-counter > span.cv-counter-previous {
   }
 }
 @media(max-width:850px) {
+  .story-source-row {
+    column-gap:20px;
+  }
   .page-header,.story-panel,.architecture {
     grid-column:1;
     grid-row:auto;
@@ -1345,9 +1347,10 @@ strong.cv-counter > span.cv-counter-previous {
     position:static;
   }
   .story-event {
+    align-self:start;
     width:100%;
     min-height:0;
-    margin-top:0;
+    margin:0;
   }
   .redhat-supply {
     width:100%;

@@ -2,7 +2,7 @@
 
 [Open the visualization](https://kvegh.github.io/RHEL-sniperpatching/).
 
-Version **0.19.14**. This browser-only explanation is for security staff, Linux
+Version **0.19.15**. This browser-only explanation is for security staff, Linux
 administrators and AAP administrators. It follows the checked-in NEW architecture
 while grouping tasks and shortening operations for presentation. It is an
 explanatory mockup: statuses, CV numbers and outcomes are illustrative. No host,
@@ -81,9 +81,13 @@ Platform footers stay at the bottom of their cards. Sidebar sizing is unchanged;
 the user scoped textbox resizing to the top explanation box. The page header now occupies the left grid column above the unchanged workflow
 panel. The redundant product-name eyebrow is removed. The title and subtitle are
 left-aligned as one block shifted left toward the page padding, with a single-line
-subtitle on desktop. Small screens retain natural wrapping. On desktop the colored status panel starts near the
-middle of the title, wraps within a maximum width of 440px and has a 118px minimum
-height. Red Hat is centered over Satellite again, with room for its rightward
+subtitle on desktop. Small screens retain natural wrapping. On desktop the colored
+status panel is centered horizontally in the left half
+of the diagram, with a maximum width of 572px (30% wider than 440px) and a 118px
+minimum height. Its distance from the site top equals its gap above AAP: the
+centered margin box reserves the same 28px as the page's top inset and shares
+additional row space equally. Width is capped to fit its half of the diagram.
+Red Hat is centered over Satellite again, with room for its rightward
 arrow exit and header links above. At widths through 850px the header, workflow
 and architecture stack normally, and the status/source offsets reset. The
 existing narrower top-row stacking is retained. Package labels use

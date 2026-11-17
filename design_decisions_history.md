@@ -1972,3 +1972,24 @@ succeeded. Existing local model/interaction suites, copy/CSS/version checks and
 whitespace checks pass. All four deployed assets match source and all fourteen
 deployed HTML/script interaction checks pass. The removed paragraph and its
 unused selectors are absent. Browser rendering remains unverified.
+
+
+## 2026-11-17 16:24 UTC — Balance and widen the status panel
+
+The user requested raising the status panel until its distance from the site top
+matches its gap above AAP, widening it by 30% and centering it in the left half
+of the diagram. Version 0.19.15 increases the width cap from 440px to 572px,
+constrained by its grid column. Grid alignment centers the panel horizontally.
+Vertically, a centered margin box with a 28px bottom margin matches the existing
+28px page top inset, sharing any additional row space equally above and below.
+This follows status text height and download-row height without a new script.
+The stacked layout resets the margin through 850px. This supersedes the previous
+title-midpoint offset while preserving the existing header, sidebar and arrows.
+Implementation and publication references follow verification. Actual browser
+rendering remains unverified.
+
+Independent source review confirmed the vertical margin calculation and noted
+that the prior source-row gap put column centers slightly away from the actual
+diagram-half centers. The desktop source row now uses the same exact halves
+as the platform row; the narrower layout retains its existing inter-column gap.
+This aligns the status panel with the AAP half without a pixel-offset workaround.
