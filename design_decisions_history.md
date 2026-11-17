@@ -2185,3 +2185,31 @@ approval controls. The 33 local model/interaction checks and static checks pass.
 The source review found no concrete layout blocker. Browser geometry, exact
 screenshot matching and visual acceptance remain unverified; the user's explicit
 no-browser-install decision was honored. No infrastructure change was made.
+
+
+## 2026-11-17 — Use larger fixed boxes without internal scrolling
+
+The user clarified that the larger fixed sizes must fit longer text without
+scrolling. The internal-scroll fallback in 0.19.20 does not satisfy that intent
+and is superseded. Version 0.19.21 removes all introduced internal scrollers and
+their extra keyboard tab stops. Cards retain larger fixed responsive heights
+for the current two-story content; the sidebar has a fixed larger height with
+its footer pushed to the bottom by an auto margin. Normal page scrolling remains
+necessary on short viewports. No content is intentionally clipped.
+
+Wide-screen reserves are 172px status, 248px platforms, 392px servers and 1040px
+sidebar. Narrow breakpoints reserve more space for wrapped text. The tradeoff
+is additional blank space in shorter states, which the user explicitly prefers
+to changing sizes or internally scrolling longer text. This supersedes the
+prior attempt to match the expanded screenshot with smaller scrolling cards.
+These are source-derived capacities for known copy, not browser-measured
+acceptance. No browser installation is authorized or performed. Implementation
+and publication references follow verification.
+
+Source review identified that 851–1100px layouts can need about 375px for the
+narrow Satellite definition, CV details and wrapped bindings. That range now
+reserves 400px for both platforms before publication. Existing 33 model/
+interaction checks, syntax, version/CSS/whitespace checks pass. Static inspection
+confirms that no internal auto/scroll overflow rule remains; normal page
+scrolling and intentionally clipped CV-counter animation are preserved.
+Browser geometry remains unverified; no tooling was installed.

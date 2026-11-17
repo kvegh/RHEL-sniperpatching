@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Version: 0.19.20.**
+**Version: 0.19.21.**
 
 [Open the interactive RHEL patching mockup](https://kvegh.github.io/RHEL-sniperpatching/)
 to follow two fixed CVE/RHSA cycles through seven explanatory scenes: green
@@ -31,10 +31,10 @@ its half of the diagram, with balanced spacing above and below and a wider
 wrapped panel; Red Hat sits closer to Satellite again. Tighter platform/host cards and a 96px desktop
 connector area reduce overall height, with extra room for wrapped descriptions
 on smaller screens. Every animated arrow makes three one-second passes,
-then its moving highlight stops. The layout fixes the responsive status, platform and server card heights, with
-scrolling content areas for longer text. The sidebar has a consistent responsive
-height and places Back/Next in its bottom section; the sidebar content
-above the controls scrolls. Stable scrollbar gutters prevent text-width shifts. Browser-rendered
+then its moving highlight stops. The layout uses larger fixed responsive status, platform and server cards to fit
+longer text without internal scrolling. The sidebar also has a fixed height and
+places Back/Next at its bottom. A stable page scrollbar gutter prevents sideways
+shifts as the normal page becomes taller. Browser-rendered
 positions remain unverified; no browser tooling was installed. The generic protocol connector is hidden; named
 AAP actions retain their arrows with clearer heads and a larger AAP card.
 Changing CV readouts roll like mechanical counters; the simplified walkthrough

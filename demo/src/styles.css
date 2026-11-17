@@ -42,7 +42,7 @@ button {
   font:inherit;
   cursor:pointer;
 }
-button:focus-visible,a:focus-visible,summary:focus-visible,[tabindex="0"]:focus-visible {
+button:focus-visible,a:focus-visible,summary:focus-visible {
   outline:3px solid var(--blue);
   outline-offset:4px;
 }
@@ -167,7 +167,7 @@ h1 {
 .story-panel {
   display:flex;
   flex-direction:column;
-  height:clamp(720px,calc(100vh - 144px),960px);
+  height:1040px;
   grid-column:1;
   grid-row:2;
   background:var(--paper);
@@ -175,17 +175,14 @@ h1 {
   border-radius:12px;
   padding:22px;
 }
-/* Only the content scrolls; presenter controls stay at the panel's bottom. */
+/* Reserve the full story area; presenter controls stay at the panel bottom. */
 .sidebar-content {
-  flex:1;
+  flex:none;
   min-height:0;
-  overflow-y:auto;
-  scrollbar-gutter:stable;
-  padding-right:4px;
 }
 .sidebar-controls {
   flex:none;
-  margin-top:16px;
+  margin-top:auto;
   padding-top:12px;
   border-top:1px solid var(--line);
 }
@@ -351,10 +348,8 @@ h1 {
   align-self:center;
   justify-self:center;
   width:min(100%,572px);
-  height:118px;
-  min-height:118px;
-  overflow-y:auto;
-  scrollbar-gutter:stable;
+  height:172px;
+  min-height:172px;
   /* Match the page's 28px top inset, then share any extra row space equally. */
   margin:0 0 28px;
   padding:15px 16px;
@@ -655,7 +650,7 @@ h1 {
   align-items:stretch;
 }
 .platform {
-  height:224px;
+  height:248px;
   display:flex;
   flex-direction:column;
   width:calc(60% - 23px);
@@ -663,11 +658,12 @@ h1 {
   background:var(--paper);
   border:1px solid #b9c7d4;
   border-radius:10px;
-  overflow:hidden;
+  overflow:visible;
   min-width:0;
   box-shadow:0 3px 10px #182f4810;
 }
 .platform-header {
+  border-radius:9px 9px 0 0;
   flex:none;
   display:flex;
   align-items:center;
@@ -712,8 +708,6 @@ h1 {
   font-weight:600;
 }
 .platform-body {
-  overflow-y:auto;
-  scrollbar-gutter:stable;
   flex:1;
   padding:8px 11px;
   min-height:0;
@@ -732,6 +726,7 @@ h1 {
   margin-top:5px;
 }
 .platform footer {
+  border-radius:0 0 9px 9px;
   flex:none;
   padding:5px 11px;
   border-top:1px solid var(--line);
@@ -1033,7 +1028,7 @@ strong.cv-counter > span.cv-counter-previous {
 .environment {
   display:flex;
   flex-direction:column;
-  height:282px;
+  height:392px;
   width:80%;
   justify-self:center;
   background:var(--paper);
@@ -1102,11 +1097,9 @@ strong.cv-counter > span.cv-counter-previous {
   color:var(--blue);
 }
 .fix-list {
-  /* Extra issue text scrolls here instead of changing the server geometry. */
+  /* Both issue rows fit inside the larger, fixed server card. */
   flex:1;
   min-height:0;
-  overflow-y:auto;
-  scrollbar-gutter:stable;
   align-content:start;
   display:grid;
   gap:11px;
@@ -1432,7 +1425,7 @@ strong.cv-counter > span.cv-counter-previous {
     grid-template-rows:none;
   }
   .story-panel {
-    height:clamp(620px,75vh,800px);
+    height:760px;
   }
   .sidebar-content {
     display:grid;
@@ -1767,11 +1760,11 @@ strong.cv-counter > span.cv-counter-previous {
   }
 }
 
-/* Reserve responsive text capacities; content may still grow rather than clip. */
+/* Fixed responsive capacities cover the known longer story text without scrollers. */
 @media(max-width:1300px) and (min-width:851px) {
-  .story-event { height:210px; min-height:210px; }
-  .platform { height:300px; }
-  .environment { height:340px; }
+  .story-event { height:288px; min-height:288px; }
+  .platform { height:360px; }
+  .environment { height:440px; }
   .cv-update { min-height:3em; }
   .cv-availability { min-height:4.5em; }
   .job-label { min-height:4.2em; }
@@ -1784,9 +1777,9 @@ strong.cv-counter > span.cv-counter-previous {
   }
 }
 @media(max-width:850px) {
-  .story-event { height:210px; min-height:210px; }
-  .platform { height:300px; }
-  .environment { height:340px; }
+  .story-event { height:250px; min-height:250px; }
+  .platform { height:360px; }
+  .environment { height:440px; }
   .narrative { min-height:225px; }
 }
 @media(max-width:640px) {
@@ -1801,7 +1794,12 @@ strong.cv-counter > span.cv-counter-previous {
 }
 
 @media(max-width:540px) {
-  .platform { height:400px; }
+  .story-panel { height:1040px; }
+  .platform { height:500px; }
   .environment { height:440px; }
   .environment header { height:80px; }
+}
+
+@media(min-width:851px) and (max-width:1100px) {
+  .platform { height:400px; }
 }
