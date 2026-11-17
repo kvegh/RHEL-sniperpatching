@@ -8,6 +8,7 @@
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let motion = !reducedMotion.matches;
   let index = 0;
+  let currentSceneRow;
 
   function indexFromHash() {
     const requested = new URLSearchParams(window.location.hash.slice(1)).get('step');
@@ -158,17 +159,33 @@
     }));
   }
 
+  function keepCurrentSceneVisible() {
+    const list = byId('step-list');
+    if (!currentSceneRow || !list.clientHeight) return;
+    const top = list.getBoundingClientRect().top + list.clientTop;
+    const bottom = top + list.clientHeight;
+    const row = currentSceneRow.getBoundingClientRect();
+    // Avoid page-scrolling/focus APIs: change only this list's offset.
+    if (row.top < top || row.bottom - row.top > list.clientHeight) list.scrollTop += row.top - top;
+    else if (row.bottom > bottom) list.scrollTop += row.bottom - bottom;
+  }
+
   function renderSceneNavigation(step) {
-    byId('step-list').replaceChildren(...story.scenes.map(scene => {
+    const list = byId('step-list');
+    list.replaceChildren(...story.scenes.map(scene => {
       const row = element('li', scene.number < step.scene ? 'is-complete' : '');
       const button = element('button');
       button.type = 'button';
-      if (scene.number === step.scene) button.setAttribute('aria-current', 'step');
+      if (scene.number === step.scene) {
+        button.setAttribute('aria-current', 'step');
+        currentSceneRow = row;
+      }
       button.append(element('span', 'step-number', scene.number < step.scene ? '✓' : String(scene.number)), element('span', '', scene.title));
       button.addEventListener('click', () => navigate(story.steps.findIndex(item => item.cycle === step.cycle && item.scene === scene.number)));
       row.append(button);
       return row;
     }));
+    keepCurrentSceneVisible();
   }
 
   function render() {
@@ -303,10 +320,14 @@
     render();
   });
   window.addEventListener('resize', updateUpstreamRoute);
+  window.addEventListener('resize', keepCurrentSceneVisible);
   if (typeof window.ResizeObserver === 'function') {
     // Follow wrapping and card-size changes as well as viewport resizes.
-    const observer = new window.ResizeObserver(updateUpstreamRoute);
-    for (const id of ['architecture', 'redhat-source', 'satellite-platform']) observer.observe(byId(id));
+    const observer = new window.ResizeObserver(() => {
+      updateUpstreamRoute();
+      keepCurrentSceneVisible();
+    });
+    for (const id of ['architecture', 'redhat-source', 'satellite-platform', 'step-list']) observer.observe(byId(id));
   }
   reducedMotion.addEventListener('change', event => { motion = !event.matches; render(); });
   index = indexFromHash();

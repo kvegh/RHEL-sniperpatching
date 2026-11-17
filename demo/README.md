@@ -2,7 +2,7 @@
 
 [Open the visualization](https://kvegh.github.io/RHEL-sniperpatching/).
 
-Version **0.19.22**. This browser-only explanation is for security staff, Linux
+Version **0.19.23**. This browser-only explanation is for security staff, Linux
 administrators and AAP administrators. It follows the checked-in NEW architecture
 while grouping tasks and shortening operations for presentation. It is an
 explanatory mockup: statuses, CV numbers and outcomes are illustrative. No host,
@@ -15,8 +15,14 @@ Scene and optional action progress share one line: **SCENE 4 OF 7: Action 2 of 2
 Single-action scenes show only the scene indicator, with no trailing separator.
 The sidebar retains its previous viewport-based fixed height and separate bottom
 control section. Back/Next are the lowest row, below Restart/Motion, so changing
-text cannot shift them. The previous sidebar content scrolling is restored along
-with its dimensions. The redundant summary footnote is absent.
+text cannot shift them. Only the Seven scenes list scrolls; the intro, run tabs,
+explanation and scene heading remain outside it. The list begins directly after
+the explanation without its former blank height reserve, using all remaining
+space above the controls. The current scene stays visible on Next/Back, scene
+selection, run changes, Restart and resize. Adjustment changes only the list's
+scroll offset; it does not call focus or scroll the page. Very narrow layouts retain a
+720px minimum sidebar height so a scene row remains usable below longer text.
+The redundant footnote is absent.
 Both broader-update history entries read **All updates until date cutoff**;
 the fixed scenario cutoff dates remain available in the technical explanation.
 
@@ -82,8 +88,8 @@ vertical stems. The route area is 96px high above 1100px viewport width,
 and 80%, with captions still 8px above the shafts. Platform padding, Satellite
 content margins and host CV/fix/check gaps are tighter without reducing text size.
 Platform footers stay at the bottom of their cards. The fixed-location refinement
-reserves two sidebar title lines and a 225px narrative region, while preserving
-the sidebar width. Hidden full-text CV preparation variants reserve the necessary platform height
+reserves two sidebar title lines while preserving the sidebar width. The narrative
+uses its natural height so the Seven scenes list can extend upward below it. Hidden full-text CV preparation variants reserve the necessary platform height
 without revealing future state. Server cards return to their previous dimensions;
 baseline content stays at the top. A
 permanent vertical scrollbar gutter keeps the centered page origin steady. Approval controls reserve two text lines and stay in a separate bottom footer.
@@ -256,9 +262,11 @@ Return to the [project README](../README.md) or [process diagram](../docs/proces
 
 ### Platform size stabilization and scoped rollback
 
-Version 0.19.22 rolls back the broad enlargement introduced in 0.19.21. Status,
+The platform sizing introduced in 0.19.22 rolls back the broad enlargement in
+0.19.21. Status,
 server and sidebar dimensions and their existing content behavior return to
-0.19.20. The bottom sidebar controls remain in place.
+0.19.20, with the subsequent scene-list-only scrolling refinement described above.
+The bottom sidebar controls remain in place.
 
 Only AAP and Satellite receive the content-sizing correction. The Satellite
 preparation slot overlays its current text and hidden sizing variants containing

@@ -175,13 +175,15 @@ h1 {
   border-radius:12px;
   padding:22px;
 }
-/* Only the content scrolls; presenter controls stay at the panel's bottom. */
+/* The scene list alone scrolls; explanation text and bottom controls stay put. */
 .sidebar-content {
+  display:flex;
+  flex-direction:column;
   flex:1;
   min-height:0;
-  overflow-y:auto;
-  scrollbar-gutter:stable;
-  padding-right:4px;
+}
+.story-intro,.cycle-tabs,.narrative,.workflow-heading {
+  flex:none;
 }
 .sidebar-controls {
   flex:none;
@@ -225,7 +227,7 @@ h1 {
   border-top:1px solid var(--line);
   margin-top:20px;
   padding-top:20px;
-  min-height:225px;
+  min-height:0;
 }
 .narrative h3 {
   font-size:20px;
@@ -281,6 +283,13 @@ h1 {
   text-align:right;
 }
 .step-list {
+  flex:1;
+  min-height:0;
+  overflow-y:auto;
+  scrollbar-gutter:stable;
+  scroll-behavior:auto;
+  align-content:start;
+  grid-auto-rows:max-content;
   list-style:none;
   margin:11px 0 0;
   padding:0;
@@ -300,6 +309,9 @@ h1 {
   padding:7px;
   border-radius:5px;
   font-weight:400;
+}
+.step-list button:focus-visible {
+  outline-offset:-3px;
 }
 .step-list button[aria-current=step] {
   background:var(--blue-soft);
@@ -1441,8 +1453,8 @@ strong.cv-counter > span.cv-counter-previous {
   }
   .sidebar-content {
     display:grid;
-    align-content:start;
     grid-template-columns:1fr 1fr;
+    grid-template-rows:auto auto auto minmax(0,1fr);
     gap:0 24px;
   }
   .story-intro {
@@ -1515,9 +1527,11 @@ strong.cv-counter > span.cv-counter-previous {
   }
   .story-panel {
     padding:17px;
+    /* Leave a readable scene row below the longest narrow-screen explanation. */
+    height:clamp(720px,75vh,800px);
   }
   .sidebar-content {
-    display:block;
+    display:flex;
   }
   .story-intro h2 {
     font-size:22px;
@@ -1787,7 +1801,6 @@ strong.cv-counter > span.cv-counter-previous {
 @media(max-width:850px) {
   .story-event { height:210px; min-height:210px; }
   .environment { height:340px; }
-  .narrative { min-height:225px; }
 }
 @media(max-width:640px) {
   .redhat-supply:has(.supply-transfer:not(.is-beside-route)) { min-height:242px; }

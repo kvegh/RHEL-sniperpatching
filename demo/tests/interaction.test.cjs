@@ -428,3 +428,64 @@ test('platform sizing variants cover every live CV preparation message', () => {
     assert.ok(variants.has(current), `Missing full-content size alternative at ${step.id}`);
   }
 });
+
+
+test('the current scene stays inside its own scroll frame through navigation and resize', () => {
+  const v = launch();
+  const list = v.get('step-list');
+  list.clientTop = 2;
+  list.clientHeight = 80;
+  let offset = 0;
+  Object.defineProperty(list, 'scrollTop', {
+    get: () => offset,
+    set: value => { offset = Math.max(0, Math.min(value, v.story.scenes.length * 40 - list.clientHeight)); },
+  });
+  list.getBoundingClientRect = () => ({ top: 100, bottom: 104 + list.clientHeight, height: 4 + list.clientHeight });
+  const replace = list.replaceChildren.bind(list);
+  list.replaceChildren = (...rows) => {
+    replace(...rows);
+    rows.forEach((row, position) => {
+      row.getBoundingClientRect = () => ({
+        top: 102 + position * 40 - list.scrollTop,
+        bottom: 142 + position * 40 - list.scrollTop,
+      });
+    });
+  };
+  v.window.scrollTo = () => assert.fail('Scene navigation must not scroll the page');
+  v.get('walkthrough').scrollTop = 77;
+  const activeRow = () => list.children.find(row => row.children[0].getAttribute('aria-current') === 'step');
+  const assertVisible = () => {
+    const row = activeRow().getBoundingClientRect();
+    assert.ok(row.top >= 102, 'The current scene is not clipped above the list');
+    assert.ok(row.bottom <= 102 + list.clientHeight, 'The current scene is not clipped below the list');
+    assert.equal(v.get('walkthrough').scrollTop, 77, 'The outer walkthrough keeps its offset');
+  };
+  for (const step of v.story.steps) {
+    go(v, step);
+    assertVisible();
+  }
+  v.get('previous').click();
+  assertVisible();
+  v.get('cycle-0').click();
+  assert.equal(list.scrollTop, 0);
+  v.get('next').click();
+  list.scrollTop = 20;
+  go(v, at(v, 0, 'resolve'));
+  assert.equal(list.scrollTop, 20, 'An already visible current scene does not move');
+  list.clientHeight = 40;
+  v.window.dispatch('resize');
+  assertVisible();
+  list.scrollTop = 100;
+  v.window.dispatch('resize');
+  assertVisible();
+  list.clientHeight = 20;
+  v.window.dispatch('resize');
+  assert.equal(activeRow().getBoundingClientRect().top, 102, 'An oversized row keeps its start visible');
+  list.clientHeight = 80;
+  v.get('restart').click();
+  assert.equal(list.scrollTop, 0);
+  assertVisible();
+  list.clientHeight = 0;
+  v.window.dispatch('resize');
+  assert.equal(list.scrollTop, 0, 'A hidden list is not scrolled');
+});

@@ -2259,3 +2259,36 @@ static checks pass. Status/server/sidebar dimensions match their pre-enlargement
 0.19.20 state; bottom navigation is preserved. The platform-only content sizing
 uses native wrapping without body scrolling or guessed heights. Browser geometry
 and visual acceptance remain unverified. No browser tooling was installed.
+
+
+## 2026-11-17 — Scroll only Seven scenes and follow the current scene
+
+The user requests that only Seven scenes scroll in the sidebar and that the
+current scene remain visible as the presentation advances. A further screenshot
+clarifies that the list should extend upward to immediately below the explanation,
+using the space formerly occupied by its blank minimum-height reserve.
+
+Version 0.19.23 moves scrolling from the whole sidebar content wrapper onto the
+scene list, retaining the fixed sidebar and bottom controls. The intro, run tabs,
+explanation and list heading stay outside the scroller. Flex/grid sizing assigns
+remaining space to the list across existing desktop/tablet/mobile breakpoints.
+Only the list scroll offset changes when the current row falls outside its visible
+bounds; focus and page position are preserved. Navigation, restart/run changes and
+resize share this behavior, with no smooth motion or new dependency. The former
+225px narrative reserve is removed so shorter text gives the list more room.
+AAP/Satellite sizing and the rest of the architecture remain unchanged. Browser
+installation remains declined; actual rendering is not claimed as verified.
+Implementation and publication references follow validation.
+
+The mobile sidebar retains a 720px minimum (matching desktop's minimum) so the
+longest narrow explanation leaves room for a readable current scene row. This
+small responsive capacity change serves the scene-list request; other diagram
+card dimensions are untouched. An oversized-row fallback keeps the row's start
+visible, and already-visible rows preserve their existing list offset.
+
+Independent source review found no concrete blocker in the final sidebar-only
+diff. The new regression checks all 42 story actions, Back, run/reset controls,
+already-visible rows, clipped top/bottom, resize, zero-height lists and oversized
+rows while guarding against page-scrolling calls. All 35 local model/interaction
+tests, syntax, HTML-ID, CSS/version and whitespace checks pass. These tests use
+the existing DOM substitute and do not establish rendered browser geometry.

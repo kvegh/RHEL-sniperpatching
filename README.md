@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Version: 0.19.22.**
+**Version: 0.19.23.**
 
 [Open the interactive RHEL patching mockup](https://kvegh.github.io/RHEL-sniperpatching/)
 to follow two fixed CVE/RHSA cycles through seven explanatory scenes: green
@@ -34,7 +34,9 @@ on smaller screens. Every animated arrow makes three one-second passes,
 then its moving highlight stops. The AAP and Satellite boxes reserve the fullest Content View composition and
 publication text, so their shared grid retains the necessary expanded height
 without fixed pixel guesses or scrolling platform bodies. The unrelated status,
-server and sidebar enlargement is rolled back; bottom sidebar navigation remains. Browser-rendered
+server and sidebar enlargement is rolled back; bottom sidebar navigation remains.
+Only the Seven scenes list scrolls in the sidebar, automatically keeping the
+current scene visible. The list uses the space immediately below the explanation. Browser-rendered
 positions remain unverified; no browser tooling was installed. The generic protocol connector is hidden; named
 AAP actions retain their arrows with clearer heads and a larger AAP card.
 Changing CV readouts roll like mechanical counters; the simplified walkthrough
