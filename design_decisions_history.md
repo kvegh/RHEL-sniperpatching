@@ -1956,3 +1956,12 @@ An actual completed-story readback confirms both broader-update labels use the
 requested wording. All four published assets match the checkout and all fourteen
 deployed HTML/script interaction checks pass. Browser rendering remains
 unverified. No dependency, infrastructure or automation behavior was changed.
+
+
+## 2026-11-17 14:23 UTC — Remove the redundant sidebar summary
+
+The user requested removing the sentence beginning Two fixed examples. Seven
+scenes per run. Version 0.19.14 removes that paragraph below the scene navigation
+and its unused desktop/mobile footnote styles. Scenarios, navigation and the
+remaining explanation are preserved. This is a focused copy cleanup within the
+existing design. Implementation and publication references follow verification.

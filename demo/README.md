@@ -2,7 +2,7 @@
 
 [Open the visualization](https://kvegh.github.io/RHEL-sniperpatching/).
 
-Version **0.19.13**. This browser-only explanation is for security staff, Linux
+Version **0.19.14**. This browser-only explanation is for security staff, Linux
 administrators and AAP administrators. It follows the checked-in NEW architecture
 while grouping tasks and shortening operations for presentation. It is an
 explanatory mockup: statuses, CV numbers and outcomes are illustrative. No host,
@@ -13,6 +13,7 @@ separately in the project README and handover.
 
 Scene and optional action progress share one line: **SCENE 4 OF 7: Action 2 of 2**.
 Single-action scenes show only the scene indicator, with no trailing separator.
+The sidebar ends after the scene navigation, without the redundant summary footnote.
 Both broader-update history entries read **All updates until date cutoff**;
 the fixed scenario cutoff dates remain available in the technical explanation.
 

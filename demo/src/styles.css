@@ -291,12 +291,6 @@ h1 {
   background:var(--green-soft);
   color:var(--green);
 }
-.story-footnote {
-  font-size:11px;
-  color:var(--muted);
-  line-height:1.6;
-  margin-top:17px;
-}
 .architecture {
   grid-column:2;
   grid-row:1 / span 2;
@@ -1404,9 +1398,6 @@ strong.cv-counter > span.cv-counter-previous {
   .step-list {
     grid-column:1/-1;
     grid-template-columns:repeat(3,minmax(0,1fr));
-  }
-  .story-footnote {
-    grid-column:1/-1;
   }
   .platform-header h3 {
     font-size:15px;
