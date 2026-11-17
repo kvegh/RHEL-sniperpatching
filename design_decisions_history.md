@@ -1800,3 +1800,13 @@ spacing, readable captions, one-second movement, route direction and motion
 controls. This supersedes the glow/halo styling documented for 0.19.7. No new
 dependency, component or architecture is needed. Implementation and publication
 references follow verification. Actual browser rendering remains unverified.
+
+Implementation: `6758d30e59b14ad4a968545197c103b4feb6251d` (0.19.9).
+[Pages run 44088137332](https://github.com/kvegh/RHEL-sniperpatching/actions/runs/44088137332)
+succeeded for that exact revision. Existing local model/interaction suites, CSS
+brace/release checks and whitespace checks pass. Source checks confirm both
+highlight shadow declarations are absent and the compact desktop/mobile spacing
+is retained. All four published assets match the checkout and all fourteen
+deployed HTML/script interaction checks pass. Browser rendering, actual caption
+wrapping and perceived motion remain unverified; no browser tool was installed.
+No infrastructure or AAP operation was performed.
