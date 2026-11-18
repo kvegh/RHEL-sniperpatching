@@ -2325,3 +2325,13 @@ and whitespace checks pass. Independent source review found no blocking issue
 in activation for either run, arrow cleanup/restoration or unchanged host state.
 CSS, layout and scenario behavior are unchanged. Browser rendering remains
 unverified under the existing no-install decision.
+
+### Publication verification — 2026-11-18 06:49 CET
+
+Implementation: `b10a143a80a772b2fea27d63039eab33f9d206af` (0.19.24).
+[Pages run 44246793295](https://github.com/kvegh/RHEL-sniperpatching/actions/runs/44246793295)
+completed successfully. All four published assets match the checkout and all
+seventeen deployed HTML/script interaction checks pass, including the new
+both-run trigger check. The 36 local tests and static checks pass. No browser
+was installed; visual rendering remains unverified. No runtime automation or
+infrastructure changes were made.
