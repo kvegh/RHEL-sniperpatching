@@ -489,3 +489,34 @@ test('the current scene stays inside its own scroll frame through navigation and
   v.window.dispatch('resize');
   assert.equal(list.scrollTop, 0, 'A hidden list is not scrolled');
 });
+
+
+test('both routine patch windows show the AAP repository and Content View update trigger', () => {
+  const v = launch();
+  const caption = 'Trigger repository and Content View updates';
+  for (const cycle of [0, 1]) {
+    go(v, at(v, cycle, 'verify-prod'));
+    const before = ['test-available', 'prod-available', 'test-installed', 'prod-installed']
+      .map(id => text(v, id));
+    v.get('next').click();
+    assert.equal(v.window.location.hash, `#step=run-${cycle + 1}-time-passes`);
+    assert.equal(text(v, 'step-title'), 'A routine patch window arrives');
+    assert.equal(text(v, 'api-label'), caption);
+    assert.equal(v.get('flow-resolve').hidden, false);
+    assert.equal(v.get('flow-resolve').getAttribute('aria-label'), caption);
+    assert.match(v.get('flow-resolve').className, /is-active/);
+    assert.equal(v.get('api-pulse').dataset.action, caption);
+    assert.match(v.get('api-pulse').className, /is-moving/);
+    assert.deepEqual(['test-available', 'prod-available', 'test-installed', 'prod-installed']
+      .map(id => text(v, id)), before, 'The explanatory trigger does not publish or install content');
+    v.get('next').click();
+    assert.equal(v.window.location.hash, `#step=run-${cycle + 1}-full-publish`);
+    assert.equal(text(v, 'api-label'), '');
+    assert.equal(v.get('flow-resolve').hidden, true);
+    assert.doesNotMatch(v.get('flow-resolve').className, /is-active/);
+    assert.doesNotMatch(v.get('api-pulse').className, /is-moving/);
+    v.get('previous').click();
+    assert.equal(text(v, 'api-label'), caption);
+    assert.match(v.get('api-pulse').className, /is-moving/);
+  }
+});

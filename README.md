@@ -1,6 +1,6 @@
 # RHEL-sniperpatching
 
-**Version: 0.19.23.**
+**Version: 0.19.24.**
 
 [Open the interactive RHEL patching mockup](https://kvegh.github.io/RHEL-sniperpatching/)
 to follow two fixed CVE/RHSA cycles through seven explanatory scenes: green
@@ -16,7 +16,9 @@ status box and its download route exits right into Satellite’s top. The archit
 Content View versions (fixed repository snapshots) and installed host state stay visible, with the selected
 fix contrasted against the later bulk content flow. This browser-only mockup
 makes AAP's orchestration explicit: query, repository update, CV composition,
-publication, then CVE-scoped deployment. Hosts request packages from Satellite;
+publication, then CVE-scoped deployment. Both runs also show AAP triggering
+repository and Content View updates when the routine patch window arrives.
+Hosts request packages from Satellite;
 Satellite returns the fix. Smaller platform cards sit centered in equal halves,
 with a larger Red Hat source and one continuous download arrow. Its colored
 category labels form a vertical stack beside the arrow, with at most five

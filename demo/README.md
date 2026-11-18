@@ -2,7 +2,7 @@
 
 [Open the visualization](https://kvegh.github.io/RHEL-sniperpatching/).
 
-Version **0.19.23**. This browser-only explanation is for security staff, Linux
+Version **0.19.24**. This browser-only explanation is for security staff, Linux
 administrators and AAP administrators. It follows the checked-in NEW architecture
 while grouping tasks and shortening operations for presentation. It is an
 explanatory mockup: statuses, CV numbers and outcomes are illustrative. No host,
@@ -52,6 +52,13 @@ automatic approval node. Scene links are educational navigation, not access cont
 | 5. Apply selected fix | AAP launches CVE-scoped deployment; the host requests packages and Satellite responds. Test Server installs/reboots/verifies first, then approval and exact promotion precede the same Prod Server exchange. |
 | 6. Routine patch window | Time passes; many security, bug-fix and enhancement updates arrive, retaining the already-applied fix in a broader CV. |
 | 7. Apply broader updates | Fully update and verify Test Server, approve, promote its exact major, update/verify Prod Server and finish green. |
+
+At **A routine patch window arrives**, both Run 01 and Run 02 show the blue
+AAP → Satellite arrow labeled **Trigger repository and Content View updates**.
+It reuses the same three one-second passes and motion controls as other AAP
+triggers. This explanatory trigger precedes the existing broader-publication
+step; it adds no navigation stop, scheduler or runtime operation, and does not
+change host content bindings or installed packages by itself.
 
 The compact status box sits beside the Red Hat software repositories on wider
 screens, aligned with the workflow panel’s top edge and saving vertical space.

@@ -2300,3 +2300,28 @@ deployed HTML/script interaction checks pass, including current-scene scrolling.
 The 35 local model/interaction checks and static checks pass. Independent source
 review found no concrete blocker. Browser layout and visual acceptance remain
 unverified; no browser tooling was installed or infrastructure changed.
+
+
+## 2026-11-18 06:45 CET — Show the routine-update trigger in both runs
+
+The user requests another AAP-to-Satellite repository and Content View update
+trigger arrow at A routine patch window arrives, explicitly in Run 2 as well.
+Version 0.19.24 reuses the existing AAP action connector at the shared time-passes
+step with the caption Trigger repository and Content View updates. A nonempty
+API caption now activates that connector, avoiding a second step-kind list that
+could omit a new caption. Existing color, three-pass pulse and motion controls
+are preserved without layout or story-sequence changes.
+
+The trigger remains explanatory: the subsequent broader-publication action
+retains the actual content-state transition. No host binding or installed state
+changes at the trigger, and no scheduler or runtime automation is added. A
+regression check traverses the step in both runs, verifies the active caption/
+pulse and unchanged host state, then checks removal on Next and restoration on
+Back. No browser tooling is installed; visual rendering remains unverified.
+Implementation and publication references follow validation.
+
+The 36 local model/interaction checks, JavaScript syntax, release consistency
+and whitespace checks pass. Independent source review found no blocking issue
+in activation for either run, arrow cleanup/restoration or unchanged host state.
+CSS, layout and scenario behavior are unchanged. Browser rendering remains
+unverified under the existing no-install decision.

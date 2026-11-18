@@ -216,7 +216,8 @@
       ? 'Trigger software repository update'
       : step.kind === 'cv-build' ? 'Trigger Content View update'
         : step.kind === 'minor' ? 'Trigger publishing updated Content View'
-          : step.scene === 2 ? 'Query: fix available?' : '';
+          : step.kind === 'time-passes' ? 'Trigger repository and Content View updates'
+            : step.scene === 2 ? 'Query: fix available?' : '';
     byId('flow-resolve').hidden = !byId('api-label').textContent;
     byId('flow-resolve').setAttribute('aria-label', byId('api-label').textContent);
     if (previousApiAction !== byId('api-label').textContent) {
@@ -252,7 +253,7 @@
     renderEvent(step, state, approval);
     renderDelivery(state);
     for (const route of routeNames) byId(`flow-${route}`).classList.toggle('is-active', step.route === route);
-    if (step.scene === 2 || step.kind === 'trigger-sync' || step.kind === 'cv-build' || step.kind === 'minor') byId('flow-resolve').classList.add('is-active');
+    if (byId('api-label').textContent) byId('flow-resolve').classList.add('is-active');
     // The DNF client requests packages; Satellite returns the selected content.
     for (const environment of ['test', 'prod']) {
       const route = byId(`flow-content-${environment}`);
